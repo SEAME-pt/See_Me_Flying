@@ -1,0 +1,1 @@
+ament_cmake_symlink_install_files("/home/joao-barros/Documents/ros2_ws/src/drone_bringup" FILES "/home/joao-barros/Documents/ros2_ws/build/drone_bringup/ament_cmake_core/drone_bringupConfig.cmake" "/home/joao-barros/Documents/ros2_ws/build/drone_bringup/ament_cmake_core/drone_bringupConfig-version.cmake" "DESTINATION" "share/drone_bringup/cmake")

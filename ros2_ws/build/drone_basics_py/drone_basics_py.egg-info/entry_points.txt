@@ -1,0 +1,2 @@
+[console_scripts]
+setpoint_pub = drone_basics_py.setpoint_pub:main
