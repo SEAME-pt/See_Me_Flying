@@ -1,0 +1,15 @@
+running develop
+running egg_info
+writing drone_basics_py.egg-info/PKG-INFO
+writing dependency_links to drone_basics_py.egg-info/dependency_links.txt
+writing entry points to drone_basics_py.egg-info/entry_points.txt
+writing requirements to drone_basics_py.egg-info/requires.txt
+writing top-level names to drone_basics_py.egg-info/top_level.txt
+reading manifest file 'drone_basics_py.egg-info/SOURCES.txt'
+writing manifest file 'drone_basics_py.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/python3.14/site-packages/drone-basics-py.egg-link (link to .)
+Installing setpoint_pub script to /home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/drone_basics_py
+
+Installed /home/joao-barros/Documents/ros2_ws/build/drone_basics_py
+running symlink_data

@@ -1,0 +1,17 @@
+[1.512s] Invoking command in '/home/joao-barros/Documents/ros2_ws/build/drone_basics_py': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/joao-barros/Documents/ros2_ws/build/drone_basics_py/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/python3.14/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/joao-barros/Documents/ros2_ws/build/drone_basics_py/build --no-deps symlink_data
+[1.869s] running develop
+[2.082s] running egg_info
+[2.105s] writing drone_basics_py.egg-info/PKG-INFO
+[2.106s] writing dependency_links to drone_basics_py.egg-info/dependency_links.txt
+[2.106s] writing entry points to drone_basics_py.egg-info/entry_points.txt
+[2.106s] writing requirements to drone_basics_py.egg-info/requires.txt
+[2.107s] writing top-level names to drone_basics_py.egg-info/top_level.txt
+[2.166s] reading manifest file 'drone_basics_py.egg-info/SOURCES.txt'
+[2.167s] writing manifest file 'drone_basics_py.egg-info/SOURCES.txt'
+[2.195s] running build_ext
+[2.195s] Creating /home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/python3.14/site-packages/drone-basics-py.egg-link (link to .)
+[2.196s] Installing setpoint_pub script to /home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/drone_basics_py
+[2.197s] 
+[2.197s] Installed /home/joao-barros/Documents/ros2_ws/build/drone_basics_py
+[2.203s] running symlink_data
+[2.249s] Invoked command in '/home/joao-barros/Documents/ros2_ws/build/drone_basics_py' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/joao-barros/Documents/ros2_ws/build/drone_basics_py/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/python3.14/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/joao-barros/Documents/ros2_ws/build/drone_basics_py/build --no-deps symlink_data

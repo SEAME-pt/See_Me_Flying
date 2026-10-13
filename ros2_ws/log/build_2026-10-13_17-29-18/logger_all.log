@@ -1,0 +1,259 @@
+[-1791908956761099008.000s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--symlink-install']
+[-1791908956761099008.000s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=True, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=4, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x7b2333033ed0>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7b233301b620>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7b233301b620>>, mixin_verb=('build',))
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[-1791908956761099008.000s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/joao-barros/Documents/ros2_ws'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ignore', 'ignore_ament_install']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore_ament_install'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_pkg']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_pkg'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_meta']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_meta'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ros']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ros'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['cmake', 'python']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'cmake'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['python_setup_py']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python_setup_py'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_cpp) by extensions ['ignore', 'ignore_ament_install']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_cpp) by extension 'ignore'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_cpp) by extension 'ignore_ament_install'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_cpp) by extensions ['colcon_pkg']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_cpp) by extension 'colcon_pkg'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_cpp) by extensions ['colcon_meta']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_cpp) by extension 'colcon_meta'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_cpp) by extensions ['ros']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_cpp) by extension 'ros'
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.package_identification:Package 'src/drone_basics_cpp' with type 'ros.ament_cmake' and name 'drone_basics_cpp'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_py) by extensions ['ignore', 'ignore_ament_install']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_py) by extension 'ignore'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_py) by extension 'ignore_ament_install'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_py) by extensions ['colcon_pkg']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_py) by extension 'colcon_pkg'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_py) by extensions ['colcon_meta']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_py) by extension 'colcon_meta'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_py) by extensions ['ros']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_basics_py) by extension 'ros'
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.package_identification:Package 'src/drone_basics_py' with type 'ros.ament_python' and name 'drone_basics_py'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_bringup) by extensions ['ignore', 'ignore_ament_install']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_bringup) by extension 'ignore'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_bringup) by extension 'ignore_ament_install'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_bringup) by extensions ['colcon_pkg']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_bringup) by extension 'colcon_pkg'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_bringup) by extensions ['colcon_meta']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_bringup) by extension 'colcon_meta'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_bringup) by extensions ['ros']
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_identification:_identify(src/drone_bringup) by extension 'ros'
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.package_identification:Package 'src/drone_bringup' with type 'ros.ament_cmake' and name 'drone_bringup'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[-1791908956761099008.000s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 3 installed packages in /home/joao-barros/Documents/ros2_ws/install
+[-1791908956761099008.000s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 321 installed packages in /opt/ros/lyrical
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_cpp' build argument 'cmake_args' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_cpp' build argument 'cmake_target' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_cpp' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_cpp' build argument 'cmake_clean_cache' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_cpp' build argument 'cmake_clean_first' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_cpp' build argument 'cmake_force_configure' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_cpp' build argument 'ament_cmake_args' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_cpp' build argument 'catkin_cmake_args' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_cpp' build argument 'catkin_skip_building_tests' from command line to 'False'
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.verb:Building package 'drone_basics_cpp' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp', 'merge_install': False, 'path': '/home/joao-barros/Documents/ros2_ws/src/drone_basics_cpp', 'symlink_install': True, 'test_result_base': None}
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_py' build argument 'cmake_args' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_py' build argument 'cmake_target' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_py' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_py' build argument 'cmake_clean_cache' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_py' build argument 'cmake_clean_first' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_py' build argument 'cmake_force_configure' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_py' build argument 'ament_cmake_args' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_py' build argument 'catkin_cmake_args' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_basics_py' build argument 'catkin_skip_building_tests' from command line to 'False'
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.verb:Building package 'drone_basics_py' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/joao-barros/Documents/ros2_ws/build/drone_basics_py', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py', 'merge_install': False, 'path': '/home/joao-barros/Documents/ros2_ws/src/drone_basics_py', 'symlink_install': True, 'test_result_base': None}
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_bringup' build argument 'cmake_args' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_bringup' build argument 'cmake_target' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_bringup' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_bringup' build argument 'cmake_clean_cache' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_bringup' build argument 'cmake_clean_first' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_bringup' build argument 'cmake_force_configure' from command line to 'False'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_bringup' build argument 'ament_cmake_args' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_bringup' build argument 'catkin_cmake_args' from command line to 'None'
+[-1791908956761099008.000s] Level 5:colcon.colcon_core.verb:set package 'drone_bringup' build argument 'catkin_skip_building_tests' from command line to 'False'
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.verb:Building package 'drone_bringup' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/joao-barros/Documents/ros2_ws/build/drone_bringup', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/joao-barros/Documents/ros2_ws/install/drone_bringup', 'merge_install': False, 'path': '/home/joao-barros/Documents/ros2_ws/src/drone_bringup', 'symlink_install': True, 'test_result_base': None}
+[-1791908956761099008.000s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[-1791908956761099008.000s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[-1791908956761099008.000s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/joao-barros/Documents/ros2_ws/src/drone_basics_cpp' with build type 'ament_cmake'
+[-1791908956761099008.000s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/joao-barros/Documents/ros2_ws/src/drone_basics_cpp'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[-1791908956761099008.000s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/joao-barros/Documents/ros2_ws/src/drone_basics_py' with build type 'ament_python'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.shell:create_environment_hook('drone_basics_py', 'ament_prefix_path')
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/hook/ament_prefix_path.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/hook/ament_prefix_path.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/hook/ament_prefix_path.sh'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp -- -j4 -l4
+[-1791908956761099008.000s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/joao-barros/Documents/ros2_ws/src/drone_basics_py'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp -- -j4 -l4
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(drone_basics_cpp)
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp' for CMake module files
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp' for CMake config files
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.shell:create_environment_hook('drone_basics_cpp', 'cmake_prefix_path')
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/hook/cmake_prefix_path.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/hook/cmake_prefix_path.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/hook/cmake_prefix_path.sh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/lib'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/bin'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/lib/pkgconfig/drone_basics_cpp.pc'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/lib/python3.14/site-packages'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/bin'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.sh'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.bash'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.zsh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/colcon-core/packages/drone_basics_cpp)
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(drone_basics_cpp)
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp' for CMake module files
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp' for CMake config files
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.shell:create_environment_hook('drone_basics_cpp', 'cmake_prefix_path')
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/hook/cmake_prefix_path.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/hook/cmake_prefix_path.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/hook/cmake_prefix_path.sh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/lib'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/bin'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/lib/pkgconfig/drone_basics_cpp.pc'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/lib/python3.14/site-packages'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/bin'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.sh'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.bash'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/drone_basics_cpp/package.zsh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/joao-barros/Documents/ros2_ws/install/drone_basics_cpp/share/colcon-core/packages/drone_basics_cpp)
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.task.python.build:Available setuptools commands: build, egg_info, easy_install, init_catalog, build_clib, bdist_dumb, develop, bdist_rpm, setopt, install_scripts, bdist, build_scripts, install_headers, saveopts, build_ext, symlink_data, compile_catalog, check, build_py, sdist, bdist_wheel, install_data, install_lib, dist_info, install_egg_info, extract_messages, clean, update_catalog, bdist_egg, install, rotate, alias, editable_wheel
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.task.python.build:Available setuptools 'develop' options: --local-snapshots-ok, --multi-version, --no-deps, --force-installation-into-system-dir, --egg-path, --editable, --site-dirs, --always-copy, --optimize, --version, --install-dir, --dry-run, --exclude-scripts, --uninstall, --always-unzip, --index-url, --install-layout, --build-directory, --upgrade, --prefix, --help, --no-user-cfg, --quiet, --user, --script-dir, --verbose, --find-links, --allow-hosts, --zip-ok, --no-find-links, --record
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/joao-barros/Documents/ros2_ws/build/drone_basics_py': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/joao-barros/Documents/ros2_ws/build/drone_basics_py/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/python3.14/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/joao-barros/Documents/ros2_ws/build/drone_basics_py/build --no-deps symlink_data
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.shell:create_environment_hook('drone_basics_py', 'pythonpath_develop')
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/build/drone_basics_py/share/drone_basics_py/hook/pythonpath_develop.ps1'
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/joao-barros/Documents/ros2_ws/build/drone_basics_py' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/joao-barros/Documents/ros2_ws/build/drone_basics_py/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/python3.14/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/joao-barros/Documents/ros2_ws/build/drone_basics_py/build --no-deps symlink_data
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/joao-barros/Documents/ros2_ws/build/drone_basics_py/share/drone_basics_py/hook/pythonpath_develop.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/build/drone_basics_py/share/drone_basics_py/hook/pythonpath_develop.sh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py' for CMake module files
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py' for CMake config files
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/bin'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/pkgconfig/drone_basics_py.pc'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/lib/python3.14/site-packages'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.shell:create_environment_hook('drone_basics_py', 'pythonpath')
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/hook/pythonpath.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/hook/pythonpath.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/hook/pythonpath.sh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/bin'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(drone_basics_py)
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/package.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/package.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/package.sh'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/package.bash'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/drone_basics_py/package.zsh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/joao-barros/Documents/ros2_ws/install/drone_basics_py/share/colcon-core/packages/drone_basics_py)
+[-1791908956761099008.000s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/joao-barros/Documents/ros2_ws/src/drone_bringup' with build type 'ament_cmake'
+[-1791908956761099008.000s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/joao-barros/Documents/ros2_ws/src/drone_bringup'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/joao-barros/Documents/ros2_ws/build/drone_bringup': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/joao-barros/Documents/ros2_ws/build/drone_bringup -- -j4 -l4
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/joao-barros/Documents/ros2_ws/build/drone_bringup' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/joao-barros/Documents/ros2_ws/build/drone_bringup -- -j4 -l4
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/joao-barros/Documents/ros2_ws/build/drone_bringup': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/joao-barros/Documents/ros2_ws/build/drone_bringup
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(drone_bringup)
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup' for CMake module files
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/joao-barros/Documents/ros2_ws/build/drone_bringup' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/joao-barros/Documents/ros2_ws/install/drone_basics_py:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/joao-barros/Documents/ros2_ws/build/drone_bringup
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup' for CMake config files
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.shell:create_environment_hook('drone_bringup', 'cmake_prefix_path')
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/hook/cmake_prefix_path.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/hook/cmake_prefix_path.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/hook/cmake_prefix_path.sh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/bin'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/lib/pkgconfig/drone_bringup.pc'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/lib/python3.14/site-packages'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/bin'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.sh'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.bash'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.zsh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/colcon-core/packages/drone_bringup)
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(drone_bringup)
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup' for CMake module files
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup' for CMake config files
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.shell:create_environment_hook('drone_bringup', 'cmake_prefix_path')
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/hook/cmake_prefix_path.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/hook/cmake_prefix_path.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/hook/cmake_prefix_path.sh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/bin'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/lib/pkgconfig/drone_bringup.pc'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/lib/python3.14/site-packages'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:checking '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/bin'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.dsv'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.sh'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.bash'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/drone_bringup/package.zsh'
+[-1791908956761099008.000s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/joao-barros/Documents/ros2_ws/install/drone_bringup/share/colcon-core/packages/drone_bringup)
+[-1791908956761099008.000s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[-1791908956761099008.000s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[-1791908956761099008.000s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[-1791908956761099008.000s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[-1791908956761099008.000s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[-1791908956761099008.000s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[-1791908956761099008.000s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/joao-barros/Documents/ros2_ws/install/local_setup.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/joao-barros/Documents/ros2_ws/install/_local_setup_util_ps1.py'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/joao-barros/Documents/ros2_ws/install/setup.ps1'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/joao-barros/Documents/ros2_ws/install/local_setup.sh'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/joao-barros/Documents/ros2_ws/install/_local_setup_util_sh.py'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/joao-barros/Documents/ros2_ws/install/setup.sh'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/joao-barros/Documents/ros2_ws/install/local_setup.bash'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/joao-barros/Documents/ros2_ws/install/setup.bash'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/joao-barros/Documents/ros2_ws/install/local_setup.zsh'
+[-1791908956761099008.000s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/joao-barros/Documents/ros2_ws/install/setup.zsh'

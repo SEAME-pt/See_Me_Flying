@@ -1,0 +1,14 @@
+package.xml
+setup.cfg
+setup.py
+drone_basics_py/__init__.py
+drone_basics_py/py.typed
+drone_basics_py/setpoint_pub.py
+drone_basics_py.egg-info/PKG-INFO
+drone_basics_py.egg-info/SOURCES.txt
+drone_basics_py.egg-info/dependency_links.txt
+drone_basics_py.egg-info/entry_points.txt
+drone_basics_py.egg-info/requires.txt
+drone_basics_py.egg-info/top_level.txt
+drone_basics_py.egg-info/zip-safe
+resource/drone_basics_py
