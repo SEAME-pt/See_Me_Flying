@@ -1,1 +1,0 @@
-ament_cmake_symlink_install_files("/home/joao-barros/Documents/ros2_ws/src/drone_basics_cpp" FILES "/home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp/ament_cmake_index/share/ament_index/resource_index/packages/drone_basics_cpp" "DESTINATION" "share/ament_index/resource_index/packages")

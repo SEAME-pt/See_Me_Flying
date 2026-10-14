@@ -1,0 +1,17 @@
+services:
+  dev:
+    build:
+      context: .
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+    image: seame/ros2-dev:jazzy
+    container_name: seame-dev
+    network_mode: host   # DDS discovery across containers and machines
+    ipc: host            # Fast DDS shared-memory transport
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-42}
+    volumes:
+      - ./ros2_ws:/home/dev/ros2_ws
+    stdin_open: true
+    tty: true
