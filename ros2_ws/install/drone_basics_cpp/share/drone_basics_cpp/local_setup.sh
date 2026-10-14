@@ -1,1 +1,0 @@
-/home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp/ament_cmake_environment_hooks/local_setup.sh

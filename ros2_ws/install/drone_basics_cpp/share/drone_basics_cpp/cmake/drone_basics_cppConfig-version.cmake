@@ -1,1 +1,0 @@
-/home/joao-barros/Documents/ros2_ws/build/drone_basics_cpp/ament_cmake_core/drone_basics_cppConfig-version.cmake
