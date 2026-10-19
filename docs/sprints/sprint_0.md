@@ -1,8 +1,8 @@
 # Sprint 0 — Onboarding & Baseline
 
-**Period:** 6 October – 16 October 2026
-**Duration:** 2 weeks
-**Phase:** Onboarding & Baseline
+- **Period:** 6 October – 16 October 2026
+- **Duration:** 2 weeks
+- **Phase:** Onboarding & Baseline
 
 ## 1. Sprint Objective
 
@@ -29,8 +29,8 @@ The sprint also establishes the initial drone architecture, communication paths,
 - Established a ROS 2 Jazzy development container to provide a consistent environment across hosts.
 - Defined the initial command interface using a Python setpoint publisher and a C++ watchdog.
 - Prepared the launch configuration and parameters:
-  - Setpoint publishing frequency: **20 Hz**.
-  - Watchdog timeout: **0.3 seconds**.
+  - Setpoint publishing frequency: **10 Hz**.
+  - Watchdog timeout: **0.5 seconds**.
 
 ### 2.3 System Design
 
@@ -46,8 +46,8 @@ The sprint also establishes the initial drone architecture, communication paths,
 | Flight controller ecosystem | INAV                         |
 | Command generation          | Python setpoint publisher    |
 | Command monitoring          | C++ watchdog                 |
-| Publishing frequency        | 20 Hz                        |
-| Watchdog timeout            | 0.3 s                        |
+| Publishing frequency        | 10 Hz                        |
+| Watchdog timeout            | 0.5 s                        |
 | Hardware interface          | ESP8266 connected to FC UART |
 | Sensors and peripherals     | Camera, optical flow, LEDs   |
 
@@ -55,7 +55,7 @@ The sprint also establishes the initial drone architecture, communication paths,
 
 The initial design includes a watchdog to detect missing or delayed setpoint messages.
 
-At a publishing frequency of 20 Hz, the expected interval between messages is 50 ms. A timeout of 300 ms corresponds to approximately six expected publishing intervals.
+At a publishing frequency of 10 Hz, the expected interval between messages is 50 ms. A timeout of 300 ms corresponds to approximately six expected publishing intervals.
 
 The intended behavior is to detect command loss and trigger a predefined safe response. The exact response, recovery behavior, and integration with the flight controller must be validated during implementation and testing.
 
@@ -66,10 +66,7 @@ The intended behavior is to detect command loss and trigger a predefined safe re
 - [x] Shared ROS 2 Jazzy development environment defined.
 - [x] Python publisher and C++ watchdog architecture defined.
 - [x] Initial launch parameters identified.
-- [x] Four-layer system architecture mapped.
 - [x] Milestone 1 divided into four sprints.
-
-*Checkboxes reflect the reported work and design activities; implementation and validation should be tracked separately where applicable.*
 
 ## 6. Open Items
 
