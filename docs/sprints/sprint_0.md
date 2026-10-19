@@ -22,9 +22,8 @@ The sprint also establishes the initial drone architecture, communication paths,
 ![Diagram](../../.assets/diagram.png)
 
 - Drafted the initial wiring plan covering the camera, Wi-fi module and optical flow sensor.
-- Defined the ESP8266 connection to a flight controller UART:
-  - ESP8266 RX → FC UART TX (T4).
-  - ESP8266 TX → FC UART RX (R4).
+- Defined the ESP8266 to UART1, and the ThoneFlow sensor to UART4, leaving UART6 free for eventual hardware add-on.
+- Connected the flow sensor to the 3.3V pad because it is sufficient to power it, and the Wi-Fi module to the general 5V power source.
 
 ### 2.2 ROS 2 + INAV
 
