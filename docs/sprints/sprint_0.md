@@ -4,6 +4,8 @@
 - **Duration:** 2 weeks
 - **Phase:** Onboarding & Baseline
 
+### [Documents the selection of INAV 9.1.1 as the drone’s flight firmware, custom flight controller target configuration, sensor calibration, safety switch setup, and the technical challenges encountered during setup.](../../.assets/Hardware_software%20choices%20for%20Drone.md)
+
 ## 1. Sprint Objective
 
 Establish the project's technical and organizational baseline, following the program's initial objectives:
