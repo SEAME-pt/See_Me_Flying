@@ -4,22 +4,22 @@ This document serves as the central planning and progress tracking guide for the
 
 The project follows an iterative development approach, with each sprint lasting approximately two weeks.
 
-## Sprints
+## 🔗 Sprints
 
 | Sprint | Period | Documentation |
 |---|---|---|
-| **Sprint 0** — Onboarding & Baseline | 6 Oct – 16 Oct 2026 |  [Sprint 0](./Sprint_0.md) |
-| **Sprint 1** | To be defined | [Sprint 1](./Sprint_1.md) |
+| **Sprint 0** — Onboarding & Baseline | 6 Oct – 16 Oct 2026 |  [Sprint 0](./sprint_0.md) |
+| **Sprint 1** | To be defined | [Sprint 1](./sprint_1.md) |
 
-## Sprint Roadmap
+## 🔗 Sprint Roadmap
 
-### 🏁 Sprint 0 — Onboarding & Baseline
+### ✔️ Sprint 0 — Onboarding & Baseline
 
 **Focus:** Development environment setup, Git workflow, ROS 2 fundamentals, team organization, and initial hardware teardown and analysis.
 
-**Documentation:** [Sprint 0](./Sprint_0.md)
+**Documentation:** [Sprint 0](./sprint_0.md)
 
-### 🏁 Sprint 1 — To be defined
+### ⏳ Sprint 1 — To be defined
 
 **Focus:** To be defined
 
