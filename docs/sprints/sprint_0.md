@@ -19,6 +19,8 @@ The sprint also establishes the initial drone architecture, communication paths,
 
 ### 2.1 Hardware
 
+![Diagram]"../../.assets/diagram.png"
+
 - Drafted the initial wiring plan covering the camera, Wi-fi module and optical flow sensor.
 - Defined the ESP8266 connection to a flight controller UART:
   - ESP8266 RX → FC UART TX (T4).
