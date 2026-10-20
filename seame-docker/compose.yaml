@@ -25,3 +25,4 @@ services:
       - "${RENDER_GID:-993}"
     stdin_open: true
     tty: true
+    init: true
