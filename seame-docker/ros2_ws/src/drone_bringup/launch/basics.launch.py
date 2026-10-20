@@ -1,27 +1,39 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+SIM = {'use_sim_time': True}
+
 
 def generate_launch_description():
-    use_sim_time = LaunchConfiguration('use_sim_time')
-    params = PathJoinSubstitution(
-        [FindPackageShare('drone_bringup'), 'config', 'basics.yaml'])
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(PathJoinSubstitution(
+            [FindPackageShare('ros_gz_sim'), 'launch', 'gz_sim.launch.py'])),
+        launch_arguments={'gz_args': '-r multicopter_velocity_control.sdf'}.items(),
+    )
 
-    return LaunchDescription([
-        DeclareLaunchArgument('use_sim_time', default_value='false'),
-        Node(
-            package='drone_basics_py',
-            executable='setpoint_pub',
-            parameters=[params, {'use_sim_time': use_sim_time}],
-            output='screen',
-        ),
-        Node(
-            package='drone_basics_cpp',
-            executable='watchdog',
-            parameters=[params, {'use_sim_time': use_sim_time}],
-            output='screen',
-        ),
-    ])
+    bridge = Node(
+        package='ros_gz_bridge', executable='parameter_bridge',
+        arguments=[
+            '/X3/gazebo/command/twist@geometry_msgs/msg/Twist]gz.msgs.Twist',
+            '/X3/enable@std_msgs/msg/Bool]gz.msgs.Boolean',
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+        ],
+        output='screen',
+    )
+
+    fc_bridge = Node(
+        package='drone_fc_bridge', executable='fc_bridge',
+        parameters=[SIM], output='screen',
+    )
+
+    watchdog = Node(
+        package='drone_basics_cpp', executable='watchdog',
+        remappings=[('setpoint_velocity', '/fc/setpoint_velocity')],
+        parameters=[SIM], output='screen',
+    )
+
+    return LaunchDescription([gazebo, bridge, fc_bridge, watchdog])
