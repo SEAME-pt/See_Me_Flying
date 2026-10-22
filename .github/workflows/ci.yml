@@ -1,0 +1,41 @@
+name: CI
+
+on:
+    push:
+        branches: [main, test]
+    pull_request:
+        branches: [main, test]
+
+jobs:
+    build-test:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 60
+        container:
+            image: ros:jazzy
+        env:
+            DEBIAN_FRONTEND: noninteractive
+        defaults:
+            run:
+                shell: bash
+                working-directory: seame-docker/ros2_ws
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v4
+
+            - name: Install dependencies
+              run: |
+                  apt-get update
+                  rosdep update --rosdistro jazzy
+                  rosdep install --from-paths src --ignore-src -y --rosdistro jazzy
+
+            - name: Build
+              run: |
+                  source /opt/ros/jazzy/setup.bash
+                  colcon build --event-handlers console_direct+
+
+            - name: Test
+              run: |
+                  source /opt/ros/jazzy/setup.bash
+                  source install/setup.bash
+                  colcon test --event-handlers console_direct+
+                  colcon test-result --verbose
