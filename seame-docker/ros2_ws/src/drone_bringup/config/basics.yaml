@@ -1,0 +1,7 @@
+setpoint_pub:
+  ros__parameters:
+    rate_hz: 20.0
+    speed: 0.3
+watchdog:
+  ros__parameters:
+    timeout_s: 0.3
