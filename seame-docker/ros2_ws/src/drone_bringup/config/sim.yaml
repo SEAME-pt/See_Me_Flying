@@ -1,0 +1,18 @@
+fc_bridge:
+  ros__parameters:
+    rate_hz: 20.0
+    setpoint_timeout_s: 0.3
+    max_speed_xy: 0.5
+    max_speed_z: 0.3
+    max_yaw_rate: 1.0
+
+watchdog:
+  ros__parameters:
+    timeout_s: 0.3          # keep equal to fc_bridge setpoint_timeout_s
+
+setpoint_pub:
+  ros__parameters:
+    rate_hz: 10.0
+    speed: 0.3
+    takeoff_s: 4.0
+    climb_speed: 0.3

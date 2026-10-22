@@ -22,6 +22,16 @@ using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::TwistStamped;
 using std_msgs::msg::Bool;
 
+namespace
+{
+bool all_finite(const Twist & t)
+{
+  return std::isfinite(t.linear.x) && std::isfinite(t.linear.y) &&
+         std::isfinite(t.linear.z) && std::isfinite(t.angular.x) &&
+         std::isfinite(t.angular.y) && std::isfinite(t.angular.z);
+}
+}  // namespace
+
 class FcBridge : public rclcpp::Node
 {
 public:
@@ -37,13 +47,18 @@ public:
     declare_parameter<double>("max_speed_xy", 0.5);   // m/s
     declare_parameter<double>("max_speed_z", 0.3);    // m/s
     declare_parameter<double>("max_yaw_rate", 1.0);   // rad/s
-
+    
     cmd_pub_ = create_publisher<Twist>(gz_twist_topic, 10);
     enable_pub_ = create_publisher<Bool>(gz_enable_topic, 10);
 
     sub_ = create_subscription<TwistStamped>(
       "fc/setpoint_velocity", rclcpp::SensorDataQoS(),
       [this](const TwistStamped & msg) {
+        if (!all_finite(msg.twist)) {
+          RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+            "Rejected non-finite setpoint (NaN/inf): treating as stale");
+          return;   // last_sp_ and last_rx_ unchanged, so the timeout still fires
+        }
         last_sp_ = msg.twist;
         last_rx_ = now();
       });
