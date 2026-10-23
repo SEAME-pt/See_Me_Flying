@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-jazzy-turtlesim \
       ros-jazzy-rqt-graph \
       ros-jazzy-teleop-twist-keyboard \
+      ros-jazzy-joy \
       ros-jazzy-tf2-tools \
       sudo bash-completion git vim \
     && rm -rf /var/lib/apt/lists/*

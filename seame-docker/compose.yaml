@@ -16,13 +16,17 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ./ros2_ws:/home/dev/ros2_ws
+      - /dev/input:/dev/input
     devices:
       - /dev/dri:/dev/dri
+    device_cgroup_rules:
+      - 'c 13:* rmw'   # input devices (js*, event*), incl. replugging the radio
     # GPU access: the dev user must be in the host's video and render groups.
     # Numbers come from .env (run ./make-env.sh once). Wrong numbers = software rendering, never a failure.
     group_add:
       - "${VIDEO_GID:-44}"
       - "${RENDER_GID:-993}"
+      - "${INPUT_GID:-994}"
     stdin_open: true
     tty: true
     init: true

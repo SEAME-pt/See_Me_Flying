@@ -16,3 +16,27 @@ setpoint_pub:
     speed: 0.3
     takeoff_s: 4.0
     climb_speed: 0.3
+
+joy_node:
+  ros__parameters:
+    device_name: "OpenTX Radiomaster Pocket Joystick"   # by name, not ID
+    deadzone: 0.05
+    autorepeat_rate: 20.0
+
+radio_teleop:
+  ros__parameters:
+    axis_roll: 0
+    axis_pitch: 1
+    axis_throttle: 2
+    axis_yaw: 3
+    axis_arm: 4
+    sign_roll: 1.0         # joy: right = -1, ROS wants right -> -y
+    sign_pitch: -1.0       # joy: up = -1, ROS wants up -> +x
+    sign_throttle: -1.0    # joy: up = -1, ROS wants up -> +z
+    sign_yaw: 1.0          # joy: right = -1, ROS wants right -> negative yaw
+    sign_arm: -1.0         # joy: armed = -1
+    arm_threshold: 0.5
+    deadband: 0.08
+    max_xy: 0.5
+    max_z: 0.3
+    max_yaw: 1.0

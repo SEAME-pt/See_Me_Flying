@@ -25,7 +25,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'setpoint_pub = drone_basics_py.setpoint_pub:main'
+            'setpoint_pub = drone_basics_py.setpoint_pub:main',
+            'radio_teleop = drone_basics_py.radio_teleop:main',
         ],
     },
 )
