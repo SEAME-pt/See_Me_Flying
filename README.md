@@ -1,14 +1,16 @@
 # Nodes Information: Drone Sim Stack
 
-Oct 20, 2026 · @Someone
+Oct 20, 2026 · @Someone · updated Oct 23, 2026
+
+For setup, see [`seame-docker/GUIDE.md`](seame-docker/GUIDE.md). To fly the sim with the keyboard or the RadioMaster Pocket, and for the parameters, failsafes and test results, see [`seame-docker/SIM_TELEOP.md`](seame-docker/SIM_TELEOP.md).
 
 ## System overview
 
-This is what runs today in the simulation, as started by `ros2 launch drone_bringup sim.launch.py`. Acronyms are spelled out the first time they appear.
+This is what runs today in the simulation, as started by `ros2 launch drone_bringup sim.launch.py source:=circle|joy|none`. The `source` argument chooses who commands the drone (default `circle`); exactly one source runs at a time. Acronyms are spelled out the first time they appear.
 
 &#91;embedded content: sim stack · 4 hops for setpoints, clock back to fc\_bridge\]
 
-Setpoints travel one way: `setpoint_pub` → `fc_bridge` → `ros_gz_bridge` → Gazebo. Simulation time travels back through the same bridge on `/clock`, and every ROS (Robot Operating System) node runs on it because the launch sets `use_sim_time: true`. The watchdog only listens; it changes nothing in the chain.
+Setpoints travel one way: the source (`setpoint_pub`, `radio_teleop` or the keyboard) → `fc_bridge` → `ros_gz_bridge` → Gazebo. Simulation time travels back through the same bridge on `/clock`, and every ROS (Robot Operating System) node runs on it because the launch sets `use_sim_time: true`. The watchdog only listens; it changes nothing in the chain.
 
 | Process | Language | Package | Started by |
 | --- | --- | --- | --- |
@@ -16,7 +18,12 @@ Setpoints travel one way: `setpoint_pub` → `fc_bridge` → `ros_gz_bridge` →
 | `parameter_bridge` | C++ | `ros_gz_bridge` (apt) | `sim.launch.py` |
 | `fc_bridge` | C++ | `drone_fc_bridge` (ours) | `sim.launch.py` |
 | `watchdog` | C++ | `drone_basics_cpp` (ours) | `sim.launch.py` |
-| `setpoint_pub` | Python | `drone_basics_py` (ours) | `sim.launch.py`, 5 s after the rest |
+| `setpoint_pub` | Python | `drone_basics_py` (ours) | `sim.launch.py source:=circle`, 5 s after the rest |
+| `joy_node` | C++ | `joy` (apt) | `sim.launch.py source:=joy` |
+| `radio_teleop` | Python | `drone_basics_py` (ours) | `sim.launch.py source:=joy` |
+| `teleop_twist_keyboard` | Python | `teleop_twist_keyboard` (apt) | By hand, with `source:=none` |
+
+All our nodes read their parameters from `drone_bringup/config/sim.yaml`; the values in the tables below are the ones in that file.
 
 ## setpoint\_pub
 
@@ -56,7 +63,7 @@ It **commands nothing**. The drone's actual failsafe is in `fc_bridge`; the watc
 | --- | --- |
 | Subscribes | `setpoint_velocity` (`geometry_msgs/TwistStamped`), remapped to `/fc/setpoint_velocity` by the launch file |
 | QoS | Sensor-data profile (best effort, small queue); connects to reliable and best-effort publishers |
-| `timeout_s` | 0.5 s (default; the launch file does not override it) |
+| `timeout_s` | 0.3 s, equal to `fc_bridge`'s `setpoint_timeout_s` (code default 0.5) |
 | Check period | 100 ms, fixed in code |
 
 ## fc\_bridge
@@ -65,7 +72,7 @@ The only node allowed to command the drone. Today it has one backend, `sim`; the
 
 **What it does**
 
-1. **Receives** setpoints on `fc/setpoint_velocity` and stores the latest one with the time it arrived. The message's own header timestamp is not used.
+1. **Receives** setpoints on `fc/setpoint_velocity` and stores the latest one with the time it arrived. The message's own header timestamp is not used. A setpoint with NaN (Not a Number) or infinity in any field is dropped with a warning (at most once a second) and not stored, so the previous one keeps ageing and the timeout takes over.
 2. **Ticks** at `rate_hz` (20 Hz). Each tick it decides whether the stored setpoint is fresh: it arrived no more than `setpoint_timeout_s` ago, and not in the "future" (which happens when sim time is reset).
 3. **Fresh:** clamps it and publishes it to Gazebo.
 4. **Stale or none yet:** publishes zero velocity. Gazebo's controller keeps following the last command it received, so this explicit zero is what makes the drone stop and hover. That is the failsafe.
@@ -91,7 +98,30 @@ The only node allowed to command the drone. Today it has one backend, `sim`; the
 | `max_speed_z` | 0.3 m/s |
 | `max_yaw_rate` | 1.0 rad/s |
 
-Timeout and clamp limits are read every tick, so `ros2 param set` changes them live. All parameters are doubles: set them as `2.0`, not `2`.
+Timeout and clamp limits are read every tick, so `ros2 param set` changes them live. All parameters are doubles: set them as `2.0`, not `2`. The code still declares every parameter with a default; `sim.yaml` only overrides the value. Removing a declaration makes the node crash the first time it reads that parameter.
+
+The clamp limits are safety caps meant for the real airframe. Tune stick feel in `radio_teleop` (`max_xy`, `max_z`, `max_yaw`), not here.
+
+## radio\_teleop
+
+Turns the RadioMaster Pocket, connected over USB as a joystick, into velocity setpoints. **Sim only**: on the real drone the radio talks ELRS (ExpressLRS) straight to INAV and never goes through ROS. Package `drone_basics_py`, file `drone_basics_py/radio_teleop.py`.
+
+**What it does, for every `/joy` message** (`joy_node` repeats the last state at 20 Hz):
+
+1. Reads the arm switch. If it is off: publishes nothing, so `fc_bridge` times out and holds. Logs `Arm switch off` once.
+2. If the switch has just been turned on, refuses to engage until the throttle stick is centred, like a real arming check. Logs `Centre the throttle stick to engage` every 2 s.
+3. Once engaged: applies sign and deadband to each stick and publishes `TwistStamped` (frame `base_link`). Right stick: forward/back and strafe. Left stick: up/down and yaw.
+
+| Item | Value |
+| --- | --- |
+| Subscribes | `joy` (`sensor_msgs/Joy`) |
+| Publishes | `setpoint_velocity` (`geometry_msgs/TwistStamped`), remapped to `/fc/setpoint_velocity` |
+| Axes | roll 0, pitch 1, throttle 2, yaw 3, arm 4 |
+| Signs | roll 1.0, pitch −1.0, throttle −1.0, yaw 1.0, arm −1.0 (`joy_node` inverts every Pocket axis) |
+| `deadband` | 0.08 |
+| `max_xy`, `max_z`, `max_yaw` | 0.5 m/s, 0.3 m/s, 1.0 rad/s at full stick |
+
+`joy_node` opens the radio by name (`device_name: "OpenTX Radiomaster Pocket Joystick"`), so a laptop accelerometer or another gamepad can't be picked by mistake.
 
 ## ros\_gz\_bridge and Gazebo
 
@@ -102,21 +132,31 @@ Timeout and clamp limits are read every tick, so `ros2 param set` changes them l
 | `/X3/gazebo/command/twist` | ROS → Gazebo | `geometry_msgs/Twist` | `gz.msgs.Twist` |
 | `/X3/enable` | ROS → Gazebo | `std_msgs/Bool` | `gz.msgs.Boolean` |
 | `/clock` | Gazebo → ROS | `rosgraph_msgs/Clock` | `gz.msgs.Clock` |
+| `/model/x3/odometry` → `/fc/odom` | Gazebo → ROS | `nav_msgs/Odometry` | `gz.msgs.Odometry` |
 
-In the bridge arguments, `]` means ROS → Gazebo and `[` means Gazebo → ROS. Any topic not listed does not cross: the drone's pose, IMU (inertial measurement unit) and odometry exist in Gazebo but are not visible in ROS yet.
+The list lives in `drone_bringup/config/gz_bridge.yaml`, which the bridge reads through its `config_file` parameter. In YAML the ROS and Gazebo names can differ, which is how odometry lands directly on the contract topic `/fc/odom`. Note the **lowercase** `x3` in the Gazebo odometry topic, unlike the command topics.
 
-**Gazebo** (`gz sim`, Gazebo Harmonic) is not a ROS node. It loads the world `multicopter_velocity_control.sdf` (SDF: Simulation Description Format) running from the start (`-r`). The world holds two quadcopters, X3 and X4; only X3 is used. X3 has a built-in velocity controller: given a Twist, it works out the motor speeds to reach that velocity and holds it until the next command. It accepts commands only while enabled. Our stack never touches the X4 or the `motor_speed` topic, which drives the propellers directly.
+`/fc/odom` arrives at 50 Hz with `frame_id: x3/odom` and `child_frame_id: x3/base_footprint`; covariances are all zero. Any topic not listed does not cross: the IMU (inertial measurement unit) is not visible in ROS yet.
+
+**Gazebo** (`gz sim`, Gazebo Harmonic) is not a ROS node. It loads the world `multicopter_velocity_control.sdf` (SDF: Simulation Description Format) running from the start (`-r`). The world holds two quadcopters, X3 and X4; only X3 is used. X3 has a built-in velocity controller: given a Twist, it works out the motor speeds to reach that velocity and holds it until the next command. Underneath, the physics is real: per-rotor motor models (thrust, rotor drag, spin-up), gravity and collisions. The controller reads commands in the **body frame** (verified Oct 22, 2026: forward follows the nose to within 1°). It accepts commands only while enabled. Our stack never touches the X4 or the `motor_speed` topic, which drives the propellers directly.
 
 ## Launch files
 
 Both live in `drone_bringup/launch/` and are installed by the `install(DIRECTORY launch config ...)` line in that package's `CMakeLists.txt`. A new launch file only becomes visible to `ros2 launch` after `colcon build`.
 
-**`sim.launch.py`: the whole first flight in one command**
+**`sim.launch.py`: the simulation with a choice of commander**
 
-1. At once: Gazebo, `parameter_bridge`, `fc_bridge` and `watchdog`. ROS launch gives no ordering between them; that is fine, because `fc_bridge` simply sits frozen until `/clock` arrives.
-2. After 5 s of wall time: `setpoint_pub` (takeoff, then circles).
-3. All our nodes get `use_sim_time: true`. `watchdog` and `setpoint_pub` are remapped from `setpoint_velocity` to `/fc/setpoint_velocity`.
-4. Ctrl-C stops everything together.
+| Argument | Values | Default |
+| --- | --- | --- |
+| `source` | `circle`, `joy`, `none` (anything else is rejected) | `circle` |
+| `world` | SDF file name or full path | `multicopter_velocity_control.sdf` |
+
+1. Always, at once: Gazebo, `parameter_bridge` (with `config/gz_bridge.yaml`), `fc_bridge` and `watchdog`. ROS launch gives no ordering between them; that is fine, because `fc_bridge` simply sits frozen until `/clock` arrives.
+2. `source:=circle`: after 5 s of wall time, `setpoint_pub` (takeoff, then circles).
+3. `source:=joy`: `joy_node` and `radio_teleop`.
+4. `source:=none`: nothing commands the drone; use it when running a source by hand, such as the keyboard.
+5. All our nodes get `config/sim.yaml` and `use_sim_time: true`. Every source is remapped from `setpoint_velocity` to `/fc/setpoint_velocity`.
+6. Ctrl-C stops everything together.
 
 **`basics.launch.py`: the crash-course exercise**
 
@@ -128,19 +168,25 @@ None of these stop the simulation from working today. The priority says when eac
 
 | Issue | Where | What can go wrong | Fix | Priority |
 | --- | --- | --- | --- | --- |
-| NaN (Not a Number) or infinite values pass through the clamp | `fc_bridge` | Comparisons with NaN are always false, so the scale stays 1 and the NaN is forwarded to the drone | Check every field with `std::isfinite`; on failure, treat the setpoint as stale (send zero) and log a warning | Before hardware |
 | Sim-only enable published forever | `fc_bridge` | Harmless in sim; on hardware it would be ROS arming the drone | The `inav` backend must not have it. Arming stays on the radio | Before hardware |
 | Message timestamp ignored | `fc_bridge` | Age is measured from arrival, so a setpoint delayed in the Wi-Fi link still counts as fresh | Also check `header.stamp` age once the real link exists, and log the measured latency | Before hardware |
-| No state comes back from the sim | bridge config | Height, position and attitude are invisible in ROS, so nothing can be checked or closed in a loop | Bridge pose, IMU and odometry onto `fc/odom`, `fc/imu`, `fc/attitude` (contract doc) | Next |
+| Only odometry comes back from the sim | bridge config | Attitude and acceleration have no topic of their own yet | Bridge the IMU onto `fc/imu`, derive `fc/attitude` (contract doc) | Next |
+| `/fc/odom` published by the bridge, not `fc_bridge` | `gz_bridge.yaml` | Sim shortcut; on hardware the `inav` backend must publish it | Keep the topic name; move the publisher with the `inav` backend | Before hardware |
+| Velocity-only control: height drifts | X3 controller | Holds zero vertical speed, not a height: drifts down about 1 cm every 6 s and loses about 15 cm in a yaw; takeoff reaches about 1.0 m, not 1.2 | Altitude hold from `/fc/odom` in `mission` or `safety_manager` | Next |
+| One commander at a time | `sim.launch.py` | `source:=` can't let a mission and a human share control | Command arbitration in `safety_manager` | Next |
+| Failsafes tested by hand only | `fc_bridge`, `radio_teleop` | A regression in the timeout, NaN guard, clamp or arm switch would go unnoticed | Automated `launch_testing` tests | Next |
+| Radio-as-joystick needs RF off | Pocket | A transmitting radio could command a bench drone | Always use the `INAV-SIM` model copy with Internal RF off | Always |
+| Possible arm switch bounce | Pocket | One burst of 12 on/off flips in 0.2 s seen in `jstest`; could toggle Engaged/off | Confirm; if real, another switch or a debounce in `radio_teleop` | Watch |
+| Frame names differ | `fc_bridge`, Gazebo | Commands say `base_link`, the sim says `x3/base_footprint`; harmless until tf is used | Align when tf is introduced | Later |
 | Takeoff is timed, not measured | `setpoint_pub` | Climbs for a fixed time with no height feedback; the real height depends on the controller | Move takeoff to the `mission` node, climbing until odometry reports the target height | Next |
 | Never lands | `setpoint_pub` | The flight only ends by stopping the launch | Landing phase in `mission` | Next |
-| Velocity frame not verified | `setpoint_pub`, `fc_bridge` | Commands are labelled `base_link` (body frame); if the X3 controller reads them in the world frame instead, behaviour differs once the drone yaws | Check with odometry: command +x, yaw the drone, see which way it moves | Next |
-| Timeouts disagree | `watchdog` 0.5 s vs `fc_bridge` 0.3 s | The watchdog warns after `fc_bridge` has already stopped the drone | Load both from one YAML parameter file | Later |
 | One-off timeout right after the first setpoint | `fc_bridge` | Seen once at startup: `received`, then `timeout` 14 ms later, then fine | Watch for it; if it repeats while setpoints flow, sim time is jumping and the timeout needs a margin | Watch |
 | Topics fixed to the X3, no namespace | all nodes | Fine for one drone; two drones would clash | Namespaces per drone when multi-agent work starts (Module 3) | Later |
 | Drone models downloaded into the container | Gazebo | Lost when the container is recreated; the world will not load without internet | Mount `~/.gz` as a cache folder in `compose.yaml` | Later |
 
 The 5 s start delay of `setpoint_pub` is wall time, which could look risky on a slow machine. It is safe: `setpoint_pub` runs on sim time, so its timer does not tick and its takeoff clock does not start until Gazebo's clock arrives.
+
+**Resolved since Oct 20, 2026:** NaN passing through the clamp (now rejected in `fc_bridge`), the watchdog and `fc_bridge` timeouts disagreeing (both 0.3 s from `sim.yaml`), no odometry in ROS (`/fc/odom`), and the unverified velocity frame (body frame confirmed).
 
 ## Not built yet
 
@@ -148,7 +194,6 @@ What the fc\_bridge interface contract asks for that does not exist today. The f
 
 | Item | Kind | Notes |
 | --- | --- | --- |
-| `fc/odom` | Topic out, `nav_msgs/Odometry` | From Gazebo's odometry, bridged; needed for height and position |
 | `fc/imu` | Topic out, `sensor_msgs/Imu` | From the X3's IMU sensor, bridged |
 | `fc/attitude` | Topic out, `geometry_msgs/QuaternionStamped` | From the pose or odometry |
 | `fc/battery`, `fc/status` | Topics out | `fc/status` needs the custom `FcStatus` message |
