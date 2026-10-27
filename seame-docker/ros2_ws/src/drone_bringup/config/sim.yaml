@@ -36,6 +36,7 @@ radio_teleop:
     sign_yaw: 1.0          # joy: right = -1, ROS wants right -> negative yaw
     sign_arm: -1.0         # joy: armed = -1
     arm_threshold: 0.5
+    arm_hold_s: 0.1        # debounce: SA bounces up to ~35 ms (arm_bounce.py, Oct 26)
     deadband: 0.08
     max_xy: 0.5
     max_z: 0.3

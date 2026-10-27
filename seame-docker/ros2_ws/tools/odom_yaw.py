@@ -1,5 +1,11 @@
-"""Print position and heading from /fc/odom twice a second."""
+"""
+Print position and heading twice a second.
+
+Default topic /fc/odom (what the drone stack sees: xy drifts, like optical flow).
+Pass /X3/odom for Gazebo's true pose: python3 odom_yaw.py /X3/odom
+"""
 import math
+import sys
 
 import rclpy
 from rclpy.node import Node
@@ -7,10 +13,10 @@ from nav_msgs.msg import Odometry
 
 
 class OdomYaw(Node):
-    def __init__(self):
+    def __init__(self, topic):
         super().__init__('odom_yaw')
         self.last = None
-        self.create_subscription(Odometry, '/fc/odom', self.on_odom, 10)
+        self.create_subscription(Odometry, topic, self.on_odom, 10)
         self.create_timer(0.5, self.show)
 
     def on_odom(self, msg):
@@ -28,7 +34,7 @@ class OdomYaw(Node):
 
 def main():
     rclpy.init()
-    rclpy.spin(OdomYaw())
+    rclpy.spin(OdomYaw(sys.argv[1] if len(sys.argv) > 1 else '/fc/odom'))
 
 
 if __name__ == '__main__':

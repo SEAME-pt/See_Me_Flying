@@ -16,7 +16,8 @@
   gz_type_name: "gz.msgs.Clock"
   direction: GZ_TO_ROS
  
-- ros_topic_name: "/fc/odom"
+# Internal: fc_bridge reads this and publishes fc/odom, fc/attitude, fc/range.
+- ros_topic_name: "/X3/odom"
   gz_topic_name: "/model/x3/odometry"
   ros_type_name: "nav_msgs/msg/Odometry"
   gz_type_name: "gz.msgs.Odometry"

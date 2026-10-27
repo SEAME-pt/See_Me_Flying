@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-jazzy-image-transport-plugins ros-jazzy-cv-bridge \
       ros-jazzy-rqt-image-view v4l-utils mesa-utils \
       ros-jazzy-tf2-tools \
+      ros-jazzy-ament-mypy \
       sudo bash-completion git vim \
     && rm -rf /var/lib/apt/lists/*
 
@@ -34,8 +35,9 @@ RUN userdel -r ubuntu 2>/dev/null || true \
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}/ros2_ws
 
-# Runtime dir for Qt (Gazebo GUI); matches XDG_RUNTIME_DIR in compose.yaml
-RUN mkdir -p /tmp/runtime-dev && chmod 700 /tmp/runtime-dev
+# Runtime dir for Qt (Gazebo GUI); matches XDG_RUNTIME_DIR in compose.yaml.
+# ~/.gz exists in the image so the gz-cache volume starts owned by dev, not root.
+RUN mkdir -p /tmp/runtime-dev && chmod 700 /tmp/runtime-dev && mkdir -p ~/.gz
 
 RUN echo 'source /opt/ros/jazzy/setup.bash' >> ~/.bashrc \
  && echo '[ -f ~/ros2_ws/install/setup.bash ] && source ~/ros2_ws/install/setup.bash' >> ~/.bashrc \

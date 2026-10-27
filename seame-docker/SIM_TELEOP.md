@@ -11,12 +11,14 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
 | Parameters | Every node reads its settings from one YAML file. The watchdog and `fc_bridge` timeouts now agree (0.3 s). | `drone_bringup/config/sim.yaml` |
 | Bridge | The Gazebo bridge topics moved from command-line arguments to YAML | `drone_bringup/config/gz_bridge.yaml` |
 | Launch | `source:=circle\|joy\|none` chooses who commands the drone; `world:=` chooses the SDF | `drone_bringup/launch/sim.launch.py` |
-| State | Odometry of the X3 is now visible in ROS on `/fc/odom` (50 Hz) | `gz_bridge.yaml` |
+| State | Odometry of the X3 is visible in ROS: Gazebo's true pose on `/X3/odom`, and what the stack sees on `fc/odom`, `fc/attitude`, `fc/range` from `fc_bridge` (Oct 27: shaped like optical flow + rangefinder, xy drifts) | `gz_bridge.yaml`, `fc_bridge.cpp` |
 | Safety | `fc_bridge` rejects setpoints containing NaN or infinity | `drone_fc_bridge/src/fc_bridge.cpp` |
 | Teleop | Keyboard teleop (`teleop_twist_keyboard`) | `Dockerfile` |
 | Teleop | RadioMaster Pocket as a USB joystick, with the arm switch as deadman | `drone_basics_py/radio_teleop.py`, `setup.py`, `package.xml`, `sim.yaml` |
 | Container | `/dev/input` and the `input` group passed into the container | `compose.yaml`, `make-env.sh`, `Dockerfile` (`ros-jazzy-joy`) |
 | Tools | `odom_yaw.py`: prints x, y, z and heading twice a second | `ros2_ws/tools/odom_yaw.py` |
+| Tools | `arm_bounce.py`: logs every arm switch change on `/joy` and flags bounces | `ros2_ws/tools/arm_bounce.py` |
+| Container | Gazebo's model cache (`~/.gz`) kept in the `gz-cache` volume, so the X3 survives recreating the container | `compose.yaml`, `Dockerfile` |
 
 ## How it fits together
 
@@ -37,7 +39,7 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
                                      ros_gz_bridge ◄── /model/x3/odometry, /clock
                                            │
                                            ▼
-                                        /fc/odom
+                                   /X3/odom ──► fc_bridge ──► fc/odom, fc/attitude, fc/range
 ```
 
 Exactly one source runs at a time, so two publishers never fight over `/fc/setpoint_velocity`. Every source ends in `fc_bridge`, so the timeout, NaN guard and clamp apply to all of them.
@@ -74,10 +76,10 @@ ros2 launch drone_bringup sim.launch.py            # source:=circle is the defau
 Takeoff, then circles. In a second terminal:
 
 ```bash
-python3 ~/ros2_ws/tools/odom_yaw.py
+python3 ~/ros2_ws/tools/odom_yaw.py /X3/odom
 ```
 
-**Expect:** z rises to about 1.0 m, then x and y trace a circle of about 0.55 m radius centred near (0, 0.55).
+**Expect:** z rises to about 1.0 m, then x and y trace a circle of about 0.55 m radius centred near (0, 0.55). `/X3/odom` is Gazebo's true pose. Without the argument the tool reads `fc/odom`, what the stack sees: the same circle, slowly drifting away (about 0.5 m per minute).
 
 ### 2. Keyboard
 
@@ -137,7 +139,7 @@ ros2 launch drone_bringup sim.launch.py source:=joy
 
 1. Disarmed: nothing is published; `fc_bridge` holds (zero velocity).
 2. Arm with the throttle off centre: `Centre the throttle stick to engage`, no motion.
-3. Centre the throttle, arm: `Engaged: sticks command velocity`. Throttle up climbs.
+3. Centre the throttle, arm: `Engaged: sticks command velocity` about 0.1 s later (the debounce). Throttle up climbs.
 4. Disarm at any time: the drone should stop and hover within about 0.3 s. Pulling the USB cable should have the same effect (both not yet tested mid-flight).
 
 Stick mapping (Mode 2): right stick = forward/back and strafe, left stick = up/down and yaw. Forward always means where the nose points (see Results).
@@ -179,6 +181,7 @@ All decimals are doubles: write `0.3`, never `0`. Axis indices are integers. A w
 | `sign_yaw` | 1.0 | Stick right → negative yaw rate (clockwise) |
 | `sign_arm` | −1.0 | The arm switch reads −1 when armed |
 | `arm_threshold` | 0.5 | `sign_arm × axis` above this means armed |
+| `arm_hold_s` | 0.1 | Debounce: the switch must read armed this long, without a break, before it engages. Off acts at once. Needs `joy_node` `autorepeat_rate` above 0 |
 | `deadband` | 0.08 | Stick values below this count as centred |
 | `max_xy`, `max_z`, `max_yaw` | 0.5, 0.3, 1.0 | Command at full stick (m/s, m/s, rad/s) |
 
@@ -188,7 +191,8 @@ Why the signs look odd: `joy_node` reports every axis of the Pocket **inverted**
 
 | Topic | Type | From | Notes |
 | --- | --- | --- | --- |
-| `/fc/odom` | `nav_msgs/Odometry` | `ros_gz_bridge`, from `/model/x3/odometry` | 50 Hz. `frame_id: x3/odom`, `child_frame_id: x3/base_footprint`. Covariances are all zero. |
+| `/X3/odom` | `nav_msgs/Odometry` | `ros_gz_bridge`, from `/model/x3/odometry` | 50 Hz, Gazebo's true pose. `frame_id: x3/odom`, `child_frame_id: x3/base_footprint`. Covariances are all zero. Only `fc_bridge` and debugging tools should read it. |
+| `/fc/odom`, `/fc/attitude`, `/fc/range` | `Odometry`, `QuaternionStamped`, `Range` | `fc_bridge` | 50 Hz. Shaped like INAV with optical flow + rangefinder: xy integrated from noisy velocity, so it drifts. See the README `fc_bridge` section. |
 | `/joy` | `sensor_msgs/Joy` | `joy_node` | Only with `source:=joy` |
 
 The Gazebo topic is `/model/x3/odometry` with a **lowercase** x3, unlike the command topics (`/X3/...`). With the uppercase name the bridge connects to nothing, silently.
@@ -220,7 +224,21 @@ The drone stays on the ground and `ros2 topic echo /X3/gazebo/command/twist --on
 | Takeoff height | About 1.02 m against 1.2 m planned (spin-up eats part of the 4 s climb) |
 | Height hold | Drifts down about 1 cm every 6 s; loses about 15 cm during a 125° yaw |
 | Odometry rate | 50.0 Hz |
-| Arm switch | One burst of 12 on/off flips in 0.2 s was seen in `jstest`. To be confirmed. |
+| Arm switch | **Bounce confirmed** (`arm_bounce.py`, Oct 26): bursts of up to about 10 flips, 0–35 ms apart, mostly on a slow arm. Fixed with `arm_hold_s` 0.1 s in `radio_teleop`. Deliberate fast flicks are 100 ms or more apart. |
+
+### Checking the arm switch for bounce
+
+Radio connected, nothing else running. Two container terminals:
+
+```bash
+ros2 run joy joy_node --ros-args -p device_name:="OpenTX Radiomaster Pocket Joystick"
+```
+
+```bash
+python3 ~/ros2_ws/tools/arm_bounce.py
+```
+
+Flip SA on and off slowly about 20 times, then Ctrl-C. A clean switch prints one line per flip, each hundreds of ms after the last. A bounce shows as lines less than 300 ms apart, marked `<-- BOUNCE`.
 
 ## Troubleshooting
 
@@ -235,17 +253,14 @@ The drone stays on the ground and `ros2 topic echo /X3/gazebo/command/twist --on
 | Never engages | Throttle not centred (the Pocket's throttle doesn't spring back) | Find the centre; `ros2 topic echo /joy --field axes` shows it |
 | Radio not in `lsusb` | Charge-only cable, USB mode not Joystick, or a dead port | Another cable or port; EdgeTX USB mode: Ask or Joystick |
 | `/dev/input` empty in the container | A volume line in `compose.yaml` indented differently from the others: YAML merges it into the line above | Same indentation for every `- ` entry; `docker compose up -d --force-recreate` |
-| `ros2 topic hz /fc/odom`: "not published yet" for a moment | The bridge hadn't connected yet | Wait a second |
+| `ros2 topic hz /fc/odom`: "not published yet" for a moment | The bridge or `fc_bridge` hadn't connected yet | Wait a second |
 | Two publishers on `/fc/setpoint_velocity` | A node started by hand while the launch has a source | Use `source:=none` when running anything by hand. Check with `ros2 topic info /fc/setpoint_velocity -v` |
 
 ## Known issues
 
 | Issue | Impact | Next step |
 | --- | --- | --- |
-| Velocity-only control: height drifts down and drops in yaw | Fine with a human on the sticks; a mission node can't rely on it | Altitude hold using `/fc/odom` (mission node or `safety_manager`) |
-| `/fc/odom` is published by the bridge, not `fc_bridge` | Sim shortcut; on hardware the `inav` backend publishes it | Keep the topic name; move the publisher with the `inav` backend |
+| Velocity-only control: height drifts down and drops in yaw | Fine with a human on the sticks; a mission node can't rely on it | Altitude hold using `fc/range` (mission node) |
 | Frame names: commands say `base_link`, the sim says `x3/base_footprint` | Nothing yet (no tf in use) | Align when tf is introduced |
 | Radio-as-joystick is sim only and needs RF off | A transmitting radio could command a bench drone | Always the `INAV-SIM` model |
-| Possible arm switch bounce | Could toggle Engaged/off quickly | Confirm; if real, use another switch or debounce in `radio_teleop` |
 | One source at a time (`source:=`) | Mission and human can't share control | Command arbitration in `safety_manager` (step 8 of the teleop guide) |
-| Failsafes tested by hand only | A regression would go unnoticed | Automated `launch_testing` tests for timeout, NaN, clamp and arm switch |

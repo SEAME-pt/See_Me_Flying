@@ -17,6 +17,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ./ros2_ws:/home/dev/ros2_ws
       - /dev/input:/dev/input
+      - gz-cache:/home/dev/.gz   # Fuel models (X3, X4) survive recreating the container
       - /dev:/dev
     devices:
       - /dev/dri:/dev/dri
@@ -33,3 +34,6 @@ services:
     stdin_open: true
     tty: true
     init: true
+
+volumes:
+  gz-cache:
