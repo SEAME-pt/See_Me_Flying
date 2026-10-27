@@ -1,6 +1,8 @@
-"""RadioMaster Pocket (USB joystick) -> velocity setpoints, arm switch as deadman.
+"""
+RadioMaster Pocket (USB joystick) -> velocity setpoints, arm switch as deadman.
 
 Sim only. On the real drone the radio talks ELRS straight to INAV.
+
 """
 from geometry_msgs.msg import TwistStamped
 import rclpy
