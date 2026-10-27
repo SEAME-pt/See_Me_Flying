@@ -17,6 +17,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-jazzy-rqt-graph \
       ros-jazzy-teleop-twist-keyboard \
       ros-jazzy-joy \
+      ros-jazzy-usb-cam ros-jazzy-image-transport \
+      ros-jazzy-image-transport-plugins ros-jazzy-cv-bridge \
+      ros-jazzy-rqt-image-view v4l-utils mesa-utils \
       ros-jazzy-tf2-tools \
       sudo bash-completion git vim \
     && rm -rf /var/lib/apt/lists/*
