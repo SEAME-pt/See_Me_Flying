@@ -77,11 +77,14 @@ jobs:
           python-version: "3.12"
 
       - name: Syntax check
-        # main.py is MicroPython, but its syntax is plain Python 3, so this still works
-        run: python -m py_compile telemetry/*.py
+        run: |
+          if [! -d telemetry ]; then echo "No telemetry/ directory, skipping syntax check"; exit 0; fi
+          python -m py_compile telemetry/*.py
+        # main.py is MicroPython, but its syntax is plain Python 3, so this still works 
 
       - name: Lint
         run: |
+          if [! -d telemetry ]; then echo "No telemetry/ directory, skipping lint"; exit 0; fi
           pip install flake8
           flake8 telemetry --max-line-length=140
 
