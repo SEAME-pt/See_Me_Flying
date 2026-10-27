@@ -2,8 +2,8 @@
 
 Sim only. On the real drone the radio talks ELRS straight to INAV.
 """
-import rclpy
 from geometry_msgs.msg import TwistStamped
+import rclpy
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
