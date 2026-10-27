@@ -2,8 +2,8 @@ import math
 
 import rclpy
 from rclpy.executors import ExternalShutdownException
-from rclpy.node import Node
 from geometry_msgs.msg import TwistStamped
+from rclpy.node import Node
 
 
 class SetpointPub(Node):
