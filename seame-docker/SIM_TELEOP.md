@@ -15,7 +15,7 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
 | Safety | `fc_bridge` rejects setpoints containing NaN or infinity | `drone_fc_bridge/src/fc_bridge.cpp` |
 | Teleop | Keyboard teleop (`teleop_twist_keyboard`) | `Dockerfile` |
 | Teleop | RadioMaster Pocket as a USB joystick, with the arm switch as deadman | `drone_basics_py/radio_teleop.py`, `setup.py`, `package.xml`, `sim.yaml` |
-| Container | `/dev/input` and the `input` group passed into the container | `compose.yaml`, `make-env.sh`, `Dockerfile` (`ros-jazzy-joy`) |
+| Container | `/dev/input` and the `input` group passed into the container | `compose.yaml`, `scripts/make-env.sh`, `Dockerfile` (`ros-jazzy-joy`) |
 | Tools | `odom_yaw.py`: prints x, y, z and heading twice a second | `ros2_ws/tools/odom_yaw.py` |
 | Tools | `arm_bounce.py`: logs every arm switch change on `/joy` and flags bounces | `ros2_ws/tools/arm_bounce.py` |
 | Container | Gazebo's model cache (`~/.gz`) kept in the `gz-cache` volume, so the X3 survives recreating the container | `compose.yaml`, `Dockerfile` |
@@ -49,7 +49,7 @@ Exactly one source runs at a time, so two publishers never fight over `/fc/setpo
 The Dockerfile and `compose.yaml` changed, so the container must be rebuilt. On the **host**, in `seame-docker/`:
 
 ```bash
-./make-env.sh                 # adds INPUT_GID to .env (answer y to overwrite)
+./scripts/make-env.sh                 # adds INPUT_GID to .env (answer y to overwrite)
 docker compose build
 docker compose up -d --force-recreate
 xhost +local:                 # lets the container open Gazebo's window; needed again after every login

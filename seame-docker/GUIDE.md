@@ -111,4 +111,4 @@ Each teammate runs sections 0–5 on their own machine and reports back:
 - **Nodes on two machines don't see each other**: same `ROS_DOMAIN_ID`? Firewall (Arch with `ufw`/`firewalld` often blocks UDP multicast)? Test with `ros2 multicast receive` / `ros2 multicast send`. Wi-Fi with client isolation (common on campus networks) blocks discovery entirely.
 - **Host ROS (Lyrical) and container ROS (Jazzy) talking to each other**: avoid it. Cross-distro communication often works but isn't guaranteed. Run everything in the container.
 
-Next: Gazebo + GPU passthrough (step 3). After that, [`SIM_TELEOP.md`](SIM_TELEOP.md) covers flying the sim with the keyboard or the RadioMaster Pocket. It needs a container rebuild and `./make-env.sh` again (for `INPUT_GID`).
+Next: Gazebo + GPU passthrough (step 3). After that, [`SIM_TELEOP.md`](SIM_TELEOP.md) covers flying the sim with the keyboard or the RadioMaster Pocket. It needs a container rebuild and `./scripts/make-env.sh` again (for `INPUT_GID`).
