@@ -1,11 +1,12 @@
-"""RadioMaster Pocket (USB joystick) -> velocity setpoints, arm switch as deadman.
+"""
+RadioMaster Pocket (USB joystick) -> velocity setpoints, arm switch as deadman.
 
 Sim only. On the real drone the radio talks ELRS straight to INAV.
 """
+from geometry_msgs.msg import TwistStamped
 import rclpy
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
-from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Joy
 
 AXES = ('roll', 'pitch', 'throttle', 'yaw')
@@ -20,6 +21,7 @@ class RadioTeleop(Node):
         self.declare_parameter('axis_arm', 4)
         self.declare_parameter('sign_arm', 1.0)            # sign_arm: -1.0 if armed reads negative
         self.declare_parameter('arm_threshold', 0.5)
+        self.declare_parameter('arm_hold_s', 0.1)    # switch must read on this long to engage
         self.declare_parameter('deadband', 0.08)
         self.declare_parameter('max_xy', 0.5)    # m/s at full stick
         self.declare_parameter('max_z', 0.3)     # m/s at full stick
@@ -28,6 +30,7 @@ class RadioTeleop(Node):
         self.pub = self.create_publisher(TwistStamped, 'setpoint_velocity', 10)
         self.create_subscription(Joy, 'joy', self.on_joy, 10)
         self.engaged = False
+        self.on_since = None   # joy stamp when the switch last turned on
 
     def p(self, name):
         return self.get_parameter(name).value
@@ -50,10 +53,20 @@ class RadioTeleop(Node):
             if self.engaged:
                 self.get_logger().info('Arm switch off: not sending, fc_bridge will hold')
             self.engaged = False
+            self.on_since = None
             return   # silence -> fc_bridge timeout -> zero velocity
+
+        stamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+        if self.on_since is None:
+            self.on_since = stamp
 
         throttle = self.axis(msg, 'throttle')
         if not self.engaged:
+            # Debounce: the Pocket's SA bounces for up to ~35 ms when armed slowly.
+            # Only arming waits; off above acts at once, so the deadman stays instant.
+            # Needs joy_node autorepeat_rate > 0, or a held switch sends no next message.
+            if stamp - self.on_since < self.p('arm_hold_s'):
+                return
             # Like a real arming check: refuse to engage with the throttle off centre,
             # or flipping the switch would make the drone jump.
             if throttle != 0.0:
