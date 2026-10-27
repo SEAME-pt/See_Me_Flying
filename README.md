@@ -1,160 +1,255 @@
-# Nodes Information: Drone Sim Stack
+# See Me Flying — Autonomous Indoor Drone
 
-Oct 20, 2026 · @Someone
+SEA:ME 2.0 drone track · Team 4 · last updated Oct 27, 2026
 
-## System overview
+An indoor autonomous drone built on a Pilotix Brook 2.5" running **INAV 9.1.1**, commanded from a **ROS 2 Jazzy** ground stack over Wi-Fi (MSP through an ESP8266). The drone flies in a room of at most 10 × 10 m, without GPS.
 
-This is what runs today in the simulation, as started by `ros2 launch drone_bringup sim.launch.py`. Acronyms are spelled out the first time they appear.
+## Quick reference
 
-&#91;embedded content: sim stack · 4 hops for setpoints, clock back to fc\_bridge\]
+| Item | Value |
+| --- | --- |
+| **`ROS_DOMAIN_ID`** | **`42`** |
+| ROS 2 distro | Jazzy (Docker container `seame-dev`) |
+| Simulator | Gazebo Harmonic, world `multicopter_velocity_control.sdf`, drone X3 |
+| Flight controller | OddityRC F7 40A AIO (STM32F722), INAV 9.1.1, custom target `ODDITYRCF7AIO` |
+| FC ↔ ground link | ESP-12E/F (ESP8266, MicroPython), Wi-Fi AP `SeeMeFlying`, TCP `192.168.4.1:5760`, UART 115200 baud |
+| Radio | RadioMaster Pocket, ExpressLRS 4.0, 2.4 GHz |
+| Video | Caddx Ratel 2 analog → 5.8 GHz VTX → USB UVC receiver → ROS `/image_raw` |
+| Ground station | Raspberry Pi 5 (16 GB, AI HAT+) and team laptops |
 
-Setpoints travel one way: `setpoint_pub` → `fc_bridge` → `ros_gz_bridge` → Gazebo. Simulation time travels back through the same bridge on `/clock`, and every ROS (Robot Operating System) node runs on it because the launch sets `use_sim_time: true`. The watchdog only listens; it changes nothing in the chain.
+### ROS_DOMAIN_ID = 42
 
-| Process | Language | Package | Started by |
+The SEA:ME network is shared between teams. ROS 2 nodes only discover each other when they share the same `ROS_DOMAIN_ID`, so **every machine and container on our team must use `42`**, and no other team may use it. Valid range is 1–101 (`0` is the default and likely used by others by accident; above 101 can clash with OS ephemeral ports).
+
+It is already the default everywhere in the repo:
+
+- `seame-docker/compose.yaml` → `ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-42}`
+- `seame-docker/.env.example` → `ROS_DOMAIN_ID=42`
+- `seame-docker/make-env.sh` → prompts with `[42]` as default
+
+Check it inside the container:
+
+```bash
+echo $ROS_DOMAIN_ID   # must print 42
+```
+
+On the Raspberry Pi or any machine running ROS outside Docker, add `export ROS_DOMAIN_ID=42` to `~/.bashrc`.
+
+> The CI tests in `drone_fc_bridge` (on the `test` branch) deliberately use `ROS_DOMAIN_ID=199` with `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST`, so test runs never leak onto the team domain.
+
+## Architecture
+
+```
+                         ┌──────────────── Ground station (ROS 2 Jazzy, domain 42) ───────────────┐
+ setpoint_pub / radio_teleop / keyboard ──► /fc/setpoint_velocity ──► fc_bridge ──┬─► sim backend ──► ros_gz_bridge ──► Gazebo (X3)
+                         watchdog (listens only) ◄────────────────────────────────┘
+                                                                                  └─► inav backend (planned) ── MSP over TCP/UDP
+                                                                                                │
+                                                                                     Wi-Fi (AP "SeeMeFlying")
+                                                                                                │
+ Drone:  ESP-12 (MicroPython, UART⇄TCP bridge) ── UART ── OddityRC F7 (INAV 9.1.1) ── ESCs/motors
+         ThoneFlow-3901U optical flow ── UART ──┘          ELRS receiver ◄── RadioMaster Pocket (arming, failsafe)
+         Caddx Ratel 2 ── VTX 5.8 GHz ──────────────────► UVC receiver ──► usb_cam ──► /image_raw
+```
+
+Key design rules:
+
+- **`fc_bridge` is the only node allowed to command the drone.** All sources publish to `/fc/setpoint_velocity`; the bridge clamps and forwards them.
+- **Arming stays on the radio.** ROS never arms the real drone. The sim-only "enable" topic will not exist in the `inav` backend.
+- **Two failsafe layers.** ROS side: `fc_bridge` sends zero velocity (hover) when setpoints go stale. FC side: INAV's RX failsafe (`DROP`, 1.5 s guard) if the radio link is lost. `msp_override_failsafe` is OFF, so Wi-Fi can't keep the drone flying on radio loss.
+
+## Repository layout
+
+```
+See_Me_Flying/
+├── README.md                     ← this file
+├── seame-docker/                 ROS 2 Jazzy dev container + workspace
+│   ├── GUIDE.md                  container setup, step by step
+│   ├── Dockerfile, compose.yaml, .env.example, make-env.sh
+│   └── ros2_ws/src/
+│       ├── drone_bringup/        launch files + YAML config
+│       ├── drone_fc_bridge/      fc_bridge (C++) – the only node that commands the drone
+│       ├── drone_basics_py/      setpoint_pub (Python), radio_teleop on `test`
+│       └── drone_basics_cpp/     watchdog (C++)
+├── telemetry/                    INAV ⇄ Wi-Fi bridge
+│   ├── main.py                   MicroPython for the ESP12 (UART ⇄ TCP)
+│   ├── inav_telemetry.py         MSP telemetry reader for the ground computer
+│   └── README.md                 flashing + usage + every telemetry field
+├── docs/
+│   ├── README.md                 hardware: drone parts, modules, mounts, limitations, wiring
+│   ├── Drone_Firmware_Choices.md why INAV (vs ArduPilot / Betaflight), custom target, calibration
+│   ├── Drone_INAV_Backup_26_10_26.md   current INAV `diff all`
+│   ├── Drone_Betaflight_Backup.md      original Betaflight 4.5.1 config (fallback)
+│   ├── Doc-ROS2/
+│   │   ├── Drone-SIM-Stack.md    every sim node, topic, parameter, known issue
+│   │   └── FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md
+│   ├── sprints/                  sprint plans (Sprint 0, ALL 1.1–1.4 decisions)
+│   ├── 3D Print Files/           STL mounts for ESP12 and PMW3901 + slicer profile
+│   ├── extras/wire_diagram.png
+│   ├── Sources.md
+│   └── pull_request_template.md
+└── .assets/                      diagrams and the hardware/software choices note
+```
+
+## Getting started (simulation)
+
+Prerequisites: Linux host (Ubuntu 22.04–26.04 or Arch), Docker Engine with the Compose plugin (**not** Docker Desktop — `network_mode: host` breaks ROS discovery there), your user in the `docker` group.
+
+```bash
+git clone https://github.com/SEAME-pt/See_Me_Flying.git
+cd See_Me_Flying/seame-docker
+./make-env.sh 42                 # writes .env with your UID/GID, ROS_DOMAIN_ID=42 and GPU groups
+docker compose build             # first time: a few minutes
+docker compose up -d
+docker compose exec dev bash     # shell inside; repeat for more terminals
+```
+
+Inside the container:
+
+```bash
+cd ~/ros2_ws
+colcon build --symlink-install
+source install/setup.bash
+ros2 launch drone_bringup sim.launch.py
+```
+
+Gazebo opens, the drone climbs for 4 s at 0.3 m/s, then flies circles of 0.6 m radius. On the `test` branch the launch also takes `source:=circle|joy|none` (circle flight, RadioMaster Pocket via USB, or keyboard/manual) and `world:=<sdf>`.
+
+Full setup and troubleshooting: [`seame-docker/GUIDE.md`](seame-docker/GUIDE.md).
+
+| Daily task | Command |
+| --- | --- |
+| Start container | `docker compose up -d` |
+| Open shell | `docker compose exec dev bash` |
+| Stop | `docker compose down` |
+| Rebuild image | `docker compose build && docker compose up -d` |
+
+## ROS 2 stack
+
+| Process | Language | Package | Role |
 | --- | --- | --- | --- |
-| Gazebo (`gz sim`) | C++ (not a ROS node) | `ros_gz_sim` (apt) | `sim.launch.py` |
-| `parameter_bridge` | C++ | `ros_gz_bridge` (apt) | `sim.launch.py` |
-| `fc_bridge` | C++ | `drone_fc_bridge` (ours) | `sim.launch.py` |
-| `watchdog` | C++ | `drone_basics_cpp` (ours) | `sim.launch.py` |
-| `setpoint_pub` | Python | `drone_basics_py` (ours) | `sim.launch.py`, 5 s after the rest |
+| `gz sim` | C++ (not a ROS node) | `ros_gz_sim` | Physics, X3 quadcopter with built-in velocity controller |
+| `parameter_bridge` | C++ | `ros_gz_bridge` | Copies `/X3/gazebo/command/twist`, `/X3/enable` (ROS→Gz) and `/clock` (Gz→ROS) |
+| `fc_bridge` | C++ | `drone_fc_bridge` | 20 Hz; clamps setpoints, sends zero velocity when stale |
+| `watchdog` | C++ | `drone_basics_cpp` | Logs when setpoints stop/resume; commands nothing |
+| `setpoint_pub` | Python | `drone_basics_py` | Test source: takeoff then circle; placeholder for `mission` |
 
-## setpoint\_pub
+`fc_bridge` limits (all live-tunable with `ros2 param set`, doubles only):
 
-A test source of velocity commands, standing in for the future `mission` node. Package `drone_basics_py`, file `drone_basics_py/setpoint_pub.py`.
-
-**What it does, in order**
-
-1. Waits for its first timer tick, then records that moment as time zero. With sim time this is when Gazebo's clock starts arriving, not when the process started.
-2. **Takeoff phase** (first `takeoff_s` seconds): publishes straight-up velocity `z = climb_speed`, no horizontal motion. Logs `Phase: takeoff`.
-3. **Circle phase** (after that): publishes a horizontal velocity of constant size `speed` whose direction turns at 0.5 rad/s, so the drone flies a circle of radius `speed / 0.5` (0.6 m at the default). `z = 0`, so it holds its height. Logs `Phase: circle`.
-4. Keeps publishing at `rate_hz` until stopped. It never lands.
-
-| Item | Value |
+| Parameter | Value |
 | --- | --- |
-| Publishes | `setpoint_velocity` (`geometry_msgs/TwistStamped`, frame `base_link`), remapped to `/fc/setpoint_velocity` by the launch file |
-| QoS (Quality of Service) | Reliable, depth 10 |
-| `rate_hz` | 10.0 Hz (read once at start) |
-| `speed` | 0.3 m/s (read every tick, so `ros2 param set` changes it live) |
-| `takeoff_s` | 4.0 s of sim time |
-| `climb_speed` | 0.3 m/s, so about 1.2 m of climb |
-
-All times are on the node clock, so with `use_sim_time` a slow simulation still climbs the full height; it just takes longer in real seconds.
-
-## watchdog
-
-An observer that reports when setpoints stop arriving. It is the seed of the future `safety_manager`. Package `drone_basics_cpp`, file `src/watchdog.cpp`.
-
-**What it does**
-
-1. On startup, sets "last message received" to now.
-2. Every time a setpoint arrives, updates "last message received".
-3. Every 100 ms, checks how long ago that was. When the gap first exceeds `timeout_s`, logs `No setpoint for X s: a real failsafe would command hover`. When messages come back, logs `Setpoints are back`. It only logs on these changes, never every tick.
-
-It **commands nothing**. The drone's actual failsafe is in `fc_bridge`; the watchdog only tells you it happened. The warning right after launch is expected: `setpoint_pub` starts 5 s later.
-
-| Item | Value |
-| --- | --- |
-| Subscribes | `setpoint_velocity` (`geometry_msgs/TwistStamped`), remapped to `/fc/setpoint_velocity` by the launch file |
-| QoS | Sensor-data profile (best effort, small queue); connects to reliable and best-effort publishers |
-| `timeout_s` | 0.5 s (default; the launch file does not override it) |
-| Check period | 100 ms, fixed in code |
-
-## fc\_bridge
-
-The only node allowed to command the drone. Today it has one backend, `sim`; the `inav` backend for the real FC (flight controller) comes later behind the same topics. Package `drone_fc_bridge`, file `src/fc_bridge.cpp`.
-
-**What it does**
-
-1. **Receives** setpoints on `fc/setpoint_velocity` and stores the latest one with the time it arrived. The message's own header timestamp is not used.
-2. **Ticks** at `rate_hz` (20 Hz). Each tick it decides whether the stored setpoint is fresh: it arrived no more than `setpoint_timeout_s` ago, and not in the "future" (which happens when sim time is reset).
-3. **Fresh:** clamps it and publishes it to Gazebo.
-4. **Stale or none yet:** publishes zero velocity. Gazebo's controller keeps following the last command it received, so this explicit zero is what makes the drone stop and hover. That is the failsafe.
-5. **Logs** only on changes: `Setpoints received, following them` and `Setpoint timeout: holding (zero velocity)`. It starts stale, so it publishes zeros and logs nothing until the first setpoint.
-6. **Keeps the sim drone enabled** by publishing `true` on the enable topic once a second. Sim only: on the real drone, arming stays on the radio.
-
-**The clamp**, applied to every command before it leaves:
-
-- Horizontal: if the speed `hypot(x, y)` is above `max_speed_xy`, both components are scaled down together, so direction is kept and only the speed is capped.
-- Vertical: `z` is limited to ±`max_speed_z`.
-- Yaw: `angular.z` is limited to ±`max_yaw_rate`.
-- Roll and pitch rates (`angular.x`, `angular.y`) are always sent as zero.
-
-| Item | Value |
-| --- | --- |
-| Subscribes | `fc/setpoint_velocity` (`geometry_msgs/TwistStamped`), sensor-data QoS |
-| Publishes | `gz_twist_topic` (`geometry_msgs/Twist`) every tick; `gz_enable_topic` (`std_msgs/Bool`) every 1 s |
-| `gz_twist_topic` | `/X3/gazebo/command/twist` |
-| `gz_enable_topic` | `/X3/enable` |
-| `rate_hz` | 20.0 (read once at start) |
 | `setpoint_timeout_s` | 0.3 s |
-| `max_speed_xy` | 0.5 m/s |
+| `max_speed_xy` | 0.5 m/s (direction kept, speed capped) |
 | `max_speed_z` | 0.3 m/s |
 | `max_yaw_rate` | 1.0 rad/s |
 
-Timeout and clamp limits are read every tick, so `ros2 param set` changes them live. All parameters are doubles: set them as `2.0`, not `2`.
+Contract topic: **`/fc/setpoint_velocity`** (`geometry_msgs/TwistStamped`, frame `base_link`).
 
-## ros\_gz\_bridge and Gazebo
+Agreed targets for the real link (ALL 1.1): control loop **50 Hz** (minimum 20 Hz), bridge watchdog **200 ms**.
 
-**`parameter_bridge`** (package `ros_gz_bridge`, installed with apt) is a translator. Gazebo has its own message system (`gz topic`), separate from ROS, and the bridge copies messages between the two for exactly the topics it is told about:
+Details for every node, parameter and known issue: [`docs/Doc-ROS2/Drone-SIM-Stack.md`](docs/Doc-ROS2/Drone-SIM-Stack.md).
 
-| Topic | Direction | ROS type | Gazebo type |
-| --- | --- | --- | --- |
-| `/X3/gazebo/command/twist` | ROS → Gazebo | `geometry_msgs/Twist` | `gz.msgs.Twist` |
-| `/X3/enable` | ROS → Gazebo | `std_msgs/Bool` | `gz.msgs.Boolean` |
-| `/clock` | Gazebo → ROS | `rosgraph_msgs/Clock` | `gz.msgs.Clock` |
+## Hardware
 
-In the bridge arguments, `]` means ROS → Gazebo and `[` means Gazebo → ROS. Any topic not listed does not cross: the drone's pose, IMU (inertial measurement unit) and odometry exist in Gazebo but are not visible in ROS yet.
-
-**Gazebo** (`gz sim`, Gazebo Harmonic) is not a ROS node. It loads the world `multicopter_velocity_control.sdf` (SDF: Simulation Description Format) running from the start (`-r`). The world holds two quadcopters, X3 and X4; only X3 is used. X3 has a built-in velocity controller: given a Twist, it works out the motor speeds to reach that velocity and holds it until the next command. It accepts commands only while enabled. Our stack never touches the X4 or the `motor_speed` topic, which drives the propellers directly.
-
-## Launch files
-
-Both live in `drone_bringup/launch/` and are installed by the `install(DIRECTORY launch config ...)` line in that package's `CMakeLists.txt`. A new launch file only becomes visible to `ros2 launch` after `colcon build`.
-
-**`sim.launch.py`: the whole first flight in one command**
-
-1. At once: Gazebo, `parameter_bridge`, `fc_bridge` and `watchdog`. ROS launch gives no ordering between them; that is fine, because `fc_bridge` simply sits frozen until `/clock` arrives.
-2. After 5 s of wall time: `setpoint_pub` (takeoff, then circles).
-3. All our nodes get `use_sim_time: true`. `watchdog` and `setpoint_pub` are remapped from `setpoint_velocity` to `/fc/setpoint_velocity`.
-4. Ctrl-C stops everything together.
-
-**`basics.launch.py`: the crash-course exercise**
-
-Starts `setpoint_pub` and `watchdog` only, with settings from `config/basics.yaml` (`rate_hz` 20, `speed` 0.3, `timeout_s` 0.3) and a `use_sim_time` launch argument (default `false`). No Gazebo and no `fc_bridge`; nothing flies. Its topic is `/setpoint_velocity`, not the contract topic.
-
-## Known issues and limitations
-
-None of these stop the simulation from working today. The priority says when each must be fixed: **before hardware** means before the `inav` backend ever commands a real motor.
-
-| Issue | Where | What can go wrong | Fix | Priority |
-| --- | --- | --- | --- | --- |
-| NaN (Not a Number) or infinite values pass through the clamp | `fc_bridge` | Comparisons with NaN are always false, so the scale stays 1 and the NaN is forwarded to the drone | Check every field with `std::isfinite`; on failure, treat the setpoint as stale (send zero) and log a warning | Before hardware |
-| Sim-only enable published forever | `fc_bridge` | Harmless in sim; on hardware it would be ROS arming the drone | The `inav` backend must not have it. Arming stays on the radio | Before hardware |
-| Message timestamp ignored | `fc_bridge` | Age is measured from arrival, so a setpoint delayed in the Wi-Fi link still counts as fresh | Also check `header.stamp` age once the real link exists, and log the measured latency | Before hardware |
-| No state comes back from the sim | bridge config | Height, position and attitude are invisible in ROS, so nothing can be checked or closed in a loop | Bridge pose, IMU and odometry onto `fc/odom`, `fc/imu`, `fc/attitude` (contract doc) | Next |
-| Takeoff is timed, not measured | `setpoint_pub` | Climbs for a fixed time with no height feedback; the real height depends on the controller | Move takeoff to the `mission` node, climbing until odometry reports the target height | Next |
-| Never lands | `setpoint_pub` | The flight only ends by stopping the launch | Landing phase in `mission` | Next |
-| Velocity frame not verified | `setpoint_pub`, `fc_bridge` | Commands are labelled `base_link` (body frame); if the X3 controller reads them in the world frame instead, behaviour differs once the drone yaws | Check with odometry: command +x, yaw the drone, see which way it moves | Next |
-| Timeouts disagree | `watchdog` 0.5 s vs `fc_bridge` 0.3 s | The watchdog warns after `fc_bridge` has already stopped the drone | Load both from one YAML parameter file | Later |
-| One-off timeout right after the first setpoint | `fc_bridge` | Seen once at startup: `received`, then `timeout` 14 ms later, then fine | Watch for it; if it repeats while setpoints flow, sim time is jumping and the timeout needs a margin | Watch |
-| Topics fixed to the X3, no namespace | all nodes | Fine for one drone; two drones would clash | Namespaces per drone when multi-agent work starts (Module 3) | Later |
-| Drone models downloaded into the container | Gazebo | Lost when the container is recreated; the world will not load without internet | Mount `~/.gz` as a cache folder in `compose.yaml` | Later |
-
-The 5 s start delay of `setpoint_pub` is wall time, which could look risky on a slow machine. It is safe: `setpoint_pub` runs on sim time, so its timer does not tick and its takeoff clock does not start until Gazebo's clock arrives.
-
-## Not built yet
-
-What the fc\_bridge interface contract asks for that does not exist today. The first group is the next step.
-
-| Item | Kind | Notes |
+| Part | Model | Notes |
 | --- | --- | --- |
-| `fc/odom` | Topic out, `nav_msgs/Odometry` | From Gazebo's odometry, bridged; needed for height and position |
-| `fc/imu` | Topic out, `sensor_msgs/Imu` | From the X3's IMU sensor, bridged |
-| `fc/attitude` | Topic out, `geometry_msgs/QuaternionStamped` | From the pose or odometry |
-| `fc/battery`, `fc/status` | Topics out | `fc/status` needs the custom `FcStatus` message |
-| `drone_interfaces` | Package | Holds `FcStatus` and any other custom messages and services |
-| `fc/arm`, `fc/hold` | Services | `fc/arm` refused on hardware; `fc/hold` sends zero |
-| `backend` and `contract_version` | `fc_bridge` parameters | `backend` selects `sim`, `inav` or `mock` |
-| `inav` backend | `fc_bridge` code | MSP (MultiWii Serial Protocol) over the ESP8266 Wi-Fi link: TCP (Transmission Control Protocol) for bring-up, UDP (User Datagram Protocol) before flight |
-| `safety_manager` | Node | Grows out of the watchdog: hover on timeout, return on low battery |
-| `mission` | Node | Takeoff, waypoints and landing as an action server; replaces `setpoint_pub` |
+| Frame | Pilotix Brook 2.5" cinewhoop | Prop guards; high-KV motors (short battery life) |
+| Flight controller | OddityRC F7 40A AIO, STM32F722RET6 (512 KB flash) | 5 UARTs; too little flash for ArduPilot |
+| Receiver | ELRS 2.4 GHz | Replaced the original TBS Crossfire antenna |
+| Camera / VTX | Caddx Ratel 2 + PandaRC VT5804 Bat Lite (5.8 GHz) | Analog; `vtx_power` far too high for indoor use |
+| Optical flow | ThoneFlow-3901U (PMW3901) | UART, no rangefinder; notch points to the back |
+| Wi-Fi | ESP-12E/F (ESP8266), MicroPython | Replaces the GoPro mount |
+| Radio | RadioMaster Pocket | ELRS 4.0 |
+| 3D printer | Wanhao Duplicator 12/230 | Mounts sliced with PrusaSlicer |
+
+Wiring plan (Sprint 0): ESP8266 → **UART1** (5 V), ThoneFlow → **UART4** (3.3 V), UART6 free for add-ons. Diagram: [`docs/extras/wire_diagram.png`](docs/extras/wire_diagram.png). Full hardware write-up: [`docs/README.md`](docs/README.md).
+
+## Flight controller (INAV)
+
+- **INAV 9.1.1** on custom target `ODDITYRCF7AIO`, derived from `AOCODARCF722AIO` (gyro `CW180_DEG → CW90_DEG`, LEDs on PA14/PA13, sensor scale 250 → 179).
+- **Why INAV:** ArduPilot doesn't fit in 512 KB; Betaflight has no autonomous modes and no ThoneFlow/optical-flow position hold. INAV has baro altitude hold, controlled emergency landing and optical-flow support.
+- **Arming:** ARM on AUX1 (ch5) and PREARM on AUX2 (ch6), active at 1700–2100. Two-switch interlock.
+- **Failsafe:** `DROP` on radio loss, 1.5 s guard.
+- **Calibration:** accelerometer gains X 4096 / Y 4098 / Z 4095; board alignment fixed from the Sensors tab.
+- **Motors:** DSHOT300, 12 poles, props-out, Bluejay ESCs.
+
+Backups: [`docs/Drone_INAV_Backup_26_10_26.md`](docs/Drone_INAV_Backup_26_10_26.md) (current) and [`docs/Drone_Betaflight_Backup.md`](docs/Drone_Betaflight_Backup.md) (original). Reasoning: [`docs/Drone_Firmware_Choices.md`](docs/Drone_Firmware_Choices.md).
+
+## Telemetry over Wi-Fi
+
+The ESP12 runs [`telemetry/main.py`](telemetry/main.py): it opens its own access point and passes every byte between a TCP client and the FC UART (no MSP parsing on the ESP).
+
+| Setting | Value |
+| --- | --- |
+| SSID | `SeeMeFlying` (password in `main.py` — change it before flashing) |
+| Address | `192.168.4.1:5760` (TCP) |
+| UART baud | 115200, must match the MSP port in INAV |
+
+On the ground computer, join `SeeMeFlying` and run:
+
+```bash
+python3 telemetry/inav_telemetry.py                    # readable output, 5 Hz
+python3 telemetry/inav_telemetry.py --info --rate 2    # JSON lines
+python3 telemetry/inav_telemetry.py --log flight.jsonl # also save to file
+```
+
+It reads attitude, altitude, battery, RC channels, motors, arming blockers, active modes and more. Flashing steps and the meaning of every field: [`telemetry/README.md`](telemetry/README.md).
+
+> **Transport decision (ALL 1.2):** TCP for now, because we are configuring INAV and reading telemetry, where reliability and easy debugging matter more than latency. Once ROS commands the real drone, a late command is worse than a lost one, so control traffic should move to **UDP**. The sprint doc evaluated MSPWifiBridge vs ESP-link; the current implementation is our own MicroPython transparent bridge.
+
+## FPV video into ROS
+
+USB UVC receiver on the ground computer (`/dev/video2`) → `usb_cam` in the container → **`/image_raw`** at ~25 Hz, view with `rqt_image_view`. The container needs the device mapped, the cgroup rule, and the `video` group. Guide: [`docs/Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md`](docs/Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md).
+
+## Status and roadmap
+
+| Sprint | Period | Focus |
+| --- | --- | --- |
+| Sprint 0 ✔ | 6–16 Oct 2026 | Onboarding, dev container, wiring plan, INAV flashing, setpoint publisher + watchdog |
+| Sprint 1 ⏳ | 19 Oct – 1 Nov 2026 | INAV telemetry over Wi-Fi, sim stack + teleop, FPV video to ROS, CI |
+
+**Done:** INAV flashed and calibrated · ESP12 telemetry bridge · sim stack flying in Gazebo · FPV video in ROS · NaN guard and teleop (on `test`).
+
+**Next (before touching real motors):**
+
+- `inav` backend in `fc_bridge` (MSP over the ESP link) — no sim-only enable, check `header.stamp` latency
+- State back from the drone/sim: `fc/odom`, `fc/imu`, `fc/attitude`, `fc/battery`, `fc/status`
+- `drone_interfaces` package (`FcStatus`), services `fc/arm` (refused on hardware) and `fc/hold`
+- `safety_manager` (grows out of the watchdog) and `mission` node (takeoff, waypoints, landing; replaces `setpoint_pub`)
+- Perception node on `/image_raw`; optical-flow position hold indoors
+
+Sprint docs: [`docs/sprints/`](docs/sprints/).
+
+## Team
+
+| Member | Areas |
+| --- | --- | --- |
+| Miguel | Hardware, Stack |
+| João | ROS, Hardware |
+| Carlos | ROS, Stack |
+| David | INAV, ROS |
+| Fernando | Stack, INAV |
+| Matheus | INAV, ROS |
+
+## Branches and contributing
+
+| Branch | Purpose |
+| --- | --- |
+| `main` | Stable, reviewed work |
+| `test` | Integration branch; newest ROS stack (teleop, `sim.yaml`, failsafe tests) |
+| `docs`, `inav_docs`, `INAV/telemetry`, `feature/*`, `ci/*` | Feature work, merged by pull request |
+
+- Open a PR into `main` using [`docs/pull_request_template.md`](docs/pull_request_template.md) and link the issue.
+- **CI** (`ci/workflow` branch, `.github/workflows/ci.yml`): on push/PR to `main` or `test`, builds `seame-docker/ros2_ws` in the plain `ros:jazzy` image and runs `colcon test`. Run it locally first:
+
+  ```bash
+  cd ~/ros2_ws && rm -rf build install log
+  rosdep install --from-paths src --ignore-src -y
+  colcon build && colcon test && colcon test-result --verbose
+  ```
+
+- Never commit `.env`, `ros2_ws/build/`, `install/` or `log/`.
+
+## Sources
+
+PX4 PMW3901 docs · Pilotix Brook · OddityRC F7 40A AIO · MicroPython ESP8266 · Wanhao D12/230 · INAV docs — links in [`docs/Sources.md`](docs/Sources.md).
