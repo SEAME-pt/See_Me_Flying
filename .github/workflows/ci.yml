@@ -78,13 +78,13 @@ jobs:
 
       - name: Syntax check
         run: |
-          if [! -d telemetry ]; then echo "No telemetry/ directory, skipping syntax check"; exit 0; fi
+          if [ ! -d telemetry ]; then echo "No telemetry/ directory, skipping syntax check"; exit 0; fi
           python -m py_compile telemetry/*.py
         # main.py is MicroPython, but its syntax is plain Python 3, so this still works 
 
       - name: Lint
         run: |
-          if [! -d telemetry ]; then echo "No telemetry/ directory, skipping lint"; exit 0; fi
+          if [ ! -d telemetry ]; then echo "No telemetry/ directory, skipping lint"; exit 0; fi
           pip install flake8
           flake8 telemetry --max-line-length=140
 
