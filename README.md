@@ -223,7 +223,7 @@ Sprint docs: [`docs/sprints/`](docs/sprints/).
 ## Team
 
 | Member | Areas |
-| --- | --- | --- |
+| --- | --- |
 | Miguel | Hardware, Stack |
 | João | ROS, Hardware |
 | Carlos | ROS, Stack |
