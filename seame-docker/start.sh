@@ -5,12 +5,13 @@ if [ "$(docker compose ps -q --status running dev)" ]; then
     echo -e "🟢 The container is already running.\n"
 else
     if [ ! -f .env ]; then
-        cp .env.example .env
-        sed -i "s/^HOST_UID=.*/HOST_UID=$(id -u)/; s/^HOST_GID=.*/HOST_GID=$(id -g)/" .env
-    fi
-
-    if [ -f ./scripts/make-env.sh ]; then
-        ./scripts/make-env.sh > /dev/null 2>&1 || true
+        echo "⚙️ Generating .env file automatically..."
+        if [ -f ./scripts/make-env.sh ]; then
+            ./scripts/make-env.sh 42
+        else
+            cp .env.example .env
+            sed -i "s/^HOST_UID=.*/HOST_UID=$(id -u)/; s/^HOST_GID=.*/HOST_GID=$(id -g)/" .env
+        fi
     fi
 
     docker compose up -d
@@ -33,17 +34,17 @@ select opt in "${options[@]}"; do
     case $opt in
         "Smoke Test (Publishers & Watchdog)")
             echo -e "\n🔥 Launching Smoke Test..."
-			bash scripts/smoke_test.sh 
+            bash scripts/smoke_test.sh 
             break
             ;;
         "Gazebo + ROS 2 (Keyboard Control)")
             echo -e "\n🎮 Launching Gazebo with Keyboard Control..."
-			bash scripts/sim_keyboard.sh
+            bash scripts/sim_keyboard.sh
             break
             ;;
         "Gazebo + ROS 2 (RadioMaster / Joystick)")
             echo -e "\n📻 Launching Gazebo with Joystick Control..."
-			bash scripts/sim_joy.sh
+            bash scripts/sim_joy.sh
             break
             ;;
         "Interactive Shell (Container Bash)")
