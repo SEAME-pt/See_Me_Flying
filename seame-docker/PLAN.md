@@ -1,8 +1,10 @@
 # Plan: fixing the known issues
 
-Oct 26, 2026. Built from the "Known issues and limitations" table in [README.md](README.md) and the known issues in [SIM_TELEOP.md](seame-docker/SIM_TELEOP.md). Already resolved, so not listed here: the NaN guard, the matching timeouts, odometry in ROS and the velocity-frame check (body frame, Oct 22).
+Oct 26, 2026. Built from the "Known issues and limitations" table in [README.md](README.md) and the known issues in [SIM_TELEOP.md](SIM_TELEOP.md). Already resolved, so not listed here: the NaN guard, the matching timeouts, odometry in ROS and the velocity-frame check (body frame, Oct 22).
 
 After each step, update the README and `SIM_TELEOP.md` tables so they stay accurate.
+
+**Assumption (Oct 28):** the real drone gets a rangefinder next to the ThoneFlow-3901. The decision isn't ours to make, but INAV only uses optical flow while it has a valid rangefinder reading, so without one most of steps 4–7 doesn't work indoors.
 
 | # | Step | Status |
 | --- | --- | --- |

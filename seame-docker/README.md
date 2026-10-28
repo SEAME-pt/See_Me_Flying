@@ -2,7 +2,7 @@
 
 Oct 20, 2026 · @Someone · updated Oct 23, 2026
 
-For setup, see [`seame-docker/GUIDE.md`](seame-docker/GUIDE.md). To fly the sim with the keyboard or the RadioMaster Pocket, and for the parameters, failsafes and test results, see [`seame-docker/SIM_TELEOP.md`](seame-docker/SIM_TELEOP.md).
+For setup, see [`GUIDE.md`](GUIDE.md). To fly the sim with the keyboard or the RadioMaster Pocket, and for the parameters, failsafes and test results, see [`SIM_TELEOP.md`](SIM_TELEOP.md).
 
 ## System overview
 
