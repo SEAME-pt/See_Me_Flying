@@ -9,9 +9,9 @@ After each step, update the README and `SIM_TELEOP.md` tables so they stay accur
 | # | Step | Status |
 | --- | --- | --- |
 | 1 | Tests for the existing failsafes | Done, Oct 26 |
-| 2 | Small fixes: `~/.gz` cache, arm switch bounce | Done, Oct 26 (cache not yet seen working in Gazebo) |
+| 2 | Small fixes: `~/.gz` cache, arm switch bounce | Done, Oct 26 (cache seen working Oct 29) |
 | 3 | State through `fc_bridge`, shaped like INAV with optical flow + rangefinder | Done, Oct 27 |
-| 4 | `mission` node v1: takeoff, hold and land on the rangefinder | To do |
+| 4 | `mission` node v1: takeoff, hold and land on the rangefinder | Done, Oct 29 |
 | 5 | `drone_interfaces`, and `mission` as an action server | To do |
 | 6 | `safety_manager`: arbitration and hover | To do |
 | 7 | Prepare `fc_bridge` for hardware | To do |

@@ -1,12 +1,13 @@
-# Changes: Oct 26–27, 2026
+# Changes: Oct 26–29, 2026
 
-What changed in the drone sim stack while working through steps 1–3 of [PLAN.md](PLAN.md), and why. Nothing here is committed yet.
+What changed in the drone sim stack while working through steps 1–4 of [PLAN.md](PLAN.md), and why.
 
 | Step | Summary |
 | --- | --- |
 | 1 | Automated tests for the failsafes (`fc_bridge` and `radio_teleop`), and the Python test suite running again |
 | 2 | Gazebo's model cache survives recreating the container; the arm switch bounce measured and debounced |
 | 3 | State comes back through `fc_bridge`, shaped like INAV with an optical flow sensor and a rangefinder |
+| 4 | A `mission` node flies takeoff, hold, circle, yaw and landing on its own, with height from the rangefinder |
 
 ## After pulling
 
@@ -19,10 +20,10 @@ docker compose build && docker compose up -d
 Then, inside the container:
 
 ```bash
-cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py && colcon test-result --verbose
+cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission && colcon test-result --verbose
 ```
 
-Expected: `37 tests, 0 errors, 0 failures, 1 skipped`. The skipped one is the template's copyright check.
+Expected: `57 tests, 0 errors, 0 failures, 2 skipped` with `drone_mission` included. The skipped ones are the templates' copyright checks.
 
 ## Step 1: tests for the failsafes
 
@@ -96,8 +97,33 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 - Noise, drift and limits are guesses until measured on the real sensors.
 - The X3 model has no IMU sensor, so `fc/imu` is postponed until `safety_manager` needs it.
 
+## Step 4: the `mission` node
+
+**Purpose:** `setpoint_pub` climbed for a fixed time, never landed, and let the height sag. The first real autonomy should take off to a measured height, hold it, and land by itself, using only what the real drone will have: the rangefinder for height, and velocity commands that INAV in POSHOLD can follow. It assumes a rangefinder will be fitted (see PLAN.md).
+
+| File | Change | Why |
+| --- | --- | --- |
+| `ros2_ws/src/drone_mission/` | New `ament_python` package: `logic.py` (the state machine, plain Python), `mission.py` (the ROS node), and the template lint tests (flake8, pep257, mypy, xmllint) | A package of its own, since `drone_basics_py` is the crash course. The logic has no ROS in it so whole flights can be tested in milliseconds |
+| `drone_mission/drone_mission/logic.py` | Phases `wait → takeoff → hold → circle → yaw → land → done`, plus `range_lost`. Height = range × tilt; `-inf` = ground. P controller on height in every airborne phase. Touchdown from the range, or from "commanding down, not moving down". Range lost: hover, resume if it returns within 2 s, otherwise land blind. Takeoff timeout lands | Each behaviour in the plan's "done when" |
+| `drone_mission/test/test_logic.py` | 15 tests against a toy drone (height follows commanded vz, range 0.04–4 m) | See the README Tests table |
+| `drone_bringup/launch/sim.launch.py` | `source:=mission` | `circle` stays for comparison |
+| `drone_bringup/config/sim.yaml` | `mission` parameters | Visible and tunable with the rest |
+| `drone_bringup/package.xml` | `exec_depend` on `drone_mission` | The launch file starts it |
+
+**Checked:**
+
+- With altitude hold switched off, 9 tests fail; with the "not moving down" touchdown switched off, the blind-landing test fails.
+- In headless Gazebo (Oct 29): takeoff to 1.24 m peak, settled at 1.20 m; 1.197–1.203 m through the circle and a full turn; landed and went quiet after about 42 s of sim time.
+- The `gz-cache` volume works: the models loaded from it after the container was recreated.
+
+**Found, now in the README's known issues:** a 4 cm takeoff overshoot; a rangefinder failing as `-inf` in the air would read as the ground; nothing disarms after landing (on hardware, that stays on the radio for now).
+
+**Running the sim headless needs X access:** Gazebo's sensors system wants OpenGL even with `-s`, and in the container that only works through the X display. If Gazebo dies with exit code 139 and `Authorization required` in the log, run `DISPLAY=:0 xhost +local:` on the host.
+
 ## Docs updated
 
 - `README.md`: `fc_bridge` section (state topics and parameters), bridge table, `radio_teleop` debounce, a **Tests** section, known issues and the resolved list.
 - `seame-docker/SIM_TELEOP.md`: changes table, diagram, topic tables, the bounce check how-to and result, known issues.
-- `PLAN.md`: steps 1–3 marked done; steps 3 and 4 rewritten around optical flow + rangefinder.
+- `README.md` (Oct 29): new `mission` section, launch table, known issues, Tests table.
+- `SIM_TELEOP.md` (Oct 29): `source:=mission` how-to and result.
+- `PLAN.md`: steps 1–4 marked done; steps 3 and 4 rewritten around optical flow + rangefinder.

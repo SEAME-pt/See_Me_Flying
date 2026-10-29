@@ -17,6 +17,27 @@ setpoint_pub:
     takeoff_s: 4.0
     climb_speed: 0.3
 
+mission:
+  ros__parameters:
+    rate_hz: 20.0
+    target_h: 1.2          # m above the ground (fc/range); keep below range_max
+    tolerance: 0.05
+    kp_z: 1.0
+    max_vz: 0.3            # = fc_bridge max_speed_z
+    land_speed: 0.15
+    ground_h: 0.12         # sim reads about 0.05 on the ground
+    touchdown_s: 1.0
+    hold_s: 3.0
+    speed: 0.3
+    omega: 0.5
+    circle_laps: 1.0
+    yaw_rate: 0.5
+    yaw_turns: 1.0
+    range_timeout_s: 0.5
+    lost_hold_s: 2.0
+    takeoff_timeout_s: 20.0
+    start_delay_s: 2.0
+
 joy_node:
   ros__parameters:
     device_name: "OpenTX Radiomaster Pocket Joystick"   # by name, not ID

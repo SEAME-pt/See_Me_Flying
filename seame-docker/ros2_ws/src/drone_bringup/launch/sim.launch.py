@@ -21,7 +21,7 @@ def generate_launch_description():
 
     args = [
         DeclareLaunchArgument('source', default_value='circle',
-                              choices=['circle', 'joy', 'none'],
+                              choices=['circle', 'mission', 'joy', 'none'],
                               description='Who commands the drone'),
         DeclareLaunchArgument('world', default_value='multicopter_velocity_control.sdf',
                               description='SDF world file name or full path'),
@@ -54,6 +54,14 @@ def generate_launch_description():
         remappings=CONTRACT, parameters=[params, SIM], output='screen',
     )])
 
+    # source:=mission — takeoff, hold, circle, yaw and land on the rangefinder.
+    # No delay needed: it waits for fc/range by itself.
+    mission = Node(
+        package='drone_mission', executable='mission',
+        remappings=CONTRACT, parameters=[params, SIM], output='screen',
+        condition=is_source('mission'),
+    )
+
     # source:=joy — RadioMaster Pocket over USB (step 7)
     joy = Node(
         package='joy', executable='joy_node',
@@ -65,4 +73,4 @@ def generate_launch_description():
         condition=is_source('joy'),
     )
 
-    return LaunchDescription(args + [gazebo, bridge, fc_bridge, watchdog, circle, joy, radio])
+    return LaunchDescription(args + [gazebo, bridge, fc_bridge, watchdog, circle, mission, joy, radio])

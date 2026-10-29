@@ -6,7 +6,7 @@ For setup, see [`GUIDE.md`](GUIDE.md). To fly the sim with the keyboard or the R
 
 ## System overview
 
-This is what runs today in the simulation, as started by `ros2 launch drone_bringup sim.launch.py source:=circle|joy|none`. The `source` argument chooses who commands the drone (default `circle`); exactly one source runs at a time. Acronyms are spelled out the first time they appear.
+This is what runs today in the simulation, as started by `ros2 launch drone_bringup sim.launch.py source:=circle|mission|joy|none`. The `source` argument chooses who commands the drone (default `circle`); exactly one source runs at a time. Acronyms are spelled out the first time they appear.
 
 &#91;embedded content: sim stack · 4 hops for setpoints, clock back to fc\_bridge\]
 
@@ -19,6 +19,7 @@ Setpoints travel one way: the source (`setpoint_pub`, `radio_teleop` or the keyb
 | `fc_bridge` | C++ | `drone_fc_bridge` (ours) | `sim.launch.py` |
 | `watchdog` | C++ | `drone_basics_cpp` (ours) | `sim.launch.py` |
 | `setpoint_pub` | Python | `drone_basics_py` (ours) | `sim.launch.py source:=circle`, 5 s after the rest |
+| `mission` | Python | `drone_mission` (ours) | `sim.launch.py source:=mission` |
 | `joy_node` | C++ | `joy` (apt) | `sim.launch.py source:=joy` |
 | `radio_teleop` | Python | `drone_basics_py` (ours) | `sim.launch.py source:=joy` |
 | `teleop_twist_keyboard` | Python | `teleop_twist_keyboard` (apt) | By hand, with `source:=none` |
@@ -27,7 +28,7 @@ All our nodes read their parameters from `drone_bringup/config/sim.yaml`; the va
 
 ## setpoint\_pub
 
-A test source of velocity commands, standing in for the future `mission` node. Package `drone_basics_py`, file `drone_basics_py/setpoint_pub.py`.
+A test source of velocity commands: takeoff for a fixed time, then circles forever. Kept for comparison; `mission` does the same flight properly. Package `drone_basics_py`, file `drone_basics_py/setpoint_pub.py`.
 
 **What it does, in order**
 
@@ -46,6 +47,44 @@ A test source of velocity commands, standing in for the future `mission` node. P
 | `climb_speed` | 0.3 m/s, so about 1.2 m of climb |
 
 All times are on the node clock, so with `use_sim_time` a slow simulation still climbs the full height; it just takes longer in real seconds.
+
+## mission
+
+Flies a whole mission on its own: takeoff, hold, a circle, a turn on the spot, and landing, with height from the rangefinder (`fc/range`), like INAV's SURFACE mode. Replaces `setpoint_pub` for anything beyond a demo. Package `drone_mission`: the flight logic is plain Python in `drone_mission/logic.py` (no ROS, so it can be tested on its own); `drone_mission/mission.py` is the ROS node around it.
+
+**Phases**
+
+1. **wait:** publishes nothing until the range has been arriving for `start_delay_s` without a break.
+2. **takeoff:** climbs until the height is within `tolerance` of `target_h`. Gives up and lands after `takeoff_timeout_s`.
+3. **hold:** hovers for `hold_s`.
+4. **circle:** horizontal speed `speed`, direction turning at `omega`, for `circle_laps` laps. Open-loop velocity, like `setpoint_pub`: flow position drifts, so the mission never flies to an absolute x, y.
+5. **yaw:** turns on the spot at `yaw_rate` for `yaw_turns` turns (0 skips it).
+6. **land:** descends at `land_speed` until touchdown, then **done:** publishes nothing, so `fc_bridge` times out and sends zero.
+
+**Height:** `fc/range` × the world z of the body z axis (from `fc/odom`'s orientation), so tilt doesn't inflate it. `-inf` (below the sensor's minimum) counts as 0, the ground. In every airborne phase, `vz = kp_z × (target_h − height)`, limited to ±`max_vz`; this corrects the X3 controller's sag.
+
+**Touchdown,** either of: height below `ground_h` for `touchdown_s`; or, after 1.5 s in **land**, commanding down but not moving down (`fc/odom` z velocity above −0.03 m/s) for `touchdown_s`. The second works with no rangefinder at all.
+
+**Range lost** (no message for `range_timeout_s`, or `+inf`) in an airborne phase: **range_lost**, which sends zero velocity. If the range comes back within `lost_hold_s`, the interrupted phase restarts; otherwise it lands blind (touchdown from odometry).
+
+Logs each change: `Phase: takeoff -> hold (height 1.16 m)`.
+
+| Item | Value |
+| --- | --- |
+| Subscribes | `fc/range` (`sensor_msgs/Range`), `fc/odom` (`nav_msgs/Odometry`) |
+| Publishes | `setpoint_velocity` (`geometry_msgs/TwistStamped`, frame `base_link`) at `rate_hz` (20), remapped to `/fc/setpoint_velocity` |
+| `target_h`, `tolerance` | 1.2 m, 0.05 m (keep `target_h` below the rangefinder's `range_max`) |
+| `kp_z`, `max_vz` | 1.0 (m/s)/m, 0.3 m/s |
+| `land_speed`, `ground_h`, `touchdown_s` | 0.15 m/s, 0.12 m, 1.0 s |
+| `hold_s` | 3.0 s |
+| `speed`, `omega`, `circle_laps` | 0.3 m/s, 0.5 rad/s, 1 |
+| `yaw_rate`, `yaw_turns` | 0.5 rad/s, 1 |
+| `range_timeout_s`, `lost_hold_s` | 0.5 s, 2.0 s |
+| `takeoff_timeout_s`, `start_delay_s` | 20.0 s, 2.0 s |
+
+All parameters are read once at start.
+
+**Sim result (Oct 29, 2026, headless, `source:=mission`):** takeoff reached 1.16 m (the switch to hold) and overshot briefly to 1.24 m, then settled at 1.20 m. Height stayed between 1.197 and 1.203 m through the circle and the full turn (the X3 used to lose about 15 cm in a yaw). Landed in about 8 s and stopped publishing. Whole mission: about 42 s of sim time.
 
 ## watchdog
 
@@ -159,15 +198,16 @@ Both live in `drone_bringup/launch/` and are installed by the `install(DIRECTORY
 
 | Argument | Values | Default |
 | --- | --- | --- |
-| `source` | `circle`, `joy`, `none` (anything else is rejected) | `circle` |
+| `source` | `circle`, `mission`, `joy`, `none` (anything else is rejected) | `circle` |
 | `world` | SDF file name or full path | `multicopter_velocity_control.sdf` |
 
 1. Always, at once: Gazebo, `parameter_bridge` (with `config/gz_bridge.yaml`), `fc_bridge` and `watchdog`. ROS launch gives no ordering between them; that is fine, because `fc_bridge` simply sits frozen until `/clock` arrives.
 2. `source:=circle`: after 5 s of wall time, `setpoint_pub` (takeoff, then circles).
-3. `source:=joy`: `joy_node` and `radio_teleop`.
-4. `source:=none`: nothing commands the drone; use it when running a source by hand, such as the keyboard.
-5. All our nodes get `config/sim.yaml` and `use_sim_time: true`. Every source is remapped from `setpoint_velocity` to `/fc/setpoint_velocity`.
-6. Ctrl-C stops everything together.
+3. `source:=mission`: `mission`, at once (it waits for `fc/range` by itself).
+4. `source:=joy`: `joy_node` and `radio_teleop`.
+5. `source:=none`: nothing commands the drone; use it when running a source by hand, such as the keyboard.
+6. All our nodes get `config/sim.yaml` and `use_sim_time: true`. Every source is remapped from `setpoint_velocity` to `/fc/setpoint_velocity`.
+7. Ctrl-C stops everything together.
 
 **`basics.launch.py`: the crash-course exercise**
 
@@ -185,31 +225,33 @@ None of these stop the simulation from working today. The priority says when eac
 | Flow position drifts while landed | `fc_bridge` | Sitting on the ground, `fc/odom` xy still drifts; INAV ignores flow when landed | Stop integrating below `range_min` if it gets in the way | Watch |
 | Rangefinder on the ground reads about 0.05 m | `fc_bridge` sim backend | Just above `range_min` (0.04), so with noise it sometimes reads `-inf` | `mission` must treat `-inf` near the ground as landed, not as a lost sensor | Next |
 | Sensor model is a guess | `fc_bridge` sim backend | Noise, drift and range limits are not measured on our hardware | Measure with the real ThoneFlow and rangefinder; update the parameters | Before hardware |
-| Velocity-only control: height drifts | X3 controller | Holds zero vertical speed, not a height: drifts down about 1 cm every 6 s and loses about 15 cm in a yaw; takeoff reaches about 1.0 m, not 1.2 | Altitude hold from `fc/range` in `mission` | Next |
+| Velocity-only control: height drifts | X3 controller | Holds zero vertical speed, not a height: drifts down about 1 cm every 6 s and loses about 15 cm in a yaw. Still true for `circle` and the radio; `mission` corrects it | Altitude hold for the radio too, in `safety_manager` | Later |
+| Takeoff overshoot | `mission` | Overshoots the target by about 4 cm before settling | Lower `kp_z` near the target, or slow the climb before it | Watch |
+| `-inf` in the air is read as the ground | `mission` | A rangefinder failing as `-inf` in flight would look like height 0, so the mission climbs | Cross-check with `fc/odom` z before trusting `-inf` | Before hardware |
+| No disarm after landing | `mission` | In the sim the X3 stays enabled; on hardware disarming stays on the radio | Decide in `safety_manager` whether ROS may ask INAV to disarm | Later |
 | One commander at a time | `sim.launch.py` | `source:=` can't let a mission and a human share control | Command arbitration in `safety_manager` | Next |
 | Radio-as-joystick needs RF off | Pocket | A transmitting radio could command a bench drone | Always use the `INAV-SIM` model copy with Internal RF off | Always |
 | Frame names differ | `fc_bridge`, Gazebo | Commands say `base_link`, the sim says `x3/base_footprint`; harmless until tf is used | Align when tf is introduced | Later |
-| Takeoff is timed, not measured | `setpoint_pub` | Climbs for a fixed time with no height feedback; the real height depends on the controller | Move takeoff to the `mission` node, climbing until odometry reports the target height | Next |
-| Never lands | `setpoint_pub` | The flight only ends by stopping the launch | Landing phase in `mission` | Next |
 | One-off timeout right after the first setpoint | `fc_bridge` | Seen once at startup: `received`, then `timeout` 14 ms later, then fine | Watch for it; if it repeats while setpoints flow, sim time is jumping and the timeout needs a margin | Watch |
 | Topics fixed to the X3, no namespace | all nodes | Fine for one drone; two drones would clash | Namespaces per drone when multi-agent work starts (Module 3) | Later |
 
 The 5 s start delay of `setpoint_pub` is wall time, which could look risky on a slow machine. It is safe: `setpoint_pub` runs on sim time, so its timer does not tick and its takeoff clock does not start until Gazebo's clock arrives.
 
-**Resolved since Oct 20, 2026:** NaN passing through the clamp (now rejected in `fc_bridge`), the watchdog and `fc_bridge` timeouts disagreeing (both 0.3 s from `sim.yaml`), no odometry in ROS (`/fc/odom`), and the unverified velocity frame (body frame confirmed). Since Oct 26: failsafes tested by hand only (now automated, see below), drone models lost when the container is recreated (now in the `gz-cache` volume), and the arm switch bounce (confirmed with `tools/arm_bounce.py`, debounced by `arm_hold_s` in `radio_teleop`). Since Oct 27: `/fc/odom` published by the bridge instead of `fc_bridge`, and no attitude topic (`fc_bridge` now publishes `fc/odom`, `fc/attitude` and `fc/range`).
+**Resolved since Oct 20, 2026:** NaN passing through the clamp (now rejected in `fc_bridge`), the watchdog and `fc_bridge` timeouts disagreeing (both 0.3 s from `sim.yaml`), no odometry in ROS (`/fc/odom`), and the unverified velocity frame (body frame confirmed). Since Oct 26: failsafes tested by hand only (now automated, see below), drone models lost when the container is recreated (now in the `gz-cache` volume), and the arm switch bounce (confirmed with `tools/arm_bounce.py`, debounced by `arm_hold_s` in `radio_teleop`). Since Oct 27: `/fc/odom` published by the bridge instead of `fc_bridge`, and no attitude topic (`fc_bridge` now publishes `fc/odom`, `fc/attitude` and `fc/range`). Since Oct 29: timed takeoff, never landing, and height drift in autonomous flight (the `mission` node).
 
 ## Tests
 
 The failsafes have automated tests. Run them inside the container:
 
 ```bash
-cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py && colcon test-result --verbose
+cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission && colcon test-result --verbose
 ```
 
 | Test file | What it checks |
 | --- | --- |
 | `drone_fc_bridge/test/test_failsafes.py` | `launch_testing`: starts `fc_bridge` alone on the wall clock. Zero with no setpoints; fresh setpoints forwarded; zero within 0.3 s (± 0.15) of the last setpoint; NaN and infinity rejected and timed out; horizontal clamp keeps direction; z and yaw clamped; roll and pitch rates zeroed; sim enable published. Runs on its own domain (199, localhost only), so a running sim does not interfere. |
 | `drone_fc_bridge/test/test_state.py` | `launch_testing`: `fc_bridge` with noise off, fed fake `/X3/odom`. Velocity passes through; xy position is integrated, not copied from the sim; body velocity is rotated by heading; height and attitude from the sim; range is z when level, 2z at 60° roll, `±inf` out of range or upside down. |
+| `drone_mission/test/test_logic.py` | pytest, no ROS: whole missions against a toy drone in milliseconds. Full phase sequence; reaches 1.2 m ± 5 cm; waits without range; start delay needs continuous range; tilt correction; hold corrects sag; range lost then back, or lost too long and blind landing; `+inf` in the air; takeoff timeout; yaw skipped at 0 turns; circle, yaw and land commands. |
 | `drone_basics_py/test/test_radio_teleop.py` | pytest, no launch: switch off publishes nothing; engage refused with throttle off centre; re-engage needs the throttle centred again; a bounce while arming or disarming never engages; off is immediate; stick scaling, signs and deadband. |
 
 Breaking the timeout check in `fc_bridge` makes three tests fail (checked Oct 26, 2026).
@@ -227,4 +269,4 @@ What the fc\_bridge interface contract asks for that does not exist today. The f
 | `backend` and `contract_version` | `fc_bridge` parameters | `backend` selects `sim`, `inav` or `mock` |
 | `inav` backend | `fc_bridge` code | MSP (MultiWii Serial Protocol) over the ESP8266 Wi-Fi link: TCP (Transmission Control Protocol) for bring-up, UDP (User Datagram Protocol) before flight |
 | `safety_manager` | Node | Grows out of the watchdog: hover on timeout, return on low battery |
-| `mission` | Node | Takeoff, waypoints and landing as an action server; replaces `setpoint_pub` |
+| `mission` actions | `drone_mission` | v1 runs a fixed flight; `Takeoff`, `Land`, `Goto` actions come with `drone_interfaces` |

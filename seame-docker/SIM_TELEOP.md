@@ -10,7 +10,7 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
 | --- | --- | --- |
 | Parameters | Every node reads its settings from one YAML file. The watchdog and `fc_bridge` timeouts now agree (0.3 s). | `drone_bringup/config/sim.yaml` |
 | Bridge | The Gazebo bridge topics moved from command-line arguments to YAML | `drone_bringup/config/gz_bridge.yaml` |
-| Launch | `source:=circle\|joy\|none` chooses who commands the drone; `world:=` chooses the SDF | `drone_bringup/launch/sim.launch.py` |
+| Launch | `source:=circle\|mission\|joy\|none` chooses who commands the drone; `world:=` chooses the SDF | `drone_bringup/launch/sim.launch.py` |
 | State | Odometry of the X3 is visible in ROS: Gazebo's true pose on `/X3/odom`, and what the stack sees on `fc/odom`, `fc/attitude`, `fc/range` from `fc_bridge` (Oct 27: shaped like optical flow + rangefinder, xy drifts) | `gz_bridge.yaml`, `fc_bridge.cpp` |
 | Safety | `fc_bridge` rejects setpoints containing NaN or infinity | `drone_fc_bridge/src/fc_bridge.cpp` |
 | Teleop | Keyboard teleop (`teleop_twist_keyboard`) | `Dockerfile` |
@@ -24,6 +24,7 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
 
 ```
                     source:=circle   setpoint_pub ──┐
+                    source:=mission  mission (fc/range, fc/odom in) ──┤
                     source:=joy      Pocket → joy_node → radio_teleop ──┤
                     source:=none     (you, by hand: keyboard or ros2 topic pub) ──┤
                                                                          ▼
@@ -80,6 +81,14 @@ python3 ~/ros2_ws/tools/odom_yaw.py /X3/odom
 ```
 
 **Expect:** z rises to about 1.0 m, then x and y trace a circle of about 0.55 m radius centred near (0, 0.55). `/X3/odom` is Gazebo's true pose. Without the argument the tool reads `fc/odom`, what the stack sees: the same circle, slowly drifting away (about 0.5 m per minute).
+
+### 1b. Mission (takeoff, hold, circle, yaw, land on the rangefinder)
+
+```bash
+ros2 launch drone_bringup sim.launch.py source:=mission
+```
+
+**Expect** in the launch log: `Phase: wait -> takeoff`, `takeoff -> hold` at about 1.16 m, then `circle`, `yaw`, `land`, `done` after about 42 s of sim time. With `odom_yaw.py /X3/odom`: z settles at 1.20 m and stays there through the circle and the turn, then comes back to about 0.05 m.
 
 ### 2. Keyboard
 
@@ -223,6 +232,7 @@ The drone stays on the ground and `ros2 topic echo /X3/gazebo/command/twist --on
 | Circle (`source:=circle`) | Radius about 0.545 m against 0.6 commanded (the drone flies about 0.27 m/s, not 0.3). Lap 12.5 s against 12.6. |
 | Takeoff height | About 1.02 m against 1.2 m planned (spin-up eats part of the 4 s climb) |
 | Height hold | Drifts down about 1 cm every 6 s; loses about 15 cm during a 125° yaw |
+| Mission (`source:=mission`, Oct 29) | Takeoff to 1.24 m peak, settled at 1.20 m; 1.197–1.203 m through the circle and a full 360° turn; landed and stopped publishing after about 42 s of sim time |
 | Odometry rate | 50.0 Hz |
 | Arm switch | **Bounce confirmed** (`arm_bounce.py`, Oct 26): bursts of up to about 10 flips, 0–35 ms apart, mostly on a slow arm. Fixed with `arm_hold_s` 0.1 s in `radio_teleop`. Deliberate fast flicks are 100 ms or more apart. |
 
@@ -247,6 +257,7 @@ Flip SA on and off slowly about 20 times, then Ctrl-C. A clean switch prints one
 | `CMakeCache.txt ... is different than the directory` | Built on the host | Build inside the container |
 | `ros2: command not found` | Host terminal | `docker compose exec dev bash` |
 | Gazebo: `could not connect to display :0` | X access not granted this login | `xhost +local:` on the host |
+| Gazebo dies with exit code 139, `Authorization required` in the log (also with `-s`, headless) | Same: the sensors system needs OpenGL through the X display | `DISPLAY=:0 xhost +local:` on the host; `xhost` must then list `LOCAL:` |
 | `fc_bridge` dies on the first valid setpoint | A `declare_parameter` line was removed or commented out | Keep every declaration; the YAML only overrides it |
 | `radio_teleop`: `has no attribute 'main'` | `radio_teleop.py` empty or not saved | Check with `wc -l`, then rebuild |
 | `/fc/setpoint_velocity` not published with `source:=joy` | Disarmed (correct), or `radio_teleop` died | Arm with the throttle centred; check the launch log |
@@ -260,7 +271,7 @@ Flip SA on and off slowly about 20 times, then Ctrl-C. A clean switch prints one
 
 | Issue | Impact | Next step |
 | --- | --- | --- |
-| Velocity-only control: height drifts down and drops in yaw | Fine with a human on the sticks; a mission node can't rely on it | Altitude hold using `fc/range` (mission node) |
+| Velocity-only control: height drifts down and drops in yaw | Fine with a human on the sticks; `mission` corrects it with `fc/range` | Altitude hold for the radio in `safety_manager` |
 | Frame names: commands say `base_link`, the sim says `x3/base_footprint` | Nothing yet (no tf in use) | Align when tf is introduced |
 | Radio-as-joystick is sim only and needs RF off | A transmitting radio could command a bench drone | Always the `INAV-SIM` model |
 | One source at a time (`source:=`) | Mission and human can't share control | Command arbitration in `safety_manager` (step 8 of the teleop guide) |
