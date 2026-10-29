@@ -24,7 +24,7 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
 
 ```
                     source:=circle   setpoint_pub ──┐
-                    source:=mission  mission (fc/range, fc/odom in) ──┤
+                    source:=mission  demo_flight → actions → mission (fc/range, fc/odom in) ──┤
                     source:=joy      Pocket → joy_node → radio_teleop ──┤
                     source:=none     (you, by hand: keyboard or ros2 topic pub) ──┤
                                                                          ▼
@@ -82,13 +82,31 @@ python3 ~/ros2_ws/tools/odom_yaw.py /X3/odom
 
 **Expect:** z rises to about 1.0 m, then x and y trace a circle of about 0.55 m radius centred near (0, 0.55). `/X3/odom` is Gazebo's true pose. Without the argument the tool reads `fc/odom`, what the stack sees: the same circle, slowly drifting away (about 0.5 m per minute).
 
-### 1b. Mission (takeoff, hold, circle, yaw, land on the rangefinder)
+### 1b. Mission (Takeoff, Goto and Land actions on the rangefinder)
 
 ```bash
 ros2 launch drone_bringup sim.launch.py source:=mission
 ```
 
-**Expect** in the launch log: `Phase: wait -> takeoff`, `takeoff -> hold` at about 1.16 m, then `circle`, `yaw`, `land`, `done` after about 42 s of sim time. With `odom_yaw.py /X3/odom`: z settles at 1.20 m and stays there through the circle and the turn, then comes back to about 0.05 m.
+`demo_flight` takes off to 1.2 m, flies a 1 m square (forward, quarter turn left, four times) and lands.
+
+**Expect** in the launch log: a few `takeoff rejected: no rangefinder reading` or `rangefinder not steady yet` while the sim starts, then `takeoff accepted`, `State: grounded -> takeoff`, `takeoff -> hold` at about 1.16 m, eight `goto: ok`, `land: ok`, `Disarmed (fc/arm)`, `Demo done`. With `odom_yaw.py /X3/odom`: z at 1.20 m throughout, a square of about 0.85 m sides, back to about 0.05 m.
+
+**Sending goals by hand:** start with `source:=mission demo:=false`, then in a second container terminal:
+
+```bash
+ros2 action send_goal /mission/takeoff drone_interfaces/action/Takeoff "{height: 1.0}" --feedback
+```
+
+```bash
+ros2 action send_goal /mission/goto drone_interfaces/action/Goto "{forward: 1.0, left: 0.5, yaw: 1.57}" --feedback
+```
+
+```bash
+ros2 action send_goal /mission/land drone_interfaces/action/Land "{}" --feedback
+```
+
+Ctrl-C on a Takeoff or Goto cancels it (the drone holds); a Land can't be cancelled. `ros2 topic echo /fc/status` shows armed, holding and the rest; `ros2 service call /fc/hold std_srvs/srv/SetBool "{data: true}"` freezes the drone whatever the mission sends.
 
 ### 2. Keyboard
 
@@ -232,7 +250,8 @@ The drone stays on the ground and `ros2 topic echo /X3/gazebo/command/twist --on
 | Circle (`source:=circle`) | Radius about 0.545 m against 0.6 commanded (the drone flies about 0.27 m/s, not 0.3). Lap 12.5 s against 12.6. |
 | Takeoff height | About 1.02 m against 1.2 m planned (spin-up eats part of the 4 s climb) |
 | Height hold | Drifts down about 1 cm every 6 s; loses about 15 cm during a 125° yaw |
-| Mission (`source:=mission`, Oct 29) | Takeoff to 1.24 m peak, settled at 1.20 m; 1.197–1.203 m through the circle and a full 360° turn; landed and stopped publishing after about 42 s of sim time |
+| Mission v1 (fixed flight, Oct 29) | Takeoff to 1.24 m peak, settled at 1.20 m; 1.197–1.203 m through the circle and a full 360° turn; landed and stopped publishing after about 42 s of sim time |
+| Mission v2 demo (actions, Oct 29) | All goals succeeded; 1.19–1.22 m through eight Goto goals; true square sides 0.82–0.91 m against 1.0 (Goto tolerance 0.10 m plus `fc/odom` drift); back within 0.09 m of the start; disarmed after landing |
 | Odometry rate | 50.0 Hz |
 | Arm switch | **Bounce confirmed** (`arm_bounce.py`, Oct 26): bursts of up to about 10 flips, 0–35 ms apart, mostly on a slow arm. Fixed with `arm_hold_s` 0.1 s in `radio_teleop`. Deliberate fast flicks are 100 ms or more apart. |
 
@@ -257,6 +276,7 @@ Flip SA on and off slowly about 20 times, then Ctrl-C. A clean switch prints one
 | `CMakeCache.txt ... is different than the directory` | Built on the host | Build inside the container |
 | `ros2: command not found` | Host terminal | `docker compose exec dev bash` |
 | Gazebo: `could not connect to display :0` | X access not granted this login | `xhost +local:` on the host |
+| Nothing moves, `mission` never logs `takeoff accepted`, and Ctrl-C is slow | No `/clock`: a Gazebo server left over from an earlier run, stuck at startup (`gz topic -l` shows only `/gazebo/starting_world`) | Ctrl-C the launch; in the container, `pgrep -af "gz sim"`, then `pkill -f "gz sim server"`. A stuck server ignores that: if `pgrep` still shows it, `pkill -9 -f "gz sim server"`. Launch again |
 | Gazebo dies with exit code 139, `Authorization required` in the log (also with `-s`, headless) | Same: the sensors system needs OpenGL through the X display | `DISPLAY=:0 xhost +local:` on the host; `xhost` must then list `LOCAL:` |
 | `fc_bridge` dies on the first valid setpoint | A `declare_parameter` line was removed or commented out | Keep every declaration; the YAML only overrides it |
 | `radio_teleop`: `has no attribute 'main'` | `radio_teleop.py` empty or not saved | Check with `wc -l`, then rebuild |

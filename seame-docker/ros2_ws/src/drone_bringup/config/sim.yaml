@@ -20,23 +20,31 @@ setpoint_pub:
 mission:
   ros__parameters:
     rate_hz: 20.0
-    target_h: 1.2          # m above the ground (fc/range); keep below range_max
+    disarm_after_land: true
+    target_h: 1.2          # m above the ground (fc/range), default Takeoff height
     tolerance: 0.05
     kp_z: 1.0
     max_vz: 0.3            # = fc_bridge max_speed_z
     land_speed: 0.15
     ground_h: 0.12         # sim reads about 0.05 on the ground
     touchdown_s: 1.0
-    hold_s: 3.0
-    speed: 0.3
-    omega: 0.5
-    circle_laps: 1.0
-    yaw_rate: 0.5
-    yaw_turns: 1.0
+    speed: 0.3             # default Goto speed
+    kp_xy: 1.0
+    pos_tolerance: 0.10
+    kp_yaw: 1.5
+    yaw_rate: 0.5          # max
+    yaw_tolerance: 0.05
+    goto_margin_s: 10.0
     range_timeout_s: 0.5
+    ready_s: 1.0           # Takeoff needs this long of range readings without a gap
+    odom_timeout_s: 0.5
     lost_hold_s: 2.0
     takeoff_timeout_s: 20.0
-    start_delay_s: 2.0
+
+demo_flight:
+  ros__parameters:
+    height: 1.2
+    side: 1.0              # m, square side
 
 joy_node:
   ros__parameters:

@@ -15,7 +15,7 @@ setup(
     zip_safe=True,
     maintainer='João Barros',
     maintainer_email='joao.barros@seame.pt',
-    description='mission: takeoff, hold, pattern and land on the rangefinder.',
+    description='mission: Takeoff, Goto and Land action servers on the rangefinder.',
     license='Apache-2.0',
     extras_require={
         'test': [
@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'mission = drone_mission.mission:main',
+            'demo_flight = drone_mission.demo_flight:main',
         ],
     },
 )

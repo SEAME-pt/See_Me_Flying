@@ -1,6 +1,6 @@
 # Changes: Oct 26–29, 2026
 
-What changed in the drone sim stack while working through steps 1–4 of [PLAN.md](PLAN.md), and why.
+What changed in the drone sim stack while working through steps 1–5 of [PLAN.md](PLAN.md), and why.
 
 | Step | Summary |
 | --- | --- |
@@ -8,6 +8,7 @@ What changed in the drone sim stack while working through steps 1–4 of [PLAN.m
 | 2 | Gazebo's model cache survives recreating the container; the arm switch bounce measured and debounced |
 | 3 | State comes back through `fc_bridge`, shaped like INAV with an optical flow sensor and a rangefinder |
 | 4 | A `mission` node flies takeoff, hold, circle, yaw and landing on its own, with height from the rangefinder |
+| 5 | `mission` takes `Takeoff`, `Goto` and `Land` actions; `fc_bridge` gets `fc/arm`, `fc/hold` and `fc/status` |
 
 ## After pulling
 
@@ -23,7 +24,7 @@ Then, inside the container:
 cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission && colcon test-result --verbose
 ```
 
-Expected: `57 tests, 0 errors, 0 failures, 2 skipped` with `drone_mission` included. The skipped ones are the templates' copyright checks.
+Expected: `78 tests, 0 errors, 0 failures, 2 skipped` with `drone_mission` included. The skipped ones are the templates' copyright checks.
 
 ## Step 1: tests for the failsafes
 
@@ -119,6 +120,35 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 **Found, now in the README's known issues:** a 4 cm takeoff overshoot; a rangefinder failing as `-inf` in the air would read as the ground; nothing disarms after landing (on hardware, that stays on the radio for now).
 
 **Running the sim headless needs X access:** Gazebo's sensors system wants OpenGL even with `-s`, and in the container that only works through the X display. If Gazebo dies with exit code 139 and `Authorization required` in the log, run `DISPLAY=:0 xhost +local:` on the host.
+
+## Step 5: interfaces and actions
+
+**Purpose:** step 4's mission was a fixed script. Missions should be requested from outside, step by step, and refused when unsafe, which is what ROS actions are for: a goal, feedback while it runs, a result, and cancelling. `fc_bridge` also needed a way to report its state and to be told to arm, disarm or freeze.
+
+| File | Change | Why |
+| --- | --- | --- |
+| `ros2_ws/src/drone_interfaces/` | New `ament_cmake` interface package: `msg/FcStatus.msg`; `action/Takeoff.action`, `Land.action`, `Goto.action` | One place for the stack's custom types. Arm and hold use `std_srvs/SetBool` instead of new types |
+| `drone_fc_bridge/src/fc_bridge.cpp` | `fc/arm` (armed state drives the sim enable topic; `armed_at_start` true), `fc/hold` (zero while on), `fc/status` | So the mission can arm and disarm, anything can freeze the drone, and everyone can see `fc_bridge`'s state |
+| `drone_fc_bridge/test/test_services.py` | New launch test, 4 tests | Locks those in |
+| `drone_mission/drone_mission/logic.py` | Rewritten for goals: `grounded → takeoff → hold ⇄ goto → land → grounded`, plus `range_lost`. Relative `Goto` with heading. Accept/refuse rules; cancel; Land preempts | See the README `mission` section |
+| `drone_mission/drone_mission/mission.py` | Three action servers on a multi-threaded executor, a lock around the logic, arms on Takeoff and disarms after Land, handles SIGINT/SIGTERM itself | rclpy's default handler made the multi-threaded executor die with an `RCLError` at Ctrl-C |
+| `drone_mission/drone_mission/demo_flight.py` | New scripted client: takeoff, 1 m square, land | Replaces v1's fixed flight as the demo |
+| `drone_mission/test/test_logic.py` | Rewritten: 31 tests, the toy drone now moves in x, y, yaw | See the README Tests table |
+| `drone_bringup/launch/sim.launch.py` | `demo` argument; `demo_flight` with `source:=mission` | Server alone with `demo:=false`, to send goals by hand |
+| `drone_bringup/config/sim.yaml` | New `mission` parameters, `demo_flight` section | |
+
+**Checked:**
+
+- With `Goto`'s world velocity sent without turning it into the body frame, the heading and square tests fail; with Land not preempting, the preemption test fails.
+- In headless Gazebo (Oct 29): the demo's every goal succeeded; 1.19–1.22 m through eight Goto goals; true square sides 0.82–0.91 m; back within 0.09 m of the start; disarmed after landing; `mission` shuts down cleanly on Ctrl-C.
+
+**Fixed after a manual run (Oct 29):**
+
+- A second launch did nothing: a Gazebo server from the previous run was stuck at startup, so there was no `/clock`. And with no clock, `mission` ignored Ctrl-C for 15 s until launch killed it, because its own signal handler only ran when the node woke up. It now keeps rclpy's signal handling (which wakes it anyway) and catches the error that handling causes in a multi-threaded executor; running goals stop waiting at shutdown. Checked: clean exit with no clock, during a Goto, and after the demo.
+- Takeoff could be accepted on the first rangefinder reading while the sim was still starting, then abort as `rangefinder lost` and go to `hold` on the ground with a 1.2 m target, which would climb with no goal. Now Takeoff needs `ready_s` (1 s) of readings without a gap, and recovering from `range_lost` never climbs on its own. `demo_flight` now lands after a failed Takeoff too. 4 new tests; all fail with the old behaviour.
+- Checked: two demos in a row in headless Gazebo, both complete.
+
+**Found, now in the README's known issues:** Goto ends short of the target (tolerance plus drift); one goal at a time with no queue; ROS can arm the sim drone, which must not carry over to hardware; an automatic landing doesn't disarm (accepted for now).
 
 ## Docs updated
 

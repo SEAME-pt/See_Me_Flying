@@ -1,0 +1,8 @@
+# Descend until touchdown, then disarm (if the mission's disarm_after_land is set).
+# Accepted whenever the drone is in the air; it aborts any other goal.
+
+---
+bool success
+string message
+---
+float32 height        # m, now; -1 when the rangefinder can't tell

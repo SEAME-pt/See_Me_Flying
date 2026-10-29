@@ -2,7 +2,8 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import EqualsSubstitution, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import (EqualsSubstitution, LaunchConfiguration, PathJoinSubstitution,
+                                  PythonExpression)
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -23,6 +24,8 @@ def generate_launch_description():
         DeclareLaunchArgument('source', default_value='circle',
                               choices=['circle', 'mission', 'joy', 'none'],
                               description='Who commands the drone'),
+        DeclareLaunchArgument('demo', default_value='true', choices=['true', 'false'],
+                              description='With source:=mission, also run demo_flight'),
         DeclareLaunchArgument('world', default_value='multicopter_velocity_control.sdf',
                               description='SDF world file name or full path'),
     ]
@@ -54,12 +57,20 @@ def generate_launch_description():
         remappings=CONTRACT, parameters=[params, SIM], output='screen',
     )])
 
-    # source:=mission — takeoff, hold, circle, yaw and land on the rangefinder.
-    # No delay needed: it waits for fc/range by itself.
+    # source:=mission — Takeoff, Goto and Land action servers on the rangefinder,
+    # and (demo:=true) demo_flight: takeoff, a square, land. No delay needed:
+    # demo_flight retries Takeoff until the rangefinder is up.
     mission = Node(
         package='drone_mission', executable='mission',
         remappings=CONTRACT, parameters=[params, SIM], output='screen',
         condition=is_source('mission'),
+    )
+    demo = Node(
+        package='drone_mission', executable='demo_flight',
+        parameters=[params, SIM], output='screen',
+        condition=IfCondition(PythonExpression([
+            "'", LaunchConfiguration('source'), "' == 'mission' and '",
+            LaunchConfiguration('demo'), "' == 'true'"])),
     )
 
     # source:=joy — RadioMaster Pocket over USB (step 7)
@@ -73,4 +84,4 @@ def generate_launch_description():
         condition=is_source('joy'),
     )
 
-    return LaunchDescription(args + [gazebo, bridge, fc_bridge, watchdog, circle, mission, joy, radio])
+    return LaunchDescription(args + [gazebo, bridge, fc_bridge, watchdog, circle, mission, demo, joy, radio])

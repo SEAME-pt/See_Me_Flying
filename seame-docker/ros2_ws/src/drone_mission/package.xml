@@ -3,7 +3,7 @@
 <package format="3">
   <name>drone_mission</name>
   <version>0.1.0</version>
-  <description>mission: takeoff, hold, pattern and land on the rangefinder. Replaces setpoint_pub.</description>
+  <description>mission: Takeoff, Goto and Land action servers on the rangefinder, and a demo client. Replaces setpoint_pub.</description>
   <maintainer email="joao.barros@seame.pt">João Barros</maintainer>
   <license>Apache-2.0</license>
 
@@ -11,6 +11,8 @@
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>drone_interfaces</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

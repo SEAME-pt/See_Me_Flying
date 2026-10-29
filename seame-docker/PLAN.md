@@ -12,7 +12,7 @@ After each step, update the README and `SIM_TELEOP.md` tables so they stay accur
 | 2 | Small fixes: `~/.gz` cache, arm switch bounce | Done, Oct 26 (cache seen working Oct 29) |
 | 3 | State through `fc_bridge`, shaped like INAV with optical flow + rangefinder | Done, Oct 27 |
 | 4 | `mission` node v1: takeoff, hold and land on the rangefinder | Done, Oct 29 |
-| 5 | `drone_interfaces`, and `mission` as an action server | To do |
+| 5 | `drone_interfaces`, and `mission` as an action server | Done, Oct 29 |
 | 6 | `safety_manager`: arbitration and hover | To do |
 | 7 | Prepare `fc_bridge` for hardware | To do |
 | 8 | Later or watch | Later |
@@ -73,6 +73,11 @@ Revised Oct 27. The real drone will get a ThoneFlow-3901 (PMW3901 optical flow, 
 
 - **What:** custom `FcStatus` message, `Takeoff`/`Land`/`Goto` actions, and `fc/arm` and `fc/hold` services.
 - **Then:** `mission` exposes these actions instead of running a fixed script.
+- **As built (Oct 29):**
+  - `drone_interfaces`: `FcStatus`, and the `Takeoff`, `Land`, `Goto` actions. `fc/arm` and `fc/hold` use the standard `std_srvs/SetBool`, so no custom services.
+  - `fc_bridge`: `fc/arm` (drives the sim enable topic; starts armed), `fc/hold` (zero whatever arrives), `fc/status` (1 Hz and on change).
+  - `mission`: one goal at a time, hold between goals. `Goto` is relative to the drone's position and heading when it starts, because flow position drifts. Land preempts anything and can't be cancelled. Disarms after Land.
+  - `demo_flight`: takeoff, a 1 m square, land; started by `source:=mission` unless `demo:=false`.
 
 ## 6. `safety_manager`, grown out of the watchdog
 
