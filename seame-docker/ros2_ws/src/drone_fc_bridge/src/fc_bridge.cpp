@@ -1,7 +1,10 @@
-// fc_bridge v0, sim backend:
-//   fc/setpoint_velocity (TwistStamped) -> clamp + timeout -> Gazebo Twist
-//   Gazebo odometry -> fc/odom, fc/attitude, fc/range
-//   fc/arm, fc/hold (std_srvs/SetBool) and fc/status (drone_interfaces/FcStatus)
+// fc_bridge v0. Parameter backend:
+//   sim:  fc/setpoint_velocity (TwistStamped) -> clamp + timeout -> Gazebo Twist
+//         Gazebo odometry -> fc/odom, fc/attitude, fc/range
+//   inav: stub for MSP to INAV through the ESP8266. Same topics and services,
+//         but sends nothing yet, and refuses fc/arm: on the real drone only the
+//         radio arms. Nothing of the sim (Gazebo topics, enable) exists here.
+//   Both: fc/arm, fc/hold (std_srvs/SetBool) and fc/status (drone_interfaces/FcStatus)
 //
 // Publishes every tick, not only on new setpoints: Gazebo's velocity
 // controller keeps following the last command it got, so on timeout we
@@ -20,6 +23,7 @@
 #include <memory>
 #include <optional>
 #include <random>
+#include <stdexcept>
 #include <string>
 
 #include "drone_interfaces/msg/fc_status.hpp"
@@ -71,6 +75,11 @@ public:
   FcBridge()
   : Node("fc_bridge")
   {
+    backend_ = declare_parameter<std::string>("backend", "sim");
+    if (backend_ != "sim" && backend_ != "inav") {
+      throw std::invalid_argument("backend must be sim or inav, not '" + backend_ + "'");
+    }
+    const bool sim = backend_ == "sim";
     const auto gz_twist_topic =
       declare_parameter<std::string>("gz_twist_topic", "/X3/gazebo/command/twist");
     const auto gz_enable_topic =
@@ -87,18 +96,28 @@ public:
     declare_parameter<double>("range_noise", 0.005);    // m
     declare_parameter<double>("range_min", 0.04);       // m, VL53L1X-like
     declare_parameter<double>("range_max", 4.0);        // m
-    // Starts armed so every source works as before; mission disarms after landing.
-    armed_ = declare_parameter<bool>("armed_at_start", true);
+    // Sim: true when nothing arms it (no radio); the launch sets it. inav: unknown
+    // until MSP reports it, so false.
+    const bool armed_at_start = declare_parameter<bool>("armed_at_start", true);
+    armed_ = sim && armed_at_start;
 
-    cmd_pub_ = create_publisher<Twist>(gz_twist_topic, 10);
-    enable_pub_ = create_publisher<Bool>(gz_enable_topic, 10);
+    if (sim) {
+      cmd_pub_ = create_publisher<Twist>(gz_twist_topic, 10);
+      enable_pub_ = create_publisher<Bool>(gz_enable_topic, 10);
+    }
     odom_pub_ = create_publisher<Odometry>("fc/odom", 10);
     attitude_pub_ = create_publisher<QuaternionStamped>("fc/attitude", 10);
     range_pub_ = create_publisher<Range>("fc/range", 10);
     status_pub_ = create_publisher<FcStatus>("fc/status", 10);
     arm_srv_ = create_service<SetBool>(
       "fc/arm", [this](SetBool::Request::SharedPtr req, SetBool::Response::SharedPtr res) {
-        // Sim only: on the real drone, arming stays on the radio (step 7 refuses this).
+        if (backend_ != "sim") {
+          // The real drone arms from the radio only; ROS can't arm or disarm it.
+          res->success = false;
+          res->message = "arming is on the radio (backend " + backend_ + ")";
+          RCLCPP_WARN(get_logger(), "fc/arm refused: %s", res->message.c_str());
+          return;
+        }
         if (armed_ != req->data) {
           armed_ = req->data;
           RCLCPP_INFO(get_logger(), armed_ ? "Armed (fc/arm)" : "Disarmed (fc/arm)");
@@ -120,9 +139,14 @@ public:
         res->success = true;
         res->message = holding_ ? "holding" : "not holding";
       });
-    sim_odom_sub_ = create_subscription<Odometry>(
-      sim_odom_topic, rclcpp::SensorDataQoS(),
-      [this](const Odometry & msg) {on_sim_odom(msg);});
+    if (sim) {
+      sim_odom_sub_ = create_subscription<Odometry>(
+        sim_odom_topic, rclcpp::SensorDataQoS(),
+        [this](const Odometry & msg) {on_sim_odom(msg);});
+    } else {
+      RCLCPP_WARN(get_logger(), "Backend %s: MSP not implemented yet; setpoints go nowhere "
+        "and no state is published", backend_.c_str());
+    }
 
     sub_ = create_subscription<TwistStamped>(
       "fc/setpoint_velocity", rclcpp::SensorDataQoS(),
@@ -149,6 +173,9 @@ private:
   void keep_enabled()
   {
     // Sim only. On the real drone, arming stays on the radio.
+    if (!enable_pub_) {
+      return;
+    }
     Bool msg;
     msg.data = armed_;
     enable_pub_->publish(msg);
@@ -158,7 +185,7 @@ private:
   {
     FcStatus st;
     st.header.stamp = now();
-    st.backend = "sim";
+    st.backend = backend_;
     st.armed = armed_;
     st.holding = holding_;
     st.following_setpoints = !stale_ && !holding_;
@@ -185,7 +212,9 @@ private:
       publish_status();
     }
 
-    cmd_pub_->publish(fresh && !holding_ ? clamp(last_sp_) : Twist());
+    if (cmd_pub_) {
+      cmd_pub_->publish(fresh && !holding_ ? clamp(last_sp_) : Twist());
+    }
   }
 
   double noise(double stddev)
@@ -301,6 +330,7 @@ private:
   rclcpp::TimerBase::SharedPtr tick_timer_;
   rclcpp::TimerBase::SharedPtr enable_timer_;
 
+  std::string backend_;
   Twist last_sp_;
   std::optional<rclcpp::Time> last_rx_;
   bool stale_{true};

@@ -14,7 +14,7 @@ After each step, update the README and `SIM_TELEOP.md` tables so they stay accur
 | 4 | `mission` node v1: takeoff, hold and land on the rangefinder | Done, Oct 29 |
 | 5 | `drone_interfaces`, and `mission` as an action server | Done, Oct 29 |
 | 6 | `safety_manager`: arbitration and hover | Done, Oct 30 |
-| 7 | Prepare `fc_bridge` for hardware | To do |
+| 7 | Prepare `fc_bridge` for hardware | Done, Oct 30 |
 | 8 | Later or watch | Later |
 
 ## 1. Tests for the existing failsafes
@@ -104,6 +104,16 @@ Without writing the `inav` backend yet.
 - **State:** the `inav` backend publishes `fc/odom`, `fc/attitude` and `fc/range` from MSP, like the sim backend does since step 3. Measure the real sensors' noise and drift and update the sim parameters to match.
 - **Mock backend:** lets the tests from step 1 run without Gazebo.
 - **Fixes:** the three "before hardware" issues in `fc_bridge`.
+
+- **As built (Oct 30):** decided with João:
+  - **ROS runs on the ground laptop, never on the drone**: `fc_bridge` talks MSP to INAV through the ESP8266. So the Wi-Fi hop is *after* `fc_bridge`, and checking `header.stamp` would only measure ROS on the laptop. Dropped; latency belongs in the `inav` backend (time each MSP request and reply, STK-5).
+  - **No mock backend:** the step 1 tests already run without Gazebo, and staying close to the real drone matters more than a fake FC.
+  - **No `contract_version`:** nothing would read it yet.
+  - **`backend` parameter** in `fc_bridge`, `sim` or `inav`. `inav` is a stub: same topics and services, sends nothing, publishes no state, refuses `fc/arm`, and has no Gazebo topics or enable. 3 launch tests (`test_inav.py`).
+  - **The sim arms like the hardware:** only the radio arms. SA arms and disarms through `fc/arm` (kill switch, even in flight); like INAV, not with the throttle off centre or on a switch already on at start. The takeover switch, not SA, hands over the sticks, and no longer arms. `mission` (`radio_arms` true) refuses Takeoff until armed, never arms or disarms, and a disarm in the air aborts its goal and grounds it.
+  - **`radio:=false`** for when someone else has the Pocket: no radio nodes, `fc_bridge` starts armed, and `mission` arms on Takeoff and disarms after Land, as before.
+  - **`backend:=inav`** in `sim.launch.py`: no Gazebo, no bridge, no radio nodes, no sim time. The launch is now one `OpaqueFunction`, so each argument is a plain Python choice.
+  - Not done here: measuring the real sensors (needs the hardware) and the MSP code itself.
 
 ## 8. Later or watch
 

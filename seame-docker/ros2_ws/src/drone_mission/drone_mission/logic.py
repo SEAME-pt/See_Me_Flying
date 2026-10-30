@@ -49,6 +49,10 @@ class Params:
     odom_timeout_s: float = 0.5   # no odometry for this long: Goto can't steer
     lost_hold_s: float = 2.0      # hover this long waiting for the range, then land
     takeoff_timeout_s: float = 20.0
+    # True like the real drone: only the radio arms, so Takeoff needs the drone
+    # armed already, and the node never arms or disarms. False (no radio in the
+    # sim): the node arms on Takeoff and disarms after a Land.
+    radio_arms: bool = True
 
 
 @dataclass
@@ -93,6 +97,7 @@ class Mission:
         self.goto_speed = params.speed
         self.lost_from = HOLD                  # state range_lost interrupted
         self.in_control = True                 # False while another source commands the drone
+        self.armed: Optional[bool] = None      # from fc/status; None until it arrives
         self.below_since: Optional[float] = None
         self.stopped_since: Optional[float] = None
         self.transitions: list = []            # (time, from, to), for logs and tests
@@ -153,6 +158,17 @@ class Mission:
             self.hold_h = h
             self.go(t, HOLD)
 
+    def on_armed(self, t: float, armed: bool) -> None:
+        """Armed or not, from fc/status. Disarmed in the air (kill switch) ends the flight."""
+        was = self.armed
+        self.armed = armed
+        # Only a change counts: a status sent just before our own arm request landed
+        # still says disarmed, and must not abort the Takeoff that asked for it.
+        if was and not armed and self.state in AIRBORNE:
+            if self.goal is not None:
+                self.finish(ABORTED, 'disarmed')
+            self.go(t, GROUNDED)
+
     # Goals: each returns (accepted, reason)
 
     def request_takeoff(self, t: float, height: float = 0.0) -> Tuple[bool, str]:
@@ -161,6 +177,8 @@ class Mission:
             return False, 'another source has control'
         if self.state != GROUNDED:
             return False, f'not on the ground ({self.state})'
+        if self.p.radio_arms and not self.armed:
+            return False, 'not armed: arm with the radio'
         if self.height(t) is None or self.range_ok_since is None:
             return False, 'no rangefinder reading'
         if t - self.range_ok_since < self.p.ready_s:

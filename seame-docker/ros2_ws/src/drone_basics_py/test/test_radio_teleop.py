@@ -4,7 +4,8 @@ Arm and takeover switches, debounce and stick mapping of radio_teleop, without a
 Calls on_joy directly and records what would be published. Default
 parameters: axes 0-3 roll, pitch, throttle, yaw; arm on axis 4; all signs +1;
 arm_hold_s 0.1; no takeover switch unless a test sets axis_takeover (then
-axis 5). Times are the Joy header stamps, in seconds.
+axis 5). The fixture starts with every switch off, as INAV needs to see the
+arm switch off before it arms. Times are the Joy header stamps, in seconds.
 """
 from drone_basics_py.radio_teleop import RadioTeleop
 import pytest
@@ -26,18 +27,22 @@ class Recorder:
 
 
 @pytest.fixture
-def teleop():
+def fresh():
+    """Just started: no /joy message yet."""
     rclpy.init()
     node = RadioTeleop()
     node.pub = Recorder()
-    node.arm_requests = 0
-
-    def request_arm():
-        node.arm_requests += 1
-    node.request_arm = request_arm
+    node.arm_calls = []                 # what fc/arm was asked: True arm, False disarm
+    node.set_fc_armed = node.arm_calls.append
     yield node
     node.destroy_node()
     rclpy.shutdown()
+
+
+@pytest.fixture
+def teleop(fresh):
+    fresh.on_joy(joy(0.0))              # every switch off
+    return fresh
 
 
 def joy(t, roll=0.0, pitch=0.0, throttle=0.0, yaw=0.0, arm=ARM_OFF, takeover=ARM_OFF):
@@ -159,10 +164,35 @@ def test_missing_arm_axis_is_off(teleop):
     assert teleop.pub.msgs == []
 
 
-def test_engaging_arms_the_fc_once(teleop):
+def test_arm_switch_arms_the_fc_once(teleop):
     t = engage(teleop)
     teleop.on_joy(joy(t + 0.05, arm=ARM_ON))
-    assert teleop.arm_requests == 1, 'after a Land disarmed it, the sticks must arm it again'
+    assert teleop.arm_calls == [True]
+
+
+def test_arm_switch_off_disarms_even_in_flight(teleop):
+    t = engage(teleop)
+    teleop.on_joy(joy(t + 0.05, throttle=1.0, arm=ARM_ON))
+    teleop.on_joy(joy(t + 0.06, throttle=1.0, arm=ARM_OFF))
+    assert teleop.arm_calls == [True, False], 'the arm switch is the kill switch'
+
+
+def test_arm_switch_on_at_start_must_be_cycled(fresh):
+    fresh.on_joy(joy(10.0, arm=ARM_ON))
+    fresh.on_joy(joy(11.0, arm=ARM_ON))
+    assert fresh.arm_calls == [], 'like INAV: never arm on a switch that was already on'
+    fresh.on_joy(joy(11.1, arm=ARM_OFF))
+    fresh.on_joy(joy(11.2, arm=ARM_ON))
+    fresh.on_joy(joy(11.2 + HOLD_S + 0.01, arm=ARM_ON))
+    assert fresh.arm_calls == [True]
+
+
+def test_arming_refused_with_throttle_off_centre(teleop):
+    teleop.on_joy(joy(10.0, throttle=-0.5, arm=ARM_ON))
+    teleop.on_joy(joy(10.5, throttle=-0.5, arm=ARM_ON))
+    assert teleop.arm_calls == []
+    teleop.on_joy(joy(10.6, arm=ARM_ON))
+    assert teleop.arm_calls == [True]
 
 
 @pytest.fixture
@@ -175,7 +205,7 @@ def test_arm_alone_does_not_take_over(with_takeover):
     with_takeover.on_joy(joy(10.0, arm=ARM_ON))
     with_takeover.on_joy(joy(10.5, pitch=1.0, arm=ARM_ON))
     assert with_takeover.pub.msgs == []
-    assert with_takeover.arm_requests == 0
+    assert with_takeover.arm_calls == [True], 'arm alone arms, ready, without taking over'
 
 
 def test_takeover_alone_does_nothing(with_takeover):
@@ -190,7 +220,7 @@ def test_takeover_with_arm_on_engages_after_hold(with_takeover):
     assert not with_takeover.engaged, 'the hold counts from the takeover, not from arming'
     with_takeover.on_joy(joy(11.0 + HOLD_S + 0.01, arm=ARM_ON, takeover=ARM_ON))
     assert with_takeover.engaged
-    assert with_takeover.arm_requests == 1
+    assert with_takeover.arm_calls == [True]
 
 
 def test_takeover_off_releases_at_once(with_takeover):
@@ -208,6 +238,7 @@ def test_arm_off_releases_even_with_takeover_on(with_takeover):
     with_takeover.on_joy(joy(10.201, pitch=1.0, arm=ARM_OFF, takeover=ARM_ON))
     assert not with_takeover.engaged
     assert len(with_takeover.pub.msgs) == 1
+    assert with_takeover.arm_calls == [True, False]
 
 
 def test_missing_takeover_axis_is_off(with_takeover):

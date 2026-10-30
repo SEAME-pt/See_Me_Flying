@@ -12,6 +12,7 @@ import threading
 import time
 
 from drone_interfaces.action import Goto, Land, Takeoff
+from drone_interfaces.msg import FcStatus
 from drone_mission.logic import ACTIVE, CANCELED, LAND, Mission, Params, SUCCEEDED
 from geometry_msgs.msg import TwistStamped
 from nav_msgs.msg import Odometry
@@ -31,7 +32,6 @@ class MissionNode(Node):
     def __init__(self):
         super().__init__('mission')
         rate = self.declare_parameter('rate_hz', 20.0).value
-        self.disarm_after_land = self.declare_parameter('disarm_after_land', True).value
         defaults = Params()
         values = {f.name: self.declare_parameter(f.name, getattr(defaults, f.name)).value
                   for f in fields(Params)}
@@ -48,6 +48,7 @@ class MissionNode(Node):
         latched = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
         self.create_subscription(String, 'safety/active_source', self.on_active_source,
                                  latched, callback_group=group)
+        self.create_subscription(FcStatus, 'fc/status', self.on_status, 10, callback_group=group)
         self.arm = self.create_client(SetBool, 'fc/arm', callback_group=group)
         self.create_timer(1.0 / rate, self.tick, callback_group=group)
         self.logged = 0
@@ -79,6 +80,10 @@ class MissionNode(Node):
         with self.lock:
             self.mission.on_odom(self.now(), p.x, p.y, yaw, msg.twist.twist.linear.z, up_z)
 
+    def on_status(self, msg):
+        with self.lock:
+            self.mission.on_armed(self.now(), msg.armed)
+
     def on_active_source(self, msg):
         with self.lock:
             self.mission.set_control(self.now(), msg.data in ('mission', 'none'), msg.data)
@@ -87,7 +92,7 @@ class MissionNode(Node):
 
     def request_takeoff(self, goal):
         ok, why = self.mission.request_takeoff(self.now(), goal.height)
-        if ok:
+        if ok and not self.mission.p.radio_arms:
             self.set_armed(True)
         return ok, why
 
@@ -143,7 +148,7 @@ class MissionNode(Node):
             handle.canceled()
         else:
             handle.abort()
-        if g.kind == LAND and g.status == SUCCEEDED and self.disarm_after_land:
+        if g.kind == LAND and g.status == SUCCEEDED and not self.mission.p.radio_arms:
             self.set_armed(False)
         with self.lock:
             self.goals.pop(bytes(handle.goal_id.uuid), None)

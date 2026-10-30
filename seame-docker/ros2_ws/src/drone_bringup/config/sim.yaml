@@ -22,7 +22,7 @@ setpoint_pub:
 mission:
   ros__parameters:
     rate_hz: 20.0
-    disarm_after_land: true
+    # radio_arms: set by the launch (true unless radio:=false)
     target_h: 1.2          # m above the ground (fc/range), default Takeoff height
     tolerance: 0.05
     kp_z: 1.0

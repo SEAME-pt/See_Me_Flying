@@ -1,10 +1,13 @@
 """
 RadioMaster Pocket (USB joystick) -> velocity setpoints.
 
-Two switches: arm (deadman) and takeover. The sticks command only while both
-are on; then the radio outranks any other source in safety_manager. Arm alone
-does nothing, so it can be on, ready, while a mission flies. Taking over arms
-fc_bridge (fc/arm), so the radio can fly again after a Land disarmed it.
+Two switches, as on the real drone with INAV:
+- Arm (SA) arms and disarms fc_bridge (fc/arm). Off is a kill switch, even in
+  flight. Like INAV, it won't arm with the throttle off centre, or when the
+  switch was already on at start: flip it off and on again.
+- Takeover: while armed, the sticks command and outrank any other source in
+  safety_manager. Off hands control back to the mission. Arm alone flies
+  nothing, so the radio can be armed and ready while a mission flies.
 
 Sim only. On the real drone the radio talks ELRS straight to INAV, where the
 takeover switch is the mode switch between the companion (MSP) and the sticks.
@@ -31,7 +34,7 @@ class RadioTeleop(Node):
         self.declare_parameter('axis_takeover', -1)        # -1: no takeover switch, arm alone
         self.declare_parameter('sign_takeover', 1.0)
         self.declare_parameter('arm_threshold', 0.5)
-        self.declare_parameter('arm_hold_s', 0.1)    # switch must read on this long to engage
+        self.declare_parameter('arm_hold_s', 0.1)    # a switch must read on this long to count
         self.declare_parameter('deadband', 0.08)
         self.declare_parameter('max_xy', 0.5)    # m/s at full stick
         self.declare_parameter('max_z', 0.3)     # m/s at full stick
@@ -40,8 +43,11 @@ class RadioTeleop(Node):
         self.pub = self.create_publisher(TwistStamped, 'setpoint_velocity', 10)
         self.create_subscription(Joy, 'joy', self.on_joy, 10)
         self.arm_client = self.create_client(SetBool, 'fc/arm')
-        self.engaged = False
-        self.on_since = None   # joy stamp when the switch last turned on
+        self.armed = False       # what we asked fc_bridge for
+        self.engaged = False     # sticks in command
+        self.seen_off = False    # arm switch seen off since start (INAV's arming check)
+        self.arm_since = None    # joy stamp when the arm switch last turned on
+        self.take_since = None   # same, takeover switch
 
     def p(self, name):
         return self.get_parameter(name).value
@@ -60,44 +66,64 @@ class RadioTeleop(Node):
         return (0 <= i < len(msg.axes)
                 and self.p(f'sign_{name}') * msg.axes[i] > self.p('arm_threshold'))
 
-    def request_arm(self):
-        # After a Land, fc_bridge is disarmed and would ignore the sticks.
+    def set_fc_armed(self, armed):
         if not self.arm_client.service_is_ready():
-            self.get_logger().warn('fc/arm not available: cannot arm', throttle_duration_sec=2.0)
+            self.get_logger().error('fc/arm not available: cannot ' +
+                                    ('arm' if armed else 'disarm'))
             return
-        self.arm_client.call_async(SetBool.Request(data=True))
+        self.arm_client.call_async(SetBool.Request(data=armed))
 
     def on_joy(self, msg):
-        takeover = self.p('axis_takeover') < 0 or self.switch(msg, 'takeover')
-        switch_on = self.switch(msg, 'arm') and takeover
+        t = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+        hold = self.p('arm_hold_s')
+        throttle = self.axis(msg, 'throttle')
+        arm_on = self.switch(msg, 'arm')
+        take_on = arm_on if self.p('axis_takeover') < 0 else self.switch(msg, 'takeover')
+        # Debounce: a switch counts once it has read on for arm_hold_s without a
+        # break (the Pocket's SA bounces for up to ~35 ms). Off acts at once.
+        # Needs joy_node autorepeat_rate > 0, or a held switch sends no next message.
+        if not arm_on:
+            self.arm_since = None
+        elif self.arm_since is None:
+            self.arm_since = t
+        if not take_on:
+            self.take_since = None
+        elif self.take_since is None:
+            self.take_since = t
 
-        if not switch_on:
+        if not arm_on:
+            self.seen_off = True
+            if self.armed:
+                self.set_fc_armed(False)
+                self.get_logger().warn('Arm switch off: disarmed')
+            self.armed = False
+        elif not self.armed and t - self.arm_since >= hold:
+            if not self.seen_off:
+                self.get_logger().warn('Arm switch was on at start: flip it off and on to arm',
+                                       throttle_duration_sec=2.0)
+            elif throttle != 0.0:
+                # Like INAV's arming check: or arming would make the drone jump.
+                self.get_logger().warn('Centre the throttle stick to arm',
+                                       throttle_duration_sec=2.0)
+            else:
+                self.armed = True
+                self.set_fc_armed(True)
+                self.get_logger().info('Armed (arm switch)')
+
+        if not (self.armed and take_on):
             if self.engaged:
                 self.get_logger().info('Released: not sending, the mission or fc_bridge holds')
             self.engaged = False
-            self.on_since = None
-            return   # silence -> fc_bridge timeout -> zero velocity
+            return   # silence -> the mission keeps control, or fc_bridge times out and holds
 
-        stamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
-        if self.on_since is None:
-            self.on_since = stamp
-
-        throttle = self.axis(msg, 'throttle')
         if not self.engaged:
-            # Debounce, both switches together: the Pocket's SA bounces for up to
-            # ~35 ms when armed slowly.
-            # Only arming waits; off above acts at once, so the deadman stays instant.
-            # Needs joy_node autorepeat_rate > 0, or a held switch sends no next message.
-            if stamp - self.on_since < self.p('arm_hold_s'):
+            if t - max(self.arm_since, self.take_since) < hold:
                 return
-            # Like a real arming check: refuse to engage with the throttle off centre,
-            # or flipping the switch would make the drone jump.
             if throttle != 0.0:
-                self.get_logger().warn('Centre the throttle stick to engage',
+                self.get_logger().warn('Centre the throttle stick to take over',
                                        throttle_duration_sec=2.0)
                 return
             self.engaged = True
-            self.request_arm()
             self.get_logger().info('Engaged: sticks command velocity')
 
         out = TwistStamped()

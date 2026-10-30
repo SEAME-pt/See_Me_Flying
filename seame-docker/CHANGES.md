@@ -183,6 +183,32 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 
 **Changed for anyone publishing by hand:** publish on `/cmd/manual`, not `/fc/setpoint_velocity`. The keyboard command in SIM_TELEOP is updated.
 
+## Step 7: `fc_bridge` ready for the real drone, and the sim arms like it
+
+**Purpose:** on the real drone ROS runs on the ground laptop and talks MSP to INAV through the ESP8266; only the radio arms, and nothing sim-only may ever reach it. Switching between Gazebo and the drone must be one launch argument (issue ROS-4).
+
+| File | Change | Why |
+| --- | --- | --- |
+| `drone_fc_bridge/src/fc_bridge.cpp` | `backend` parameter, `sim` or `inav` (anything else stops the node). `inav`: stub, same topics and services, sends nothing, refuses `fc/arm`, no Gazebo topics, no enable; `fc/status` reports the backend | The shape of the real backend, with no way for ROS to arm the drone or a sim topic to leak |
+| `drone_fc_bridge/test/test_inav.py` | 3 launch tests: status says `inav` and disarmed; `fc/arm` refused; nothing and nobody on the Gazebo topics | |
+| `drone_basics_py/drone_basics_py/radio_teleop.py` | SA arms and disarms through `fc/arm`: off is the kill switch, even in flight. Like INAV: not with the throttle off centre, and not on a switch already on at start. Takeover no longer arms | On the real drone only the radio arms |
+| `drone_mission/drone_mission/logic.py`, `mission.py` | `radio_arms` (default true): Takeoff needs the drone armed, the node never arms or disarms. Listens to `fc/status`: armed to disarmed in the air aborts the goal (`disarmed`) and grounds it. `disarm_after_land` removed | Matches the real drone; with `radio_arms` false the old behaviour stays |
+| `drone_mission/drone_mission/demo_flight.py` | Retries Takeoff for 2 minutes, not 30 s | Time to arm with the radio |
+| `drone_bringup/launch/sim.launch.py` | `backend:=sim\|inav`; `radio:=true\|false` (false: no radio nodes, `fc_bridge` starts armed, `mission` arms itself). Rebuilt around one `OpaqueFunction` | Sim to real is one argument; testing without the Pocket when someone else has it |
+| Tests | 6 more mission logic tests (43), radio tests reworked for arming (24) | |
+
+**Dropped from the plan, and why:** a `header.stamp` age check (the Wi-Fi hop is after `fc_bridge`, so it would only measure ROS on the laptop; latency goes in the `inav` backend), the mock backend (the step 1 tests already run without Gazebo), `contract_version` (nothing reads it).
+
+**Checked:**
+
+- Each new guard broken on purpose fails a test: the Takeoff arming check (2 fail), the disarm-in-the-air abort (1), SA off not disarming (2), no off-at-start check (1), `inav` accepting `fc/arm` (3).
+- Headless Gazebo, fake Pocket (`radio:=true`): Takeoff refused (`not armed`); SA on armed it; Takeoff to 1.0 m; SA off in the air: disarmed, dropped to 0.05 m, `mission` `hold -> grounded`.
+- `radio:=false`: the demo flew by itself (eight Gotos, Land, disarmed); no radio nodes started.
+- `backend:=inav`: no Gazebo started; `fc/status` `inav`, disarmed; `fc/arm` refused; Takeoff refused (`not armed`).
+- All tests pass except the 4 older lint failures (`basics.launch.py`, `watchdog.cpp`).
+
+**Changed for everyone:** the drone starts disarmed. Arm with SA (throttle centred), or launch with `radio:=false`.
+
 ## Docs updated
 
 - `README.md`: `fc_bridge` section (state topics and parameters), bridge table, `radio_teleop` debounce, a **Tests** section, known issues and the resolved list.

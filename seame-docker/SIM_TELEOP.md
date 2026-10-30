@@ -10,7 +10,7 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
 | --- | --- | --- |
 | Parameters | Every node reads its settings from one YAML file. The `safety_manager` and `fc_bridge` timeouts agree (0.3 s). | `drone_bringup/config/sim.yaml` |
 | Bridge | The Gazebo bridge topics moved from command-line arguments to YAML | `drone_bringup/config/gz_bridge.yaml` |
-| Launch | `source:=circle\|mission\|joy\|none` chooses who commands the drone; `world:=` chooses the SDF | `drone_bringup/launch/sim.launch.py` |
+| Launch | `source:=circle\|mission\|none` chooses what flies on its own (`joy` removed Oct 30: the radio always runs); `radio:=`, `backend:=`, `world:=` | `drone_bringup/launch/sim.launch.py` |
 | State | Odometry of the X3 is visible in ROS: Gazebo's true pose on `/X3/odom`, and what the stack sees on `fc/odom`, `fc/attitude`, `fc/range` from `fc_bridge` (Oct 27: shaped like optical flow + rangefinder, xy drifts) | `gz_bridge.yaml`, `fc_bridge.cpp` |
 | Safety | `fc_bridge` rejects setpoints containing NaN or infinity | `drone_fc_bridge/src/fc_bridge.cpp` |
 | Teleop | Keyboard teleop (`teleop_twist_keyboard`) | `Dockerfile` |
@@ -19,13 +19,15 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
 | Tools | `odom_yaw.py`: prints x, y, z and heading twice a second | `ros2_ws/tools/odom_yaw.py` |
 | Tools | `arm_bounce.py`: logs every arm switch change on `/joy` and flags bounces | `ros2_ws/tools/arm_bounce.py` |
 | Container | Gazebo's model cache (`~/.gz`) kept in the `gz-cache` volume, so the X3 survives recreating the container | `compose.yaml`, `Dockerfile` |
+| Arming | Oct 30 (step 7): only the radio arms, like the real drone: SA arms and disarms (kill switch), the takeover switch hands over the sticks. `radio:=false` without a Pocket. `backend:=inav` starts the real-drone stub | `radio_teleop.py`, `mission`, `fc_bridge.cpp`, `sim.launch.py` |
 
 ## How it fits together
 
 ```
    source:=circle   setpoint_pub ─────────────────────────────┐
    source:=mission  demo_flight → actions → mission ───────────┼─► /cmd/mission  (3)
-   always             Pocket → joy_node → radio_teleop ─────────► /cmd/radio    (1)
+   radio:=true        Pocket → joy_node → radio_teleop ─────────► /cmd/radio    (1)
+                      (SA arms/disarms through fc/arm; takeover sends sticks)
    by hand: keyboard or ros2 topic pub ───────────────────────────► /cmd/manual   (2)
                                                                          │
                          safety_manager: highest-priority source publishing in the last 0.3 s
@@ -43,6 +45,8 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
                                            ▼
                                    /X3/odom ──► fc_bridge ──► fc/odom, fc/attitude, fc/range
 ```
+
+With `backend:=inav`, Gazebo, `ros_gz_bridge` and the radio nodes are gone, and `fc_bridge` is the MSP stub: it sends nothing yet.
 
 Only `safety_manager` publishes on `/fc/setpoint_velocity`, so sources never fight: the radio beats manual beats the mission. Every source still ends in `fc_bridge`, so the timeout, NaN guard and clamp apply to all of them.
 
@@ -69,13 +73,15 @@ You may see `groups: cannot find name for group ID 990` (and `994`) when enterin
 
 ## Try it
 
+**Arming (since Oct 30, step 7):** like the real drone, **only the radio arms**. The drone starts disarmed; flip SA off and on with the throttle centred (`Armed (arm switch)`), and SA off disarms at once, even in the air (the kill switch: the sim drone drops). The takeover switch, not SA, hands the sticks control. **No Pocket** (someone else has it): add `radio:=false` to any launch below; then the drone starts armed and `mission` arms on Takeoff and disarms after a Land, as before.
+
 ### 1. Circle flight (the old behaviour)
 
 ```bash
-ros2 launch drone_bringup sim.launch.py            # source:=circle is the default
+ros2 launch drone_bringup sim.launch.py radio:=false   # source:=circle is the default
 ```
 
-Takeoff, then circles. In a second terminal:
+Takeoff, then circles. With the radio instead, arm within 5 s of the launch: `setpoint_pub` starts on a timer. In a second terminal:
 
 ```bash
 python3 ~/ros2_ws/tools/odom_yaw.py /X3/odom
@@ -89,11 +95,11 @@ python3 ~/ros2_ws/tools/odom_yaw.py /X3/odom
 ros2 launch drone_bringup sim.launch.py source:=mission
 ```
 
-`demo_flight` takes off to 1.2 m, flies a 1 m square (forward, quarter turn left, four times) and lands.
+`demo_flight` takes off to 1.2 m, flies a 1 m square (forward, quarter turn left, four times) and lands. Arm with SA (throttle centred) within 2 minutes; with `radio:=false` it goes by itself.
 
-**Expect** in the launch log: a few `takeoff rejected: no rangefinder reading` or `rangefinder not steady yet` while the sim starts, then `takeoff accepted`, `State: grounded -> takeoff`, `takeoff -> hold` at about 1.16 m, eight `goto: ok`, `land: ok`, `Disarmed (fc/arm)`, `Demo done`. With `odom_yaw.py /X3/odom`: z at 1.20 m throughout, a square of about 0.85 m sides, back to about 0.05 m.
+**Expect** in the launch log: a few `takeoff rejected: no rangefinder reading`, `rangefinder not steady yet` or `not armed: arm with the radio`, then `takeoff accepted`, `State: grounded -> takeoff`, `takeoff -> hold` at about 1.16 m, eight `goto: ok`, `land: ok`, `Demo done`. With `radio:=false` also `Disarmed (fc/arm)` after the landing; with the radio it stays armed until you flip SA off. With `odom_yaw.py /X3/odom`: z at 1.20 m throughout, a square of about 0.85 m sides, back to about 0.05 m.
 
-**Sending goals by hand:** start with `source:=mission demo:=false`, then in a second container terminal:
+**Sending goals by hand:** start with `source:=mission demo:=false`, arm with SA (or add `radio:=false`), then in a second container terminal:
 
 ```bash
 ros2 action send_goal /mission/takeoff drone_interfaces/action/Takeoff "{height: 1.0}" --feedback
@@ -115,7 +121,13 @@ Ctrl-C on a Takeoff or Goto cancels it (the drone holds); a Land can't be cancel
 ros2 launch drone_bringup sim.launch.py source:=mission demo:=false
 ```
 
-Take off and start a long Goto (see "Sending goals by hand" above), then, with SA on, centre the throttle and flip the takeover switch on (the other shoulder switch, axis 6). **Expect:** `Active source: radio` from `safety_manager`, `goto -> overridden` from `mission`, the Goto aborted with `overridden by radio`, and the sticks fly the drone. Flip takeover (or SA) off: `overridden -> hold` at the height you left it, `Active source: mission`. Send a Land, or land it yourself before flipping off: then the mission goes to `grounded`. After a Land (which disarms), taking over again arms the drone (`Armed (fc/arm)` from `fc_bridge`) and the sticks fly it; no Takeoff goal needed.
+Arm with SA, take off and start a long Goto (see "Sending goals by hand" above):
+
+```bash
+ros2 action send_goal /mission/goto drone_interfaces/action/Goto "{forward: 10.0, speed: 0.3}" --feedback
+```
+
+Then centre the throttle and flip the takeover switch on (the other shoulder switch, axis 6). **Expect:** `Active source: radio` from `safety_manager`, `goto -> overridden` from `mission`, the Goto aborted with `overridden by radio`, and the sticks fly the drone. Flip takeover (or SA) off: `overridden -> hold` at the height you left it, `Active source: mission`. Send a Land, or land it yourself before flipping off: then the mission goes to `grounded`. The drone stays armed after a Land, so taking over again flies it straight away; SA off disarms. SA off in the air: `Disarmed (fc/arm)`, the drone drops, and `mission` goes to `grounded` with the goal aborted (`disarmed`).
 
 With `demo:=true` the demo stops at the first aborted step and asks for a Land, which the mission refuses while you have control; that's expected.
 
@@ -175,10 +187,10 @@ ros2 run joy joy_enumerate_devices           # must list "OpenTX Radiomaster Poc
 ros2 launch drone_bringup sim.launch.py source:=none
 ```
 
-1. Disarmed: nothing is published; `fc_bridge` holds (zero velocity).
-2. Arm with the throttle off centre: `Centre the throttle stick to engage`, no motion.
-3. Centre the throttle, arm: `Engaged: sticks command velocity` about 0.1 s later (the debounce). Throttle up climbs.
-4. Disarm at any time: the drone should stop and hover within about 0.3 s. Pulling the USB cable should have the same effect (both not yet tested mid-flight).
+1. At start the drone is disarmed. If SA was already on, `Arm switch was on at start`: flip it off and on.
+2. SA on with the throttle off centre: `Centre the throttle stick to arm`, no motion.
+3. Centre the throttle, SA on: `Armed (arm switch)` about 0.1 s later (the debounce). Then takeover on: `Engaged: sticks command velocity`. Throttle up climbs.
+4. Takeover off: the sticks stop commanding and the drone hovers within about 0.3 s (`fc_bridge` timeout). SA off: disarmed, the motors stop and it drops. Pulling the USB cable stops the commands (hover), but leaves it armed: no message, no disarm.
 
 Stick mapping (Mode 2): right stick = forward/back and strafe, left stick = up/down and yaw. Forward always means where the nose points (see Results).
 
@@ -243,12 +255,13 @@ The Gazebo topic is `/model/x3/odometry` with a **lowercase** x3, unlike the com
 | No setpoint for 0.3 s (key released, `radio_teleop` silent, node crashed, USB unplugged) | `fc_bridge` sends zero velocity → the drone hovers. `safety_manager` logs `No source publishing`. |
 | Setpoint with NaN or infinity in any field | `fc_bridge` drops it and logs `Rejected non-finite setpoint` at most once a second. The previous setpoint keeps ageing, so the timeout above takes over. |
 | Too fast | Clamped to the `fc_bridge` limits; horizontal direction kept |
-| Arm on, takeover off | Nothing: the radio is ready but the mission (or hover) keeps control |
-| Takeover on, arm off | Nothing |
-| Takeover on with arm on, after a Land | `radio_teleop` arms `fc_bridge` (`fc/arm`) and the sticks fly it |
-| Arm or takeover switch off | `radio_teleop` stops publishing → control goes back to the mission, or with none, timeout → hover |
+| SA on (throttle centred, switch seen off since start) | `radio_teleop` arms `fc_bridge` (`fc/arm`); takeover off, so the mission (or hover) keeps control |
+| SA off | Disarmed at once (`fc/arm` false), even in flight: the kill switch. `mission` aborts its goal (`disarmed`) and goes grounded |
+| Takeover on, SA off | Nothing |
+| Takeover off | `radio_teleop` stops publishing → control goes back to the mission, or with none, timeout → hover |
 | Takeover on (arm on) during a mission | The radio takes over at once; the mission aborts its goal (`overridden by radio`) and goes quiet. Switch off: the mission holds where you left it (or stays grounded if you landed) and waits for a new goal |
-| Arm switch on with the throttle off centre | `radio_teleop` refuses to engage until the throttle is centred |
+| SA or takeover on with the throttle off centre | `radio_teleop` refuses to arm, or to take over, until the throttle is centred |
+| `backend:=inav` | No Gazebo and no radio nodes; `fc_bridge` sends nothing yet and refuses `fc/arm`; `mission` refuses Takeoff (`not armed`) |
 
 Test the NaN guard (sim with `source:=none`):
 
@@ -298,7 +311,8 @@ Flip SA on and off slowly about 20 times, then Ctrl-C. A clean switch prints one
 | Gazebo dies with exit code 139, `Authorization required` in the log (also with `-s`, headless) | Same: the sensors system needs OpenGL through the X display | `DISPLAY=:0 xhost +local:` on the host; `xhost` must then list `LOCAL:` |
 | `fc_bridge` dies on the first valid setpoint | A `declare_parameter` line was removed or commented out | Keep every declaration; the YAML only overrides it |
 | `radio_teleop`: `has no attribute 'main'` | `radio_teleop.py` empty or not saved | Check with `wc -l`, then rebuild |
-| Sticks do nothing | Arm or takeover off (correct), or `radio_teleop` died; `ros2 topic echo /safety/active_source` should say `radio` while engaged | Arm with the throttle centred; check the launch log |
+| `takeoff rejected: not armed: arm with the radio` | Only the radio arms now | Flip SA off and on with the throttle centred, or launch with `radio:=false` |
+| Sticks do nothing | Disarmed, or takeover off (correct), or `radio_teleop` died; `ros2 topic echo /safety/active_source` should say `radio` while engaged | Arm with the throttle centred; check the launch log |
 | Never engages | Throttle not centred (the Pocket's throttle doesn't spring back) | Find the centre; `ros2 topic echo /joy --field axes` shows it |
 | Radio not in `lsusb` | Charge-only cable, USB mode not Joystick, or a dead port | Another cable or port; EdgeTX USB mode: Ask or Joystick |
 | `/dev/input` empty in the container | A volume line in `compose.yaml` indented differently from the others: YAML merges it into the line above | Same indentation for every `- ` entry; `docker compose up -d --force-recreate` |

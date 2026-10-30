@@ -48,8 +48,10 @@ class Plant:
 class Flight:
     """A mission, a toy drone and a clock."""
 
-    def __init__(self, **params):
+    def __init__(self, armed=True, **params):
         self.m = Mission(Params(**params))
+        if armed is not None:
+            self.m.on_armed(0.0, armed)   # like fc/status: armed with the radio by default
         self.plant = Plant()
         self.t = 0.0
         self.cmd = None
@@ -454,3 +456,52 @@ def test_repeated_control_messages_change_nothing():
     f.m.set_control(f.t, True)
     f.m.set_control(f.t, True)
     assert len(f.m.transitions) == n
+
+
+# Arming: on the real drone only the radio arms (radio_arms, the default)
+
+
+def test_takeoff_refused_until_armed():
+    f = Flight(armed=False)
+    ok, why = f.m.request_takeoff(f.t)
+    assert not ok and 'arm' in why
+    f.m.on_armed(f.t, True)
+    assert f.m.request_takeoff(f.t)[0]
+
+
+def test_takeoff_refused_before_any_status():
+    f = Flight(armed=None)
+    assert not f.m.request_takeoff(f.t)[0], 'no fc/status yet: armed is unknown'
+
+
+def test_without_radio_arming_takeoff_needs_no_arm():
+    f = Flight(armed=False, radio_arms=False)
+    assert f.m.request_takeoff(f.t)[0], 'the node arms it itself'
+
+
+def test_stale_disarmed_status_does_not_abort_takeoff():
+    f = Flight(armed=False, radio_arms=False)
+    ok, _ = f.m.request_takeoff(f.t)
+    goal = f.m.goal
+    f.m.on_armed(f.t, False)          # sent before the arm request landed
+    assert f.m.state == TAKEOFF and goal.status == 'active'
+    f.m.on_armed(f.t, True)
+    assert f.finish(goal).status == SUCCEEDED
+
+
+def test_disarm_in_the_air_aborts_and_goes_quiet():
+    f = Flight()
+    f.takeoff()
+    ok, _ = f.m.request_goto(f.t, 3.0, 0.0)
+    goal = f.m.goal
+    f.run(1.0)
+    f.m.on_armed(f.t, False)          # the radio's kill switch
+    assert goal.status == ABORTED and goal.message == 'disarmed'
+    assert f.m.state == GROUNDED
+    assert f.m.step(f.t) is None, 'silent: nothing commands a disarmed drone'
+
+
+def test_disarm_on_the_ground_changes_nothing():
+    f = Flight()
+    f.m.on_armed(f.t, False)
+    assert states(f.m) == []

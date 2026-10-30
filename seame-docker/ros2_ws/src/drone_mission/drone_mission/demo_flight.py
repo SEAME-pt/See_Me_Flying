@@ -47,8 +47,9 @@ class DemoFlight(Node):
         return result if result.success else None
 
     def run(self):
-        # The mission refuses Takeoff until the rangefinder is up: keep asking for 30 s.
-        ok = self.send('takeoff', Takeoff.Goal(height=self.height), retry_s=30.0) is not None
+        # The mission refuses Takeoff until the rangefinder is up and the drone is armed
+        # (with the radio, unless radio:=false): keep asking for 2 minutes.
+        ok = self.send('takeoff', Takeoff.Goal(height=self.height), retry_s=120.0) is not None
         for i in range(4):
             ok = ok and self.send('goto', Goto.Goal(forward=self.side)) is not None
             ok = ok and self.send('goto', Goto.Goal(yaw=math.pi / 2)) is not None
