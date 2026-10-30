@@ -6,23 +6,23 @@ For setup, see [`GUIDE.md`](GUIDE.md). To fly the sim with the keyboard or the R
 
 ## System overview
 
-This is what runs today in the simulation, as started by `ros2 launch drone_bringup sim.launch.py source:=circle|mission|joy|none`. The `source` argument chooses who commands the drone (default `circle`); exactly one source runs at a time. Acronyms are spelled out the first time they appear.
+This is what runs today in the simulation, as started by `ros2 launch drone_bringup sim.launch.py source:=circle|mission|none`. The `source` argument chooses what flies the drone on its own (default `circle`). The RadioMaster Pocket is **always** there as the override, like on the real drone: engaged, it takes over from any source. Acronyms are spelled out the first time they appear.
 
 &#91;embedded content: sim stack · 4 hops for setpoints, clock back to fc\_bridge\]
 
-Setpoints travel one way: the source (`setpoint_pub`, `radio_teleop` or the keyboard) → `fc_bridge` → `ros_gz_bridge` → Gazebo. Simulation time travels back through the same bridge on `/clock`, and every ROS (Robot Operating System) node runs on it because the launch sets `use_sim_time: true`. The watchdog only listens; it changes nothing in the chain.
+Setpoints travel one way: the sources (`mission` or `setpoint_pub`, `radio_teleop`, the keyboard) → `safety_manager`, which picks one → `fc_bridge` → `ros_gz_bridge` → Gazebo. Simulation time travels back through the same bridge on `/clock`, and every ROS (Robot Operating System) node runs on it because the launch sets `use_sim_time: true`. Since Oct 30 the sources no longer publish to `fc_bridge` directly: see `safety_manager`.
 
 | Process | Language | Package | Started by |
 | --- | --- | --- | --- |
 | Gazebo (`gz sim`) | C++ (not a ROS node) | `ros_gz_sim` (apt) | `sim.launch.py` |
 | `parameter_bridge` | C++ | `ros_gz_bridge` (apt) | `sim.launch.py` |
 | `fc_bridge` | C++ | `drone_fc_bridge` (ours) | `sim.launch.py` |
-| `watchdog` | C++ | `drone_basics_cpp` (ours) | `sim.launch.py` |
+| `safety_manager` | Python | `drone_safety` (ours) | `sim.launch.py` |
 | `setpoint_pub` | Python | `drone_basics_py` (ours) | `sim.launch.py source:=circle`, 5 s after the rest |
 | `mission` | Python | `drone_mission` (ours) | `sim.launch.py source:=mission` |
 | `demo_flight` | Python | `drone_mission` (ours) | `sim.launch.py source:=mission` (unless `demo:=false`) |
-| `joy_node` | C++ | `joy` (apt) | `sim.launch.py source:=joy` |
-| `radio_teleop` | Python | `drone_basics_py` (ours) | `sim.launch.py source:=joy` |
+| `joy_node` | C++ | `joy` (apt) | `sim.launch.py`, always |
+| `radio_teleop` | Python | `drone_basics_py` (ours) | `sim.launch.py`, always |
 | `teleop_twist_keyboard` | Python | `teleop_twist_keyboard` (apt) | By hand, with `source:=none` |
 
 All our nodes read their parameters from `drone_bringup/config/sim.yaml`; the values in the tables below are the ones in that file.
@@ -40,7 +40,7 @@ A test source of velocity commands: takeoff for a fixed time, then circles forev
 
 | Item | Value |
 | --- | --- |
-| Publishes | `setpoint_velocity` (`geometry_msgs/TwistStamped`, frame `base_link`), remapped to `/fc/setpoint_velocity` by the launch file |
+| Publishes | `setpoint_velocity` (`geometry_msgs/TwistStamped`, frame `base_link`), remapped to `/cmd/mission` by the launch file |
 | QoS (Quality of Service) | Reliable, depth 10 |
 | `rate_hz` | 10.0 Hz (read once at start) |
 | `speed` | 0.3 m/s (read every tick, so `ros2 param set` changes it live) |
@@ -76,7 +76,8 @@ Flies on request: three action servers, `mission/takeoff`, `mission/goto` and `m
 | Item | Value |
 | --- | --- |
 | Subscribes | `fc/range` (`sensor_msgs/Range`), `fc/odom` (`nav_msgs/Odometry`) |
-| Publishes | `setpoint_velocity` (`geometry_msgs/TwistStamped`, frame `base_link`) at `rate_hz` (20), remapped to `/fc/setpoint_velocity` |
+| Publishes | `setpoint_velocity` (`geometry_msgs/TwistStamped`, frame `base_link`) at `rate_hz` (20), remapped to `/cmd/mission` |
+| Subscribes (control) | `safety/active_source` (`std_msgs/String`): not `mission` or `none` means overridden |
 | Actions | `mission/takeoff`, `mission/goto`, `mission/land` (`drone_interfaces/action/...`) |
 | Calls | `fc/arm` (`std_srvs/SetBool`): true on Takeoff, false after a Land |
 | `target_h`, `tolerance` | 1.2 m, 0.05 m |
@@ -97,24 +98,33 @@ All parameters are read once at start.
 
 **Version 1 (Oct 29, `c50f8e9`)** ran a fixed flight (takeoff, hold, circle, yaw, land) with no actions; it settled at 1.20 m and held 1.197–1.203 m through the circle and a full turn.
 
-## watchdog
+## safety\_manager
 
-An observer that reports when setpoints stop arriving. It is the seed of the future `safety_manager`. Package `drone_basics_cpp`, file `src/watchdog.cpp`.
+Decides which command source reaches the drone. Since Oct 30 it is the **only publisher of `/fc/setpoint_velocity`**: every source publishes on its own topic, and `safety_manager` forwards one of them. Grew out of the watchdog, which only logged a timeout; the watchdog still runs in `basics.launch.py`. Package `drone_safety`: the rule is plain Python in `drone_safety/arbiter.py` (no ROS, tested on its own), `drone_safety/safety_manager.py` is the node.
 
-**What it does**
+| Source | Topic | Priority |
+| --- | --- | --- |
+| `radio_teleop` (RadioMaster Pocket) | `/cmd/radio` | 1, highest |
+| Anything by hand: keyboard, `ros2 topic pub` | `/cmd/manual` | 2 |
+| `mission` or `setpoint_pub` | `/cmd/mission` | 3 |
 
-1. On startup, sets "last message received" to now.
-2. Every time a setpoint arrives, updates "last message received".
-3. Every 100 ms, checks how long ago that was. When the gap first exceeds `timeout_s`, logs `No setpoint for X s: a real failsafe would command hover`. When messages come back, logs `Setpoints are back`. It only logs on these changes, never every tick.
+**The rule:** the highest-priority source that has published within `source_timeout_s` is active, and only its commands are forwarded, as they arrive (no added delay). With none active nothing is forwarded, so `fc_bridge`'s timeout sends zero, as before.
 
-It **commands nothing**. The drone's actual failsafe is in `fc_bridge`; the watchdog only tells you it happened. The warning right after launch is expected: `setpoint_pub` starts 5 s later.
+**Taking over:** `radio_teleop` only publishes while its arm and takeover switches are both on, so **flipping takeover on (with arm on) takes control** from the mission, and either switch off gives it back. Taking over also arms `fc_bridge`, so it works after a Land. The active source is published on `safety/active_source` (`std_msgs/String`, latched) and logged on every change: `Active source: radio`, `No source publishing: fc_bridge times out and sends zero`.
+
+**`mission` listens to it:** when another source becomes active it aborts its goal (`overridden by radio`) and goes quiet in state **overridden**, refusing new goals. When control comes back (active is `mission` or `none`) it never resumes on its own: on the ground it goes to **grounded**, in the air it holds the height it is at. Then it takes new goals.
+
+**Low battery:** a placeholder. It subscribes to `fc/battery` (`sensor_msgs/BatteryState`; nothing publishes it yet) and warns once below `battery_low`. Returning or landing comes later.
 
 | Item | Value |
 | --- | --- |
-| Subscribes | `setpoint_velocity` (`geometry_msgs/TwistStamped`), remapped to `/fc/setpoint_velocity` by the launch file |
-| QoS | Sensor-data profile (best effort, small queue); connects to reliable and best-effort publishers |
-| `timeout_s` | 0.3 s, equal to `fc_bridge`'s `setpoint_timeout_s` (code default 0.5) |
-| Check period | 100 ms, fixed in code |
+| Subscribes | `cmd/radio`, `cmd/manual`, `cmd/mission` (`geometry_msgs/TwistStamped`, sensor-data QoS); `fc/battery` |
+| Publishes | `fc/setpoint_velocity` (`geometry_msgs/TwistStamped`); `safety/active_source` (`std_msgs/String`, transient local) |
+| `priority` | `["radio", "manual", "mission"]`, highest first; each name `n` is the topic `cmd/n` |
+| `source_timeout_s` | 0.3 s, equal to `fc_bridge`'s `setpoint_timeout_s` |
+| `battery_low` | 0.2 (fraction) |
+
+**Sim result (Oct 30, 2026, headless, with `ros2 topic pub` standing in for the radio):** during a 3 m Goto, commands on `/cmd/radio` took over at once; the Goto aborted with `overridden by radio`; the "radio" brought the drone from 1.20 m down to 0.28 m; when it stopped, `mission` held at about 0.33 m (no climb back) and accepted a Land.
 
 ## fc\_bridge
 
@@ -172,16 +182,18 @@ Turns the RadioMaster Pocket, connected over USB as a joystick, into velocity se
 
 **What it does, for every `/joy` message** (`joy_node` repeats the last state at 20 Hz):
 
-1. Reads the arm switch. If it is off: publishes nothing, so `fc_bridge` times out and holds. Logs `Arm switch off` once.
-2. If the switch has just been turned on, waits until it has read on without a break for `arm_hold_s` (debounce: the Pocket's switch bounces). Then refuses to engage until the throttle stick is centred, like a real arming check. Logs `Centre the throttle stick to engage` every 2 s.
-3. Once engaged: applies sign and deadband to each stick and publishes `TwistStamped` (frame `base_link`). Right stick: forward/back and strafe. Left stick: up/down and yaw.
+1. Reads the arm switch (SA) and the takeover switch (`axis_takeover`, axis 6 on the Pocket; with −1, arm alone takes over). Unless both are on: publishes nothing, so the mission keeps control, or with none `fc_bridge` times out and holds. Logs `Released` once. Arm alone can stay on, ready, while a mission flies.
+2. If both have just turned on, waits until they have read on without a break for `arm_hold_s` (debounce: the Pocket's switch bounces). Then refuses to engage until the throttle stick is centred, like a real arming check. Logs `Centre the throttle stick to engage` every 2 s.
+3. On engaging, calls `fc/arm` (true), so the radio can fly again after a Land disarmed the drone. On the real drone the radio arms INAV itself, and the takeover switch is INAV's mode switch between the companion computer (MSP) and the sticks.
+4. Once engaged: applies sign and deadband to each stick and publishes `TwistStamped` (frame `base_link`). Right stick: forward/back and strafe. Left stick: up/down and yaw.
 
 | Item | Value |
 | --- | --- |
 | Subscribes | `joy` (`sensor_msgs/Joy`) |
-| Publishes | `setpoint_velocity` (`geometry_msgs/TwistStamped`), remapped to `/fc/setpoint_velocity` |
-| Axes | roll 0, pitch 1, throttle 2, yaw 3, arm 4 |
-| Signs | roll 1.0, pitch −1.0, throttle −1.0, yaw 1.0, arm −1.0 (`joy_node` inverts every Pocket axis) |
+| Calls | `fc/arm` (`std_srvs/SetBool`), on engaging |
+| Publishes | `setpoint_velocity` (`geometry_msgs/TwistStamped`), remapped to `/cmd/radio`: only while engaged, which is what makes the radio take over |
+| Axes | roll 0, pitch 1, throttle 2, yaw 3, arm 4, takeover 6 |
+| Signs | roll 1.0, pitch −1.0, throttle −1.0, yaw 1.0, arm −1.0, takeover −1.0 (`joy_node` inverts every Pocket axis) |
 | `arm_hold_s` | 0.1 s; off still acts at once |
 | `deadband` | 0.08 |
 | `max_xy`, `max_z`, `max_yaw` | 0.5 m/s, 0.3 m/s, 1.0 rad/s at full stick |
@@ -213,17 +225,18 @@ Both live in `drone_bringup/launch/` and are installed by the `install(DIRECTORY
 
 | Argument | Values | Default |
 | --- | --- | --- |
-| `source` | `circle`, `mission`, `joy`, `none` (anything else is rejected) | `circle` |
+| `source` | `circle`, `mission`, `none` (anything else is rejected, including the old `joy`) | `circle` |
 | `demo` | `true`, `false`: with `source:=mission`, also run `demo_flight` | `true` |
 | `world` | SDF file name or full path | `multicopter_velocity_control.sdf` |
 
-1. Always, at once: Gazebo, `parameter_bridge` (with `config/gz_bridge.yaml`), `fc_bridge` and `watchdog`. ROS launch gives no ordering between them; that is fine, because `fc_bridge` simply sits frozen until `/clock` arrives.
+0. Before starting anything, the launch checks that every package it needs is found, and that no other `gz sim` runs in your `GZ_PARTITION`; otherwise it stops with the reason. Two sims in one partition share topics, so `fc_bridge` would read both drones in turn and the drone flickers.
+1. Always, at once: Gazebo, `parameter_bridge` (with `config/gz_bridge.yaml`), `fc_bridge` and `safety_manager`. ROS launch gives no ordering between them; that is fine, because `fc_bridge` simply sits frozen until `/clock` arrives.
 2. `source:=circle`: after 5 s of wall time, `setpoint_pub` (takeoff, then circles).
 3. `source:=mission`: `mission`, and `demo_flight` unless `demo:=false`, at once (`demo_flight` retries Takeoff until the rangefinder is up).
-4. `source:=joy`: `joy_node` and `radio_teleop`.
-5. `source:=none`: nothing commands the drone; use it when running a source by hand, such as the keyboard.
-6. All our nodes get `config/sim.yaml` and `use_sim_time: true`. Every source is remapped from `setpoint_velocity` to `/fc/setpoint_velocity`.
-7. Ctrl-C stops everything together.
+4. `source:=none`: nothing flies the drone on its own; fly it with the radio alone, or by hand (keyboard on `/cmd/manual`).
+5. Always: `joy_node` and `radio_teleop`. The real drone never flies without the radio as a backup, so the sim doesn't either. With the Pocket unplugged, `joy_node` waits quietly and picks it up when it appears; `radio_teleop` publishes only while engaged, so it changes nothing until you flip the switch.
+6. All our nodes get `config/sim.yaml` and `use_sim_time: true`. Each source is remapped from `setpoint_velocity` to its own topic: `/cmd/mission` (`setpoint_pub`, `mission`) or `/cmd/radio` (`radio_teleop`).
+7. Ctrl-C stops everything together. Every Python node handles the shutdown race in rclpy (the context can close between two waits), so none of them dies with a traceback.
 
 **`basics.launch.py`: the crash-course exercise**
 
@@ -248,7 +261,8 @@ None of these stop the simulation from working today. The priority says when eac
 | Goto ends short of the target | `mission` | Ends within `pos_tolerance` (0.10 m) of an `fc/odom` target, and `fc/odom` drifts: the sim's 1 m sides came out 0.82–0.91 m | Lower `pos_tolerance`; accept that flow can't do exact distances | Watch |
 | No disarm after an automatic landing | `mission` | Only a successful Land goal disarms; landing after a lost rangefinder or a takeoff timeout leaves the drone armed | Accepted for now (Oct 29): fine in the sim; revisit with arming on hardware (step 7) | Later |
 | One goal at a time, no queue | `mission` | A second Goto is rejected while one runs; clients must wait | A queue, or waypoint lists in one goal, when missions need it | Later |
-| One commander at a time | `sim.launch.py` | `source:=` can't let a mission and a human share control | Command arbitration in `safety_manager` | Next |
+| Mission command gaps under CPU load | `mission` | Twice in the sim its 20 Hz commands paused for more than 0.3 s while a `ros2` CLI started, so `fc_bridge` sent zero for a moment | Watch; if it shows up on the real laptop, raise `source_timeout_s`/`setpoint_timeout_s` a little or move the timer to its own thread | Watch |
+| `mission` sometimes slow to exit | `mission` | Once in 11 Ctrl-Cs (Oct 30, after a radio takeover) it didn't exit within 15 s; not reproduced since | Watch; launch kills it after 15 s anyway | Watch |
 | Radio-as-joystick needs RF off | Pocket | A transmitting radio could command a bench drone | Always use the `INAV-SIM` model copy with Internal RF off | Always |
 | Frame names differ | `fc_bridge`, Gazebo | Commands say `base_link`, the sim says `x3/base_footprint`; harmless until tf is used | Align when tf is introduced | Later |
 | One-off timeout right after the first setpoint | `fc_bridge` | Seen once at startup: `received`, then `timeout` 14 ms later, then fine | Watch for it; if it repeats while setpoints flow, sim time is jumping and the timeout needs a margin | Watch |
@@ -256,23 +270,24 @@ None of these stop the simulation from working today. The priority says when eac
 
 The 5 s start delay of `setpoint_pub` is wall time, which could look risky on a slow machine. It is safe: `setpoint_pub` runs on sim time, so its timer does not tick and its takeoff clock does not start until Gazebo's clock arrives.
 
-**Resolved since Oct 20, 2026:** NaN passing through the clamp (now rejected in `fc_bridge`), the watchdog and `fc_bridge` timeouts disagreeing (both 0.3 s from `sim.yaml`), no odometry in ROS (`/fc/odom`), and the unverified velocity frame (body frame confirmed). Since Oct 26: failsafes tested by hand only (now automated, see below), drone models lost when the container is recreated (now in the `gz-cache` volume), and the arm switch bounce (confirmed with `tools/arm_bounce.py`, debounced by `arm_hold_s` in `radio_teleop`). Since Oct 27: `/fc/odom` published by the bridge instead of `fc_bridge`, and no attitude topic (`fc_bridge` now publishes `fc/odom`, `fc/attitude` and `fc/range`). Since Oct 29: timed takeoff, never landing, and height drift in autonomous flight (the `mission` node); no disarm after landing in the sim (`mission` calls `fc/arm`).
+**Resolved since Oct 20, 2026:** NaN passing through the clamp (now rejected in `fc_bridge`), the watchdog and `fc_bridge` timeouts disagreeing (both 0.3 s from `sim.yaml`), no odometry in ROS (`/fc/odom`), and the unverified velocity frame (body frame confirmed). Since Oct 26: failsafes tested by hand only (now automated, see below), drone models lost when the container is recreated (now in the `gz-cache` volume), and the arm switch bounce (confirmed with `tools/arm_bounce.py`, debounced by `arm_hold_s` in `radio_teleop`). Since Oct 27: `/fc/odom` published by the bridge instead of `fc_bridge`, and no attitude topic (`fc_bridge` now publishes `fc/odom`, `fc/attitude` and `fc/range`). Since Oct 29: timed takeoff, never landing, and height drift in autonomous flight (the `mission` node); no disarm after landing in the sim (`mission` calls `fc/arm`). Since Oct 30: one commander at a time (`safety_manager` arbitrates; the radio overrides a running mission).
 
 ## Tests
 
 The failsafes have automated tests. Run them inside the container:
 
 ```bash
-cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission && colcon test-result --verbose
+cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission drone_safety && colcon test-result --verbose
 ```
 
 | Test file | What it checks |
 | --- | --- |
 | `drone_fc_bridge/test/test_failsafes.py` | `launch_testing`: starts `fc_bridge` alone on the wall clock. Zero with no setpoints; fresh setpoints forwarded; zero within 0.3 s (± 0.15) of the last setpoint; NaN and infinity rejected and timed out; horizontal clamp keeps direction; z and yaw clamped; roll and pitch rates zeroed; sim enable published. Runs on its own domain (199, localhost only), so a running sim does not interfere. |
 | `drone_fc_bridge/test/test_state.py` | `launch_testing`: `fc_bridge` with noise off, fed fake `/X3/odom`. Velocity passes through; xy position is integrated, not copied from the sim; body velocity is rotated by heading; height and attitude from the sim; range is z when level, 2z at 60° roll, `±inf` out of range or upside down. |
-| `drone_mission/test/test_logic.py` | pytest, no ROS: 31 tests, whole flights against a toy drone (height, x, y, yaw) in milliseconds. Takeoff (default and given height; refused without range, above `max_range`, in the air; timeout lands; cancel holds); Goto (forward, relative to heading, a square comes back, refused on the ground and during takeoff and without odometry, aborts when odometry stops, timeout, cancel holds, feedback); Land (preempts Goto, can't be cancelled, refused on the ground); hold corrects sag; tilt; `-inf` = ground; range lost then back, aborting a Goto, or lost too long and blind landing; Land during an autonomous landing; Takeoff waits for a steady range, and a gap restarts the wait; range lost during Takeoff: back to grounded if still on the ground, or holds the height reached, never climbs with no goal. |
+| `drone_mission/test/test_logic.py` | pytest, no ROS: 31 tests (Oct 29), whole flights against a toy drone (height, x, y, yaw) in milliseconds. 37 since Oct 30, with overrides: the goal aborts and the mission goes quiet; goals refused while overridden; control back in the air holds where the pilot left it and takes new goals; back on the ground stays grounded; an override aborts a Land too. Takeoff (default and given height; refused without range, above `max_range`, in the air; timeout lands; cancel holds); Goto (forward, relative to heading, a square comes back, refused on the ground and during takeoff and without odometry, aborts when odometry stops, timeout, cancel holds, feedback); Land (preempts Goto, can't be cancelled, refused on the ground); hold corrects sag; tilt; `-inf` = ground; range lost then back, aborting a Goto, or lost too long and blind landing; Land during an autonomous landing; Takeoff waits for a steady range, and a gap restarts the wait; range lost during Takeoff: back to grounded if still on the ground, or holds the height reached, never climbs with no goal. |
+| `drone_safety/test/test_arbiter.py` | pytest, no ROS: nothing active at start; one source forwarded; the radio takes over from the mission and the mission is dropped; manual beats mission but not radio; control returns once the radio is quiet for the timeout; all quiet is none; unknown sources never forwarded; changes reported once; time going backwards isn't fresh. |
 | `drone_fc_bridge/test/test_services.py` | `launch_testing`: starts armed; `fc/arm` false/true changes the enable topic and `fc/status`; `fc/hold` sends zero despite fresh setpoints, and releasing it follows them again; `fc/status` reports the setpoint age. |
-| `drone_basics_py/test/test_radio_teleop.py` | pytest, no launch: switch off publishes nothing; engage refused with throttle off centre; re-engage needs the throttle centred again; a bounce while arming or disarming never engages; off is immediate; stick scaling, signs and deadband. |
+| `drone_basics_py/test/test_radio_teleop.py` | pytest, no launch: switch off publishes nothing; arm alone or takeover alone does nothing; either off releases at once; the hold counts from the takeover; engaging arms the FC once; engage refused with throttle off centre; re-engage needs the throttle centred again; a bounce while arming or disarming never engages; off is immediate; stick scaling, signs and deadband. |
 
 Breaking the timeout check in `fc_bridge` makes three tests fail (checked Oct 26, 2026).
 
@@ -286,4 +301,4 @@ What the fc\_bridge interface contract asks for that does not exist today. The f
 | `fc/battery` | Topic out | Battery from INAV over MSP; nothing in the sim yet |
 | `backend` and `contract_version` | `fc_bridge` parameters | `backend` selects `sim`, `inav` or `mock` |
 | `inav` backend | `fc_bridge` code | MSP (MultiWii Serial Protocol) over the ESP8266 Wi-Fi link: TCP (Transmission Control Protocol) for bring-up, UDP (User Datagram Protocol) before flight |
-| `safety_manager` | Node | Grows out of the watchdog: hover on timeout, return on low battery |
+| Low-battery action | `safety_manager` | Only warns today; return or land comes with `fc/battery` from the `inav` backend |

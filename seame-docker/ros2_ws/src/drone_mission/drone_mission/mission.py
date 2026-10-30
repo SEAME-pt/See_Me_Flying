@@ -21,7 +21,9 @@ from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import ExternalShutdownException, MultiThreadedExecutor
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile
 from sensor_msgs.msg import Range
+from std_msgs.msg import String
 from std_srvs.srv import SetBool
 
 
@@ -42,6 +44,10 @@ class MissionNode(Node):
         self.pub = self.create_publisher(TwistStamped, 'setpoint_velocity', 10)
         self.create_subscription(Range, 'fc/range', self.on_range, 10, callback_group=group)
         self.create_subscription(Odometry, 'fc/odom', self.on_odom, 10, callback_group=group)
+        # Without a safety_manager nothing arrives here and the mission stays in control.
+        latched = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
+        self.create_subscription(String, 'safety/active_source', self.on_active_source,
+                                 latched, callback_group=group)
         self.arm = self.create_client(SetBool, 'fc/arm', callback_group=group)
         self.create_timer(1.0 / rate, self.tick, callback_group=group)
         self.logged = 0
@@ -72,6 +78,10 @@ class MissionNode(Node):
         p = msg.pose.pose.position
         with self.lock:
             self.mission.on_odom(self.now(), p.x, p.y, yaw, msg.twist.twist.linear.z, up_z)
+
+    def on_active_source(self, msg):
+        with self.lock:
+            self.mission.set_control(self.now(), msg.data in ('mission', 'none'), msg.data)
 
     # Goals
 

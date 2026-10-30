@@ -1,7 +1,8 @@
 """
 Mission state machine, without ROS: feed it measurements, goals and times; ask for a command.
 
-States: grounded -> takeoff -> hold <-> goto -> land -> grounded, plus range_lost.
+States: grounded -> takeoff -> hold <-> goto -> land -> grounded, plus range_lost
+and overridden (another source, such as the radio, has control: see safety_manager).
 One goal at a time (Takeoff, Goto or Land); hold is where it rests in the air,
 publishing altitude hold so fc_bridge never times out between goals.
 Height is the rangefinder (fc/range), tilt-corrected, like INAV's SURFACE mode.
@@ -18,6 +19,7 @@ HOLD = 'hold'
 GOTO = 'goto'
 LAND = 'land'
 RANGE_LOST = 'range_lost'
+OVERRIDDEN = 'overridden'
 AIRBORNE = (TAKEOFF, HOLD, GOTO, LAND, RANGE_LOST)
 
 ACTIVE = 'active'
@@ -90,6 +92,7 @@ class Mission:
         self.goto_limit_s = 0.0
         self.goto_speed = params.speed
         self.lost_from = HOLD                  # state range_lost interrupted
+        self.in_control = True                 # False while another source commands the drone
         self.below_since: Optional[float] = None
         self.stopped_since: Optional[float] = None
         self.transitions: list = []            # (time, from, to), for logs and tests
@@ -128,10 +131,34 @@ class Mission:
     def odom_fresh(self, t: float) -> bool:
         return self.odom_t is not None and t - self.odom_t <= self.p.odom_timeout_s
 
+    def set_control(self, t: float, in_control: bool, by: str = '') -> None:
+        """Another source took over (False), or control came back (True)."""
+        if in_control == self.in_control:
+            return
+        self.in_control = in_control
+        if not in_control:
+            if self.goal is not None:
+                self.finish(ABORTED, f'overridden by {by}')
+            self.go(t, OVERRIDDEN)
+            return
+        # Back in control: never resume a goal or climb on its own. The other
+        # source may have moved or landed the drone, so start from where it is.
+        h = self.height(t)
+        if h is None:
+            self.lost_from = HOLD
+            self.go(t, RANGE_LOST)
+        elif h < self.p.ground_h:
+            self.go(t, GROUNDED)
+        else:
+            self.hold_h = h
+            self.go(t, HOLD)
+
     # Goals: each returns (accepted, reason)
 
     def request_takeoff(self, t: float, height: float = 0.0) -> Tuple[bool, str]:
         target = height if height > 0.0 else self.p.target_h
+        if not self.in_control:
+            return False, 'another source has control'
         if self.state != GROUNDED:
             return False, f'not on the ground ({self.state})'
         if self.height(t) is None or self.range_ok_since is None:
@@ -147,6 +174,8 @@ class Mission:
 
     def request_goto(self, t: float, forward: float, left: float, yaw: float = 0.0,
                      speed: float = 0.0) -> Tuple[bool, str]:
+        if not self.in_control:
+            return False, 'another source has control'
         if self.state != HOLD or self.goal is not None:
             return False, f'only from hold, with no other goal ({self.state})'
         if not self.odom_fresh(t):
@@ -163,6 +192,8 @@ class Mission:
         return True, ''
 
     def request_land(self, t: float) -> Tuple[bool, str]:
+        if not self.in_control:
+            return False, 'another source has control'
         if self.state not in AIRBORNE:
             return False, 'already on the ground'
         if self.goal is not None and self.goal.kind != LAND:
@@ -192,8 +223,8 @@ class Mission:
         elapsed = t - self.phase_start
         p = self.p
 
-        if self.state == GROUNDED:
-            return None
+        if self.state in (GROUNDED, OVERRIDDEN):
+            return None                        # silent: fc_bridge or the other source rules
 
         if self.state in (TAKEOFF, HOLD, GOTO) and h is None:
             if self.goal is not None:

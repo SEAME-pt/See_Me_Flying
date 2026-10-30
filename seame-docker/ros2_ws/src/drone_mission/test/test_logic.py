@@ -9,7 +9,7 @@ move it in x, y, yaw exactly. The rangefinder reads the height (0.04-4.0 m,
 import math
 
 from drone_mission.logic import (ABORTED, CANCELED, GOTO, GROUNDED, HOLD, LAND, Mission,
-                                 Params, RANGE_LOST, SUCCEEDED, TAKEOFF)
+                                 OVERRIDDEN, Params, RANGE_LOST, SUCCEEDED, TAKEOFF)
 
 DT = 0.05
 
@@ -388,3 +388,69 @@ def test_range_lost_mid_takeoff_holds_the_height_reached():
     f.run(5.0)
     assert f.m.state == HOLD
     assert abs(f.plant.h - h) <= 0.05, 'holds where the takeoff was interrupted, no further climb'
+
+
+def test_override_aborts_the_goal_and_goes_quiet():
+    f = Flight()
+    f.takeoff()
+    f.m.request_goto(f.t, 2.0, 0.0)
+    goal = f.m.goal
+    f.run(1.0)
+    f.m.set_control(f.t, False, 'radio')
+    f.run(0.1)
+    assert goal.status == ABORTED and goal.message == 'overridden by radio'
+    assert f.m.state == OVERRIDDEN
+    assert f.cmd is None, 'silent while another source commands'
+
+
+def test_goals_refused_while_overridden():
+    f = Flight()
+    f.m.set_control(f.t, False, 'radio')
+    for ok, why in (f.m.request_takeoff(f.t), f.m.request_goto(f.t, 1.0, 0.0),
+                    f.m.request_land(f.t)):
+        assert not ok and 'another source' in why
+
+
+def test_control_back_in_the_air_holds_where_it_is():
+    f = Flight()
+    f.takeoff()
+    f.m.set_control(f.t, False, 'radio')
+    f.plant.h = 0.7             # the pilot brought it down to 0.7 m
+    f.run(0.5)
+    f.m.set_control(f.t, True)
+    f.run(5.0)
+    assert f.m.state == HOLD
+    assert abs(f.plant.h - 0.7) <= 0.05, 'holds where the pilot left it, no climb back to 1.2'
+    assert f.goto(1.0, 0.0).status == SUCCEEDED, 'and takes new goals'
+
+
+def test_control_back_on_the_ground_stays_grounded():
+    f = Flight()
+    f.takeoff()
+    f.m.set_control(f.t, False, 'radio')
+    f.plant.h = 0.0             # the pilot landed it
+    f.run(0.5)
+    f.m.set_control(f.t, True)
+    f.run(2.0)
+    assert f.m.state == GROUNDED
+    assert f.cmd is None
+    assert f.plant.h == 0.0
+
+
+def test_override_during_land_aborts_it():
+    f = Flight()
+    f.takeoff()
+    f.m.request_land(f.t)
+    goal = f.m.goal
+    f.run(1.0)
+    f.m.set_control(f.t, False, 'manual')
+    assert goal.status == ABORTED and 'manual' in goal.message
+
+
+def test_repeated_control_messages_change_nothing():
+    f = Flight()
+    f.takeoff()
+    n = len(f.m.transitions)
+    f.m.set_control(f.t, True)
+    f.m.set_control(f.t, True)
+    assert len(f.m.transitions) == n

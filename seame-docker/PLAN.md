@@ -13,7 +13,7 @@ After each step, update the README and `SIM_TELEOP.md` tables so they stay accur
 | 3 | State through `fc_bridge`, shaped like INAV with optical flow + rangefinder | Done, Oct 27 |
 | 4 | `mission` node v1: takeoff, hold and land on the rangefinder | Done, Oct 29 |
 | 5 | `drone_interfaces`, and `mission` as an action server | Done, Oct 29 |
-| 6 | `safety_manager`: arbitration and hover | To do |
+| 6 | `safety_manager`: arbitration and hover | Done, Oct 30 |
 | 7 | Prepare `fc_bridge` for hardware | To do |
 | 8 | Later or watch | Later |
 
@@ -87,6 +87,13 @@ Revised Oct 27. The real drone will get a ThoneFlow-3901 (PMW3901 optical flow, 
   - a placeholder hook for low battery.
 - **Removes:** the "one commander at a time" limitation.
 - **Done when:** you can take over a running mission with the sticks, and tests cover the override.
+- **As built (Oct 30):**
+  - `drone_safety` package, `safety_manager` node: the only publisher of `/fc/setpoint_velocity`. Sources publish on `/cmd/radio`, `/cmd/manual`, `/cmd/mission`; the highest-priority one publishing in the last 0.3 s wins, forwarded with no added delay. Active source latched on `safety/active_source`.
+  - The radio takes over by being engaged (arm switch on), since `radio_teleop` only publishes then.
+  - Oct 30, after the first Pocket test: a separate takeover switch (arm and takeover both on to fly), and taking over arms `fc_bridge`, so the radio flies after a Land. On the Pocket: axis 6, −1 when on.
+  - `mission`: new state `overridden`. Losing control aborts the goal; getting it back never resumes or climbs: holds where it is, or stays grounded.
+  - Hover on timeout stays with `fc_bridge` (zero velocity); low battery only warns, since nothing publishes `fc/battery` yet.
+  - `sim.launch.py`: the radio always runs, next to any source, like the real drone (`source:=joy` and `radio:=` removed the same day); the watchdog is replaced. Taking over with the real Pocket is not yet tried; the sim test used `ros2 topic pub` on `/cmd/radio`.
 
 ## 7. Prepare `fc_bridge` for hardware
 

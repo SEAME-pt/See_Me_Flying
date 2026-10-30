@@ -1,6 +1,6 @@
-# Changes: Oct 26–29, 2026
+# Changes: Oct 26–30, 2026
 
-What changed in the drone sim stack while working through steps 1–5 of [PLAN.md](PLAN.md), and why.
+What changed in the drone sim stack while working through steps 1–6 of [PLAN.md](PLAN.md), and why.
 
 | Step | Summary |
 | --- | --- |
@@ -9,6 +9,7 @@ What changed in the drone sim stack while working through steps 1–5 of [PLAN.m
 | 3 | State comes back through `fc_bridge`, shaped like INAV with an optical flow sensor and a rangefinder |
 | 4 | A `mission` node flies takeoff, hold, circle, yaw and landing on its own, with height from the rangefinder |
 | 5 | `mission` takes `Takeoff`, `Goto` and `Land` actions; `fc_bridge` gets `fc/arm`, `fc/hold` and `fc/status` |
+| 6 | `safety_manager` picks which source commands the drone; the radio takes over a running mission |
 
 ## After pulling
 
@@ -21,10 +22,10 @@ docker compose build && docker compose up -d
 Then, inside the container:
 
 ```bash
-cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission && colcon test-result --verbose
+cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission drone_safety && colcon test-result --verbose
 ```
 
-Expected: `78 tests, 0 errors, 0 failures, 2 skipped` with `drone_mission` included. The skipped ones are the templates' copyright checks.
+Expected: `98 tests, 0 errors, 0 failures, 3 skipped` with `drone_mission` included. The skipped ones are the templates' copyright checks.
 
 ## Step 1: tests for the failsafes
 
@@ -149,6 +150,38 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 - Checked: two demos in a row in headless Gazebo, both complete.
 
 **Found, now in the README's known issues:** Goto ends short of the target (tolerance plus drift); one goal at a time with no queue; ROS can arm the sim drone, which must not carry over to hardware; an automatic landing doesn't disarm (accepted for now).
+
+## Step 6: `safety_manager`
+
+**Purpose:** until now exactly one source could run (`source:=`), so a pilot couldn't take over a running mission without restarting the launch. On the real drone that takeover is the main safety feature. Now every source publishes on its own topic and one node decides who reaches `fc_bridge`.
+
+| File | Change | Why |
+| --- | --- | --- |
+| `ros2_ws/src/drone_safety/` | New `ament_python` package: `arbiter.py` (the rule, plain Python), `safety_manager.py` (the node), lint tests | The rule tested on its own, like `mission` |
+| `drone_safety/drone_safety/arbiter.py` | Highest-priority source that published in the last `source_timeout_s` wins: radio > manual > mission | A radio that is engaged always wins; a quiet source hands control back by itself |
+| `drone_safety/drone_safety/safety_manager.py` | The only publisher of `/fc/setpoint_velocity`; forwards the active source's commands as they arrive; latches `safety/active_source`; logs changes; low-battery warning placeholder | Replaces the watchdog in the sim |
+| `drone_safety/test/test_arbiter.py` | 9 tests | See the README Tests table |
+| `drone_mission/drone_mission/logic.py`, `mission.py` | State `overridden`: losing control aborts the goal and goes quiet, goals refused; control back holds where it is or stays grounded. The node listens to `safety/active_source` | The mission must not fight the pilot, nor resume a goal from a place the pilot moved it to |
+| `drone_mission/test/test_logic.py` | 6 more tests (37) | |
+| `drone_bringup/launch/sim.launch.py` | Sources remapped to `/cmd/mission` and `/cmd/radio`; `safety_manager` instead of the watchdog; **the radio always runs**; `source` is now `circle`, `mission` or `none` | The real drone never flies without the radio as a backup, so neither does the sim. `source:=joy` is gone (use `source:=none` to fly with the radio alone) and fails loudly; `radio:=` is gone and ignored |
+| `drone_bringup/config/sim.yaml`, `package.xml` | `safety_manager` parameters instead of the watchdog's; depends on `drone_safety` | |
+
+**Checked:**
+
+- With the priority order reversed, the arbiter tests fail; the 6 override tests cover the mission side.
+- In headless Gazebo (Oct 30), with `ros2 topic pub` on `/cmd/radio` as the radio: the radio took over during a 3 m Goto, which aborted with `overridden by radio`; the drone went from 1.20 m to 0.28 m under "radio" control; afterwards `mission` held at about 0.33 m and landed on request.
+- With the Pocket unplugged, `joy_node` waits quietly and the demo completes; five Ctrl-Cs in a row, every node exits cleanly.
+- **Not yet tried with the real Pocket** (`source:=mission demo:=false`, SIM_TELEOP section 1c).
+
+**Found, now in the README's known issues:** `mission`'s 20 Hz commands paused for over 0.3 s twice while a `ros2` CLI started (CPU load), so `fc_bridge` sent zero for a moment; once in 11 Ctrl-Cs `mission` didn't exit within 15 s, not reproduced since.
+
+**Shutdown race fixed in every Python node:** with the radio nodes always running, `radio_teleop` (and once `safety_manager`) died at Ctrl-C with the same `RCLError` `mission` had: rclpy's handler can close the context between two waits. `safety_manager`, `radio_teleop`, `setpoint_pub` and `demo_flight` now treat it as a normal shutdown.
+
+**Launch guard (Oct 30):** the first Pocket test flickered. The cause was two Gazebo sims, not the radio. A launch run before `drone_safety` was sourced started Gazebo and only then failed on the missing package, leaving that Gazebo running without its launch. The next launch started a second one in the same partition, and `fc_bridge` read both drones' odometry and range in turn. `sim.launch.py` now checks every package it needs before starting anything, and refuses to start while another `gz sim` runs in the same `GZ_PARTITION`. Checked in the container: with `drone_safety` hidden, the launch fails and leaves no Gazebo behind; a second launch next to a running one is refused; a normal launch still starts.
+
+**Takeover switch and re-arming (Oct 30):** in the first Pocket test the radio couldn't fly after a Land: the Land disarms `fc_bridge`, which then ignored the sticks until a Takeoff goal armed it again. And with one switch for both arming and taking over, the radio couldn't be armed and ready without grabbing control. `radio_teleop` now has a second switch, `axis_takeover`: the sticks command only while arm **and** takeover are on, and engaging calls `fc/arm`. On the real drone this matches INAV: the radio arms, and a mode switch chooses between the companion (MSP) and the sticks. On the Pocket it's the shoulder switch opposite SA: `/joy` axis 6, −1 when on (`axis_takeover: 6`, `sign_takeover: -1.0` in `sim.yaml`). 7 more tests in `test_radio_teleop.py` (21); with the `fc/arm` call removed, 2 of them fail. In headless Gazebo with a fake `/joy`: Takeoff, Land (disarmed at 0.05 m), takeover → `Armed (fc/arm)`, climbed to 1.0 m, released → `mission` held at 0.94 m.
+
+**Changed for anyone publishing by hand:** publish on `/cmd/manual`, not `/fc/setpoint_velocity`. The keyboard command in SIM_TELEOP is updated.
 
 ## Docs updated
 

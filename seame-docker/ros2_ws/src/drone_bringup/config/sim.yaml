@@ -6,9 +6,11 @@ fc_bridge:
     max_speed_z: 0.3
     max_yaw_rate: 1.0
 
-watchdog:
+safety_manager:
   ros__parameters:
-    timeout_s: 0.3          # keep equal to fc_bridge setpoint_timeout_s
+    priority: ["radio", "manual", "mission"]   # highest first; topics cmd/<name>
+    source_timeout_s: 0.3   # keep equal to fc_bridge setpoint_timeout_s
+    battery_low: 0.2        # placeholder: only warns
 
 setpoint_pub:
   ros__parameters:
@@ -64,6 +66,8 @@ radio_teleop:
     sign_throttle: -1.0    # joy: up = -1, ROS wants up -> +z
     sign_yaw: 1.0          # joy: right = -1, ROS wants right -> negative yaw
     sign_arm: -1.0         # joy: armed = -1
+    axis_takeover: 6       # the takeover switch (opposite shoulder from SA); -1 = arm alone
+    sign_takeover: -1.0    # joy: on = -1, like the arm switch
     arm_threshold: 0.5
     arm_hold_s: 0.1        # debounce: SA bounces up to ~35 ms (arm_bounce.py, Oct 26)
     deadband: 0.08

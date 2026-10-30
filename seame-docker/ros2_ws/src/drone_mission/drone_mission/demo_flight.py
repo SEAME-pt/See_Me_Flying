@@ -10,6 +10,7 @@ import time
 
 from drone_interfaces.action import Goto, Land, Takeoff
 import rclpy
+from rclpy._rclpy_pybind11 import RCLError
 from rclpy.action import ActionClient
 from rclpy.node import Node
 
@@ -66,6 +67,10 @@ def main(args=None):
         node.run()
     except KeyboardInterrupt:
         pass
+    except RCLError:
+        # Ctrl-C can shut the context down between two waits; not a crash then.
+        if rclpy.ok():
+            raise
     finally:
         node.destroy_node()
         rclpy.try_shutdown()
