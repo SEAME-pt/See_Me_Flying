@@ -77,11 +77,13 @@ jobs:
           python-version: "3.12"
 
       - name: Syntax check
+        if: hashFiles('telemetry/*.py') != ''   # skip when there is no telemetry code yet
         run: |
           python -m py_compile telemetry/*.py
-        # main.py is MicroPython, but its syntax is plain Python 3, so this still works 
+        # main.py is MicroPython, but its syntax is plain Python 3, so this still works
 
       - name: Lint
+        if: hashFiles('telemetry/*.py') != ''
         run: |
           pip install flake8
           flake8 telemetry --max-line-length=140
@@ -104,6 +106,8 @@ jobs:
           push: false
           cache-from: type=gha  # reuse layers from earlier runs: much faster
           cache-to: type=gha,mode=max
+
+  # 4. If any job above fails on a PR, move the PR back to draft so it can't be merged by accident
   block-red-pr:
     needs: [ros2-build-test, telemetry-python, docker-image]
     if: failure() && github.event_name == 'pull_request'
