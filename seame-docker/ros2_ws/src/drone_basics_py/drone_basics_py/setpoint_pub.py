@@ -2,12 +2,13 @@ import math
 
 import rclpy
 from rclpy.executors import ExternalShutdownException
-from rclpy.node import Node
 from geometry_msgs.msg import TwistStamped
+from rclpy.node import Node
 
 
 class SetpointPub(Node):
-    """Takeoff, then circles.
+    """
+    Takeoff, then circles.
 
     Phase 1 (first takeoff_s seconds): climb straight up at climb_speed.
     Phase 2 (after that): fly a horizontal circle at speed, holding height.

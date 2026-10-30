@@ -1,4 +1,5 @@
-"""Whole first flight in one command.
+"""
+Whole first flight in one command.
 
 Order: Gazebo, bridge, fc_bridge and watchdog start together; after 5 s
 (wall time, so Gazebo has loaded), setpoint_pub starts: takeoff, then circles.
