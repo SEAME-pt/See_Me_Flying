@@ -104,3 +104,22 @@ jobs:
           push: false
           cache-from: type=gha  # reuse layers from earlier runs: much faster
           cache-to: type=gha,mode=max
+
+  block-red-pr:
+    needs: [ros2-build-test, telemetry-python, docker-image]
+    if: failure() && github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Convert PR to draft and comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh pr ready "$PR" --undo --repo "$REPO" || echo "Could not convert to draft"
+          gh pr comment "$PR" --repo "$REPO" --body "CI failed, so this PR was moved back to draft. Fix the errors, push, wait for green CI, then click 'Ready for review'. Details: $RUN_URL"
