@@ -93,7 +93,7 @@ Revised Oct 27. The real drone will get a ThoneFlow-3901 (PMW3901 optical flow, 
   - Oct 30, after the first Pocket test: a separate takeover switch (arm and takeover both on to fly), and taking over arms `fc_bridge`, so the radio flies after a Land. On the Pocket: axis 6, −1 when on.
   - `mission`: new state `overridden`. Losing control aborts the goal; getting it back never resumes or climbs: holds where it is, or stays grounded.
   - Hover on timeout stays with `fc_bridge` (zero velocity); low battery only warns, since nothing publishes `fc/battery` yet.
-  - `sim.launch.py`: the radio always runs, next to any source, like the real drone (`source:=joy` and `radio:=` removed the same day); the watchdog is replaced. Taking over with the real Pocket is not yet tried; the sim test used `ros2 topic pub` on `/cmd/radio`.
+  - `sim.launch.py`: the radio always runs, next to any source, like the real drone (`source:=joy` and `radio:=` removed the same day); the watchdog is replaced. Tested with the real Pocket on Oct 30: takeover mid-Goto, release to hold, and re-arming after a Land.
 
 ## 7. Prepare `fc_bridge` for hardware
 

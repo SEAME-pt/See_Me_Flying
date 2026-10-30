@@ -171,7 +171,7 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 - With the priority order reversed, the arbiter tests fail; the 6 override tests cover the mission side.
 - In headless Gazebo (Oct 30), with `ros2 topic pub` on `/cmd/radio` as the radio: the radio took over during a 3 m Goto, which aborted with `overridden by radio`; the drone went from 1.20 m to 0.28 m under "radio" control; afterwards `mission` held at about 0.33 m and landed on request.
 - With the Pocket unplugged, `joy_node` waits quietly and the demo completes; five Ctrl-Cs in a row, every node exits cleanly.
-- **Not yet tried with the real Pocket** (`source:=mission demo:=false`, SIM_TELEOP section 1c).
+- With the real Pocket (Oct 30, SIM_TELEOP section 1c): takeover mid-Goto, release to hold, re-arm and fly after a Land. Works.
 
 **Found, now in the README's known issues:** `mission`'s 20 Hz commands paused for over 0.3 s twice while a `ros2` CLI started (CPU load), so `fc_bridge` sent zero for a moment; once in 11 Ctrl-Cs `mission` didn't exit within 15 s, not reproduced since.
 
