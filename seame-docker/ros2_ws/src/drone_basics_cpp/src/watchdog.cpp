@@ -9,14 +9,15 @@ using namespace std::chrono_literals;
 class Watchdog : public rclcpp::Node
 {
 public:
-  Watchdog() : Node("watchdog")
+  Watchdog()
+  : Node("watchdog")
   {
     timeout_s_ = declare_parameter<double>("timeout_s", 0.5);
     last_rx_ = now();
     sub_ = create_subscription<geometry_msgs::msg::TwistStamped>(
       "setpoint_velocity", rclcpp::SensorDataQoS(),
-      [this](const geometry_msgs::msg::TwistStamped &) { last_rx_ = now(); });
-    timer_ = create_timer(100ms, [this]() { check(); });
+      [this](const geometry_msgs::msg::TwistStamped &) {last_rx_ = now();});
+    timer_ = create_timer(100ms, [this]() {check();});
   }
 
 private:
