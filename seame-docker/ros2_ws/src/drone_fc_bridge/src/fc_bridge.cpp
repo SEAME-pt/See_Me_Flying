@@ -1,6 +1,10 @@
-// fc_bridge v0, sim backend:
-//   fc/setpoint_velocity (TwistStamped) -> clamp + timeout -> Gazebo Twist
-//   Gazebo odometry -> fc/odom, fc/attitude, fc/range
+// fc_bridge v0. Parameter backend:
+//   sim:  fc/setpoint_velocity (TwistStamped) -> clamp + timeout -> Gazebo Twist
+//         Gazebo odometry -> fc/odom, fc/attitude, fc/range
+//   inav: stub for MSP to INAV through the ESP8266. Same topics and services,
+//         but sends nothing yet, and refuses fc/arm: on the real drone only the
+//         radio arms. Nothing of the sim (Gazebo topics, enable) exists here.
+//   Both: fc/arm, fc/hold (std_srvs/SetBool) and fc/status (drone_interfaces/FcStatus)
 //
 // Publishes every tick, not only on new setpoints: Gazebo's velocity
 // controller keeps following the last command it got, so on timeout we
@@ -19,8 +23,10 @@
 #include <memory>
 #include <optional>
 #include <random>
+#include <stdexcept>
 #include <string>
 
+#include "drone_interfaces/msg/fc_status.hpp"
 #include "geometry_msgs/msg/quaternion_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
@@ -28,8 +34,10 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/range.hpp"
 #include "std_msgs/msg/bool.hpp"
+#include "std_srvs/srv/set_bool.hpp"
 
 using namespace std::chrono_literals;
+using drone_interfaces::msg::FcStatus;
 using geometry_msgs::msg::Quaternion;
 using geometry_msgs::msg::QuaternionStamped;
 using geometry_msgs::msg::Twist;
@@ -37,6 +45,7 @@ using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::Odometry;
 using sensor_msgs::msg::Range;
 using std_msgs::msg::Bool;
+using std_srvs::srv::SetBool;
 
 namespace
 {
@@ -66,6 +75,11 @@ public:
   FcBridge()
   : Node("fc_bridge")
   {
+    backend_ = declare_parameter<std::string>("backend", "sim");
+    if (backend_ != "sim" && backend_ != "inav") {
+      throw std::invalid_argument("backend must be sim or inav, not '" + backend_ + "'");
+    }
+    const bool sim = backend_ == "sim";
     const auto gz_twist_topic =
       declare_parameter<std::string>("gz_twist_topic", "/X3/gazebo/command/twist");
     const auto gz_enable_topic =
@@ -82,15 +96,57 @@ public:
     declare_parameter<double>("range_noise", 0.005);    // m
     declare_parameter<double>("range_min", 0.04);       // m, VL53L1X-like
     declare_parameter<double>("range_max", 4.0);        // m
+    // Sim: true when nothing arms it (no radio); the launch sets it. inav: unknown
+    // until MSP reports it, so false.
+    const bool armed_at_start = declare_parameter<bool>("armed_at_start", true);
+    armed_ = sim && armed_at_start;
 
-    cmd_pub_ = create_publisher<Twist>(gz_twist_topic, 10);
-    enable_pub_ = create_publisher<Bool>(gz_enable_topic, 10);
+    if (sim) {
+      cmd_pub_ = create_publisher<Twist>(gz_twist_topic, 10);
+      enable_pub_ = create_publisher<Bool>(gz_enable_topic, 10);
+    }
     odom_pub_ = create_publisher<Odometry>("fc/odom", 10);
     attitude_pub_ = create_publisher<QuaternionStamped>("fc/attitude", 10);
     range_pub_ = create_publisher<Range>("fc/range", 10);
-    sim_odom_sub_ = create_subscription<Odometry>(
-      sim_odom_topic, rclcpp::SensorDataQoS(),
-      [this](const Odometry & msg) {on_sim_odom(msg);});
+    status_pub_ = create_publisher<FcStatus>("fc/status", 10);
+    arm_srv_ = create_service<SetBool>(
+      "fc/arm", [this](SetBool::Request::SharedPtr req, SetBool::Response::SharedPtr res) {
+        if (backend_ != "sim") {
+          // The real drone arms from the radio only; ROS can't arm or disarm it.
+          res->success = false;
+          res->message = "arming is on the radio (backend " + backend_ + ")";
+          RCLCPP_WARN(get_logger(), "fc/arm refused: %s", res->message.c_str());
+          return;
+        }
+        if (armed_ != req->data) {
+          armed_ = req->data;
+          RCLCPP_INFO(get_logger(), armed_ ? "Armed (fc/arm)" : "Disarmed (fc/arm)");
+          keep_enabled();
+          publish_status();
+        }
+        res->success = true;
+        res->message = armed_ ? "armed" : "disarmed";
+      });
+    hold_srv_ = create_service<SetBool>(
+      "fc/hold", [this](SetBool::Request::SharedPtr req, SetBool::Response::SharedPtr res) {
+        if (holding_ != req->data) {
+          holding_ = req->data;
+          RCLCPP_WARN(get_logger(), holding_ ?
+            "Hold on (fc/hold): ignoring setpoints, sending zero" :
+            "Hold off (fc/hold): following setpoints again");
+          publish_status();
+        }
+        res->success = true;
+        res->message = holding_ ? "holding" : "not holding";
+      });
+    if (sim) {
+      sim_odom_sub_ = create_subscription<Odometry>(
+        sim_odom_topic, rclcpp::SensorDataQoS(),
+        [this](const Odometry & msg) {on_sim_odom(msg);});
+    } else {
+      RCLCPP_WARN(get_logger(), "Backend %s: MSP not implemented yet; setpoints go nowhere "
+        "and no state is published", backend_.c_str());
+    }
 
     sub_ = create_subscription<TwistStamped>(
       "fc/setpoint_velocity", rclcpp::SensorDataQoS(),
@@ -108,7 +164,7 @@ public:
     // when use_sim_time is true (and stops while the sim is paused).
     tick_timer_ = create_timer(
       std::chrono::duration<double>(1.0 / rate_hz), [this]() {tick();});
-    enable_timer_ = create_timer(1s, [this]() {keep_enabled();});
+    enable_timer_ = create_timer(1s, [this]() {keep_enabled(); publish_status();});
   }
 
 private:
@@ -117,9 +173,25 @@ private:
   void keep_enabled()
   {
     // Sim only. On the real drone, arming stays on the radio.
+    if (!enable_pub_) {
+      return;
+    }
     Bool msg;
-    msg.data = true;
+    msg.data = armed_;
     enable_pub_->publish(msg);
+  }
+
+  void publish_status()
+  {
+    FcStatus st;
+    st.header.stamp = now();
+    st.backend = backend_;
+    st.armed = armed_;
+    st.holding = holding_;
+    st.following_setpoints = !stale_ && !holding_;
+    st.setpoint_age_s = last_rx_ ? static_cast<float>((now() - *last_rx_).seconds()) : -1.0f;
+    st.range_valid = range_valid_;
+    status_pub_->publish(st);
   }
 
   void tick()
@@ -135,9 +207,14 @@ private:
     } else if (!fresh && !stale_) {
       RCLCPP_WARN(get_logger(), "Setpoint timeout: holding (zero velocity)");
     }
-    stale_ = !fresh;
+    if (stale_ != !fresh) {
+      stale_ = !fresh;
+      publish_status();
+    }
 
-    cmd_pub_->publish(fresh ? clamp(last_sp_) : Twist());
+    if (cmd_pub_) {
+      cmd_pub_->publish(fresh && !holding_ ? clamp(last_sp_) : Twist());
+    }
   }
 
   double noise(double stddev)
@@ -213,6 +290,10 @@ private:
     } else {
       range.range = r;
     }
+    if (range_valid_ != std::isfinite(range.range)) {
+      range_valid_ = std::isfinite(range.range);
+      publish_status();
+    }
     range_pub_->publish(range);
   }
 
@@ -242,13 +323,20 @@ private:
   rclcpp::Publisher<QuaternionStamped>::SharedPtr attitude_pub_;
   rclcpp::Publisher<Range>::SharedPtr range_pub_;
   rclcpp::Subscription<Odometry>::SharedPtr sim_odom_sub_;
+  rclcpp::Publisher<FcStatus>::SharedPtr status_pub_;
+  rclcpp::Service<SetBool>::SharedPtr arm_srv_;
+  rclcpp::Service<SetBool>::SharedPtr hold_srv_;
   rclcpp::Subscription<TwistStamped>::SharedPtr sub_;
   rclcpp::TimerBase::SharedPtr tick_timer_;
   rclcpp::TimerBase::SharedPtr enable_timer_;
 
+  std::string backend_;
   Twist last_sp_;
   std::optional<rclcpp::Time> last_rx_;
   bool stale_{true};
+  bool armed_{true};
+  bool holding_{false};
+  bool range_valid_{false};
 
   std::mt19937 rng_{42};   // fixed seed: the same run drifts the same way
   std::normal_distribution<double> normal_{0.0, 1.0};

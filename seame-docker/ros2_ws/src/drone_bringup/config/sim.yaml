@@ -6,9 +6,11 @@ fc_bridge:
     max_speed_z: 0.3
     max_yaw_rate: 1.0
 
-watchdog:
+safety_manager:
   ros__parameters:
-    timeout_s: 0.3          # keep equal to fc_bridge setpoint_timeout_s
+    priority: ["radio", "manual", "mission"]   # highest first; topics cmd/<name>
+    source_timeout_s: 0.3   # keep equal to fc_bridge setpoint_timeout_s
+    battery_low: 0.2        # placeholder: only warns
 
 setpoint_pub:
   ros__parameters:
@@ -16,6 +18,35 @@ setpoint_pub:
     speed: 0.3
     takeoff_s: 4.0
     climb_speed: 0.3
+
+mission:
+  ros__parameters:
+    rate_hz: 20.0
+    # radio_arms: set by the launch (true unless radio:=false)
+    target_h: 1.2          # m above the ground (fc/range), default Takeoff height
+    tolerance: 0.05
+    kp_z: 1.0
+    max_vz: 0.3            # = fc_bridge max_speed_z
+    land_speed: 0.15
+    ground_h: 0.12         # sim reads about 0.05 on the ground
+    touchdown_s: 1.0
+    speed: 0.3             # default Goto speed
+    kp_xy: 1.0
+    pos_tolerance: 0.10
+    kp_yaw: 1.5
+    yaw_rate: 0.5          # max
+    yaw_tolerance: 0.05
+    goto_margin_s: 10.0
+    range_timeout_s: 0.5
+    ready_s: 1.0           # Takeoff needs this long of range readings without a gap
+    odom_timeout_s: 0.5
+    lost_hold_s: 2.0
+    takeoff_timeout_s: 20.0
+
+demo_flight:
+  ros__parameters:
+    height: 1.2
+    side: 1.0              # m, square side
 
 joy_node:
   ros__parameters:
@@ -35,6 +66,8 @@ radio_teleop:
     sign_throttle: -1.0    # joy: up = -1, ROS wants up -> +z
     sign_yaw: 1.0          # joy: right = -1, ROS wants right -> negative yaw
     sign_arm: -1.0         # joy: armed = -1
+    axis_takeover: 6       # the takeover switch (opposite shoulder from SA); -1 = arm alone
+    sign_takeover: -1.0    # joy: on = -1, like the arm switch
     arm_threshold: 0.5
     arm_hold_s: 0.1        # debounce: SA bounces up to ~35 ms (arm_bounce.py, Oct 26)
     deadband: 0.08
