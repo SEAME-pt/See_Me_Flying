@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  push:
+    branches: [main, Develop, test, 'ci/**'] # run on pushes to main, Develop, test, and any branch under ci/
+  pull_request:
+    branches: [main, Develop, test, 'ci/**'] # run on PRs targeting main, Develop, test, and any branch under ci/
+  workflow_dispatch:            # "Run workflow" button in the Actions tab
+
+concurrency:                    # a new push cancels the older run on the same branch
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # 1. ROS 2 workspace: build and test on a clean Jazzy image
+  ros2-build-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    container:
+      image: ros:jazzy
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    defaults:
+      run:
+        shell: bash
+        working-directory: seame-docker/ros2_ws
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install build and test dependencies
+        # Only what building and testing needs: skips runtime-only deps such as
+        # Gazebo (ros_gz_sim, ros_gz_bridge), which makes the job much faster.
+        run: |
+          apt-get update
+          rosdep update --rosdistro jazzy
+          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy \
+            --dependency-types build \
+            --dependency-types buildtool \
+            --dependency-types build_export \
+            --dependency-types test
+
+      - name: Build
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build --event-handlers console_direct+
+
+      - name: Test
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          source install/setup.bash
+          colcon test --event-handlers console_direct+
+          colcon test-result --verbose
+
+      - name: Upload test results
+        if: always()            # keep the reports even when tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: ros2-test-results
+          path: seame-docker/ros2_ws/build/*/test_results
+          if-no-files-found: ignore
+
+  # 2. telemetry/: plain Python, not a ROS package, so job 1 never sees it
+  telemetry-python:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Syntax check
+        if: hashFiles('telemetry/*.py') != ''   # skip when there is no telemetry code yet
+        run: |
+          python -m py_compile telemetry/*.py
+        # main.py is MicroPython, but its syntax is plain Python 3, so this still works
+
+      - name: Lint
+        if: hashFiles('telemetry/*.py') != ''
+        run: |
+          pip install flake8
+          flake8 telemetry --max-line-length=140
+
+  # 3. Dev container: proves the Dockerfile still builds from scratch (STK-2)
+  docker-image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build the dev image (not pushed anywhere)
+        uses: docker/build-push-action@v6
+        with:
+          context: seame-docker
+          push: false
+          cache-from: type=gha  # reuse layers from earlier runs: much faster
+          cache-to: type=gha,mode=max
+
+  # 4. If any job above fails on a PR, move the PR back to draft so it can't be merged by accident
+  block-red-pr:
+    needs: [ros2-build-test, telemetry-python, docker-image]
+    if: failure() && github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Convert PR to draft and comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh pr ready "$PR" --undo --repo "$REPO" || echo "Could not convert to draft"
+          gh pr comment "$PR" --repo "$REPO" --body "CI failed, so this PR was moved back to draft. Fix the errors, push, wait for green CI, then click 'Ready for review'. Details: $RUN_URL"
