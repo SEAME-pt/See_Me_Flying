@@ -9,12 +9,6 @@
 // Publishes every tick, not only on new setpoints: Gazebo's velocity
 // controller keeps following the last command it got, so on timeout we
 // must actively send zero. That explicit zero is the failsafe.
-//
-// State is shaped like what INAV reports with optical flow + rangefinder,
-// not like the perfect pose Gazebo knows: horizontal position is integrated
-// from noisy velocity and drifts, and height comes from a rangefinder with
-// limits. Code above fc_bridge then can't come to rely on what the real
-// drone won't have.
 
 #include <algorithm>
 #include <chrono>
