@@ -1,12 +1,9 @@
-# FPV Video Receiver Setup: UVC Receiver to ROS 2
-
-Oct 26, 2026 · @Someone
-
+---
+title: ROS and Video communication
+---
 ## Overview
 
 The drone's analog camera now reaches ROS 2. A USB receiver on the ground computer picks up the 5.8 GHz signal, and `usb_cam` inside the container publishes it as `/image_raw` at about 25 Hz.
-
-&#91;embedded content: video path · drone to ROS 2\]
 
 Frames flow one way, from the drone to `/image_raw`. The dashed perception node does not exist yet; it is the next step.
 
@@ -181,3 +178,7 @@ The video reaches ROS at the right rate, but nothing is measured end to end, sav
 | Raw video is about 20.7 MB/s | Large bags; heavy for the Raspberry Pi 5 or a network link | Record short bags, or the compressed topic from `image_transport` |
 
 After these, the next step is a perception node: subscribe to `/image_raw`, convert with `cv_bridge` to OpenCV, and log each frame's age from `header.stamp`.
+
+# Tags
+
+#guides 
