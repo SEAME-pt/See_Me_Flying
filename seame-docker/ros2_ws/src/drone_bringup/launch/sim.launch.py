@@ -90,7 +90,10 @@ def setup(context):
         parameters=[params, clock], output='screen',
     ))
 
-    if source == 'circle':
+    # demo:=true runs a scripted flight for the source; without it nothing flies
+    # until someone sends a goal or takes the sticks.
+    demo = arg('demo') == 'true'
+    if source == 'circle' and demo:
         # Takeoff then circles, 5 s after the rest. On a timer, not on arming:
         # with radio:=true, arm before it starts.
         actions.append(TimerAction(period=5.0, actions=[Node(
@@ -98,15 +101,15 @@ def setup(context):
             remappings=TO_MISSION, parameters=[params, clock], output='screen',
         )]))
     elif source == 'mission':
-        # Takeoff, Goto and Land action servers on the rangefinder, and (demo:=true)
-        # demo_flight: takeoff, a square, land. demo_flight retries Takeoff until
-        # the rangefinder is up and the drone is armed.
+        # Takeoff, Goto and Land action servers on the rangefinder, always; with
+        # demo:=true also demo_flight: takeoff, a square, land. demo_flight retries
+        # Takeoff until the rangefinder is up and the drone is armed.
         actions.append(Node(
             package='drone_mission', executable='mission',
             remappings=TO_MISSION, output='screen',
             parameters=[params, clock, {'radio_arms': radio_arms}],
         ))
-        if arg('demo') == 'true':
+        if demo:
             actions.append(Node(
                 package='drone_mission', executable='demo_flight',
                 parameters=[params, clock], output='screen',
@@ -132,15 +135,17 @@ def generate_launch_description():
         DeclareLaunchArgument('backend', default_value='sim', choices=['sim', 'inav'],
                               description='sim: Gazebo. inav: the real drone over MSP '
                                           '(stub: nothing sent yet)'),
-        DeclareLaunchArgument('source', default_value='circle',
+        DeclareLaunchArgument('source', default_value='mission',
                               choices=['circle', 'mission', 'none'],
-                              description='What flies the drone on its own; the radio '
-                                          'overrides it'),
+                              description='What commands the drone besides the radio: '
+                                          'mission (action servers), circle (setpoint_pub, '
+                                          'demo only) or none'),
         DeclareLaunchArgument('radio', default_value='true', choices=['true', 'false'],
                               description='Sim only. false: no RadioMaster (someone else has '
                                           'it); the mission arms the drone itself'),
-        DeclareLaunchArgument('demo', default_value='true', choices=['true', 'false'],
-                              description='With source:=mission, also run demo_flight'),
+        DeclareLaunchArgument('demo', default_value='false', choices=['true', 'false'],
+                              description='Fly a scripted demo: the square (source:=mission) '
+                                          'or the circle (source:=circle)'),
         DeclareLaunchArgument('world', default_value='multicopter_velocity_control.sdf',
                               description='Sim only: SDF world file name or full path'),
         # Everything else is decided once the arguments are known, and checked

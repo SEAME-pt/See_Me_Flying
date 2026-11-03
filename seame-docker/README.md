@@ -6,7 +6,7 @@ For setup, see [`GUIDE.md`](GUIDE.md). To fly the sim with the keyboard or the R
 
 ## System overview
 
-This is what runs today in the simulation, as started by `ros2 launch drone_bringup sim.launch.py source:=circle|mission|none`. The `source` argument chooses what flies the drone on its own (default `circle`). The RadioMaster Pocket is **always** there as the override, like on the real drone: engaged, it takes over from any source. Acronyms are spelled out the first time they appear.
+This is what runs today in the simulation, as started by `ros2 launch drone_bringup sim.launch.py source:=circle|mission|none`. The `source` argument chooses what commands the drone besides the radio (default `mission`: the action servers, idle until a goal arrives); `demo:=true` adds a scripted flight. The RadioMaster Pocket is **always** there as the override, like on the real drone: engaged, it takes over from any source. Acronyms are spelled out the first time they appear.
 
 &#91;embedded content: sim stack · 4 hops for setpoints, clock back to fc\_bridge\]
 
@@ -18,9 +18,9 @@ Setpoints travel one way: the sources (`mission` or `setpoint_pub`, `radio_teleo
 | `parameter_bridge` | C++ | `ros_gz_bridge` (apt) | `sim.launch.py` |
 | `fc_bridge` | C++ | `drone_fc_bridge` (ours) | `sim.launch.py` |
 | `safety_manager` | Python | `drone_safety` (ours) | `sim.launch.py` |
-| `setpoint_pub` | Python | `drone_basics_py` (ours) | `sim.launch.py source:=circle`, 5 s after the rest |
-| `mission` | Python | `drone_mission` (ours) | `sim.launch.py source:=mission` |
-| `demo_flight` | Python | `drone_mission` (ours) | `sim.launch.py source:=mission` (unless `demo:=false`) |
+| `setpoint_pub` | Python | `drone_basics_py` (ours) | `sim.launch.py source:=circle demo:=true`, 5 s after the rest |
+| `mission` | Python | `drone_mission` (ours) | `sim.launch.py` (`source:=mission` is the default) |
+| `demo_flight` | Python | `drone_mission` (ours) | `sim.launch.py demo:=true` (with `source:=mission`) |
 | `joy_node` | C++ | `joy` (apt) | `sim.launch.py`, always |
 | `radio_teleop` | Python | `drone_basics_py` (ours) | `sim.launch.py`, always |
 | `teleop_twist_keyboard` | Python | `teleop_twist_keyboard` (apt) | By hand, with `source:=none` |
@@ -229,17 +229,17 @@ Both live in `drone_bringup/launch/` and are installed by the `install(DIRECTORY
 | Argument | Values | Default |
 | --- | --- | --- |
 | `backend` | `sim`: Gazebo. `inav`: the real drone over MSP (stub: nothing is sent yet). No Gazebo, bridge, radio nodes or sim time with `inav` | `sim` |
-| `source` | `circle`, `mission`, `none` (anything else is rejected, including the old `joy`) | `circle` |
+| `source` | `mission` (action servers), `circle` (`setpoint_pub`, only with `demo:=true`), `none` (anything else is rejected, including the old `joy`) | `mission` |
 | `radio` | `true`, `false`. Sim only. `false`: no Pocket (someone else has it): no radio nodes, `fc_bridge` starts armed and `mission` arms on Takeoff and disarms after Land | `true` |
-| `demo` | `true`, `false`: with `source:=mission`, also run `demo_flight` | `true` |
+| `demo` | `true`, `false`: fly a scripted demo, the square (`demo_flight`, with `source:=mission`) or the circle (`setpoint_pub`, with `source:=circle`). Without it nothing flies until a goal is sent or the radio takes over | `false` |
 | `world` | Sim only: SDF file name or full path | `multicopter_velocity_control.sdf` |
 
 Everything is decided in one function once the arguments are known (`OpaqueFunction`), so switching sim and real is one argument, never a node.
 
 0. Before starting anything, the launch checks that every package it needs is found, and (sim only) that no other `gz sim` runs in your `GZ_PARTITION`; otherwise it stops with the reason. Two sims in one partition share topics, so `fc_bridge` would read both drones in turn and the drone flickers.
 1. Always, at once: `fc_bridge` and `safety_manager`, plus Gazebo and `parameter_bridge` (with `config/gz_bridge.yaml`) with `backend:=sim`. ROS launch gives no ordering between them; that is fine, because `fc_bridge` simply sits frozen until `/clock` arrives.
-2. `source:=circle`: after 5 s of wall time, `setpoint_pub` (takeoff, then circles). It runs on a timer, not on arming: with the radio, arm before it starts, or use `radio:=false`.
-3. `source:=mission`: `mission`, and `demo_flight` unless `demo:=false`, at once (`demo_flight` retries Takeoff for 2 minutes, until the rangefinder is up and you've armed with the radio).
+2. `source:=circle demo:=true`: after 5 s of wall time, `setpoint_pub` (takeoff, then circles). Without `demo:=true`, `source:=circle` starts nothing. It runs on a timer, not on arming: with the radio, arm before it starts, or use `radio:=false`.
+3. `source:=mission` (the default): `mission`, idle until a goal arrives; with `demo:=true` also `demo_flight`, at once (`demo_flight` retries Takeoff for 2 minutes, until the rangefinder is up and you've armed with the radio).
 4. `source:=none`: nothing flies the drone on its own; fly it with the radio alone, or by hand (keyboard on `/cmd/manual`).
 5. With `backend:=sim` and `radio:=true` (the default): `joy_node` and `radio_teleop`. The real drone never flies without the radio as a backup, and only the radio arms it, so the sim does the same. With the Pocket unplugged, `joy_node` waits quietly and picks it up when it appears; until you arm, nothing flies.
 6. All our nodes get `config/sim.yaml`, and `use_sim_time` true with `sim` (false with `inav`). Each source is remapped from `setpoint_velocity` to its own topic: `/cmd/mission` (`setpoint_pub`, `mission`) or `/cmd/radio` (`radio_teleop`).

@@ -209,6 +209,18 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 
 **Changed for everyone:** the drone starts disarmed. Arm with SA (throttle centred), or launch with `radio:=false`.
 
+## Nov 3: nothing flies by itself unless asked
+
+**Purpose:** a plain launch, for example `radio:=false` to fly by hand, took off and circled on its own, because `source` defaulted to `circle` and `demo` only applied to the mission.
+
+| File | Change |
+| --- | --- |
+| `drone_bringup/launch/sim.launch.py` | `demo:=true` now gates every scripted flight: the circle (`source:=circle`) and the square (`demo_flight`, `source:=mission`). `demo` defaults to `false`, `source` to `mission` (the action servers, idle until a goal). `source:=circle` without `demo:=true` starts nothing |
+
+**Changed for everyone:** the old default `ros2 launch drone_bringup sim.launch.py` (circle) is now `... source:=circle demo:=true`; the mission demo is `... demo:=true`; `source:=mission demo:=false` is now just `ros2 launch drone_bringup sim.launch.py`.
+
+**Checked** (launch only, which nodes start): `radio:=false` → `mission` only; `+ demo:=true` → `+ demo_flight`; `source:=circle radio:=false` → no flight node; `+ demo:=true` → `setpoint_pub`; no arguments → `mission` and the radio nodes.
+
 ## Docs updated
 
 - `README.md`: `fc_bridge` section (state topics and parameters), bridge table, `radio_teleop` debounce, a **Tests** section, known issues and the resolved list.

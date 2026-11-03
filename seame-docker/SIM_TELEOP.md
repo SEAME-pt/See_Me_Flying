@@ -10,7 +10,7 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
 | --- | --- | --- |
 | Parameters | Every node reads its settings from one YAML file. The `safety_manager` and `fc_bridge` timeouts agree (0.3 s). | `drone_bringup/config/sim.yaml` |
 | Bridge | The Gazebo bridge topics moved from command-line arguments to YAML | `drone_bringup/config/gz_bridge.yaml` |
-| Launch | `source:=circle\|mission\|none` chooses what flies on its own (`joy` removed Oct 30: the radio always runs); `radio:=`, `backend:=`, `world:=` | `drone_bringup/launch/sim.launch.py` |
+| Launch | `source:=mission\|circle\|none` chooses what commands the drone besides the radio (`joy` removed Oct 30: the radio always runs); `demo:=true` for a scripted flight (Nov 3: off by default); `radio:=`, `backend:=`, `world:=` | `drone_bringup/launch/sim.launch.py` |
 | State | Odometry of the X3 is visible in ROS: Gazebo's true pose on `/X3/odom`, and what the stack sees on `fc/odom`, `fc/attitude`, `fc/range` from `fc_bridge` (Oct 27: shaped like optical flow + rangefinder, xy drifts) | `gz_bridge.yaml`, `fc_bridge.cpp` |
 | Safety | `fc_bridge` rejects setpoints containing NaN or infinity | `drone_fc_bridge/src/fc_bridge.cpp` |
 | Teleop | Keyboard teleop (`teleop_twist_keyboard`) | `Dockerfile` |
@@ -24,8 +24,8 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
 ## How it fits together
 
 ```
-   source:=circle   setpoint_pub ─────────────────────────────┐
-   source:=mission  demo_flight → actions → mission ───────────┼─► /cmd/mission  (3)
+   source:=circle   setpoint_pub (demo:=true) ────────────────┐
+   source:=mission  [demo_flight →] actions → mission ─────────┼─► /cmd/mission  (3)
    radio:=true        Pocket → joy_node → radio_teleop ─────────► /cmd/radio    (1)
                       (SA arms/disarms through fc/arm; takeover sends sticks)
    by hand: keyboard or ros2 topic pub ───────────────────────────► /cmd/manual   (2)
@@ -78,7 +78,7 @@ You may see `groups: cannot find name for group ID 990` (and `994`) when enterin
 ### 1. Circle flight (the old behaviour)
 
 ```bash
-ros2 launch drone_bringup sim.launch.py radio:=false   # source:=circle is the default
+ros2 launch drone_bringup sim.launch.py source:=circle demo:=true radio:=false
 ```
 
 Takeoff, then circles. With the radio instead, arm within 5 s of the launch: `setpoint_pub` starts on a timer. In a second terminal:
@@ -92,14 +92,14 @@ python3 ~/ros2_ws/tools/odom_yaw.py /X3/odom
 ### 1b. Mission (Takeoff, Goto and Land actions on the rangefinder)
 
 ```bash
-ros2 launch drone_bringup sim.launch.py source:=mission
+ros2 launch drone_bringup sim.launch.py demo:=true
 ```
 
 `demo_flight` takes off to 1.2 m, flies a 1 m square (forward, quarter turn left, four times) and lands. Arm with SA (throttle centred) within 2 minutes; with `radio:=false` it goes by itself.
 
 **Expect** in the launch log: a few `takeoff rejected: no rangefinder reading`, `rangefinder not steady yet` or `not armed: arm with the radio`, then `takeoff accepted`, `State: grounded -> takeoff`, `takeoff -> hold` at about 1.16 m, eight `goto: ok`, `land: ok`, `Demo done`. With `radio:=false` also `Disarmed (fc/arm)` after the landing; with the radio it stays armed until you flip SA off. With `odom_yaw.py /X3/odom`: z at 1.20 m throughout, a square of about 0.85 m sides, back to about 0.05 m.
 
-**Sending goals by hand:** start with `source:=mission demo:=false`, arm with SA (or add `radio:=false`), then in a second container terminal:
+**Sending goals by hand:** start with `ros2 launch drone_bringup sim.launch.py` (the mission servers, no demo), arm with SA (or add `radio:=false`), then in a second container terminal:
 
 ```bash
 ros2 action send_goal /mission/takeoff drone_interfaces/action/Takeoff "{height: 1.0}" --feedback
@@ -118,7 +118,7 @@ Ctrl-C on a Takeoff or Goto cancels it (the drone holds); a Land can't be cancel
 ### 1c. Mission with the radio as override
 
 ```bash
-ros2 launch drone_bringup sim.launch.py source:=mission demo:=false
+ros2 launch drone_bringup sim.launch.py
 ```
 
 Arm with SA, take off and start a long Goto (see "Sending goals by hand" above):
