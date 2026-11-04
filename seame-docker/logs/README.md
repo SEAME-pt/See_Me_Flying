@@ -33,7 +33,7 @@ A clean build and `colcon test` inside the container, with the same commands as 
 
 The report compares with the previous run: new tests, tests gone, and any test whose result changed. `history.csv` columns: run, date, commit, dirty, verdict, cases, passed, skipped, failed, behaviour, lint, build_s, test_s.
 
-Commit the run folder together with the code it tested, or right after, so the history stays in the repo. A run is about 20 KB.
+Commit the run folder together with the code it tested, or right after, so the history stays in the repo. A run is about 60 KB.
 
 ## Measurements
 
