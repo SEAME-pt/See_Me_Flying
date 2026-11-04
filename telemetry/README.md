@@ -1,3 +1,6 @@
+---
+title: ESP12 Setup
+---
 # Setting up INAV'S telemetry
 
 ## ESP12
@@ -180,3 +183,12 @@ These three overlap. `inav_status` is the most complete, so you can remove the o
 |`inav_analog.full_when_plugged_in`|Whether the battery was detected as full at power-up|True / False|
 |`inav_analog.uses_capacity_thresholds`|Whether warnings use capacity instead of voltage|True / False|
 |`inav_analog.rssi_pct`|Radio signal strength|percent, 0–100|
+
+# How to connect to drone's wi-fi
+
+First connect the battery to the drone, a few seconds after, a wi-fi network SSID chosen with `main.py` should appear, connect that and it's done.
+
+# Tags
+
+#guides 
+#firmware 

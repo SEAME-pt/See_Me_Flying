@@ -1,0 +1,224 @@
+{
+  "main": {
+    "id": "4eb93a86c80e046b",
+    "type": "split",
+    "children": [
+      {
+        "id": "0577cfb80a73a9b3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8aaf281dcc7324fc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Wanhao_Duplicator_12-230.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Wanhao_Duplicator_12-230"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "dcdb0dd88bc901ff",
+    "type": "split",
+    "children": [
+      {
+        "id": "d36a2a82e0d01ab2",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "865d3e27ac136935",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "4f1065678381a9d5",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "f841dcb8ceebd618",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "ce485cfa0e415267",
+    "type": "split",
+    "children": [
+      {
+        "id": "9cbf85c3d91b3465",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5957c48d4ba34a79",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "README.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "1310911282eb4d16",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "README.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "a43d8fa69494dd8f",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "4da7618506aada00",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "81a6392c162da38f",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "README.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "8aaf281dcc7324fc",
+  "lastOpenFiles": [
+    "Sources.md",
+    "Wanhao_Duplicator_12-230.md",
+    "ELRS_Guide.md",
+    "sprints/README.md",
+    "Doc-ROS2/Drone-SIM-Stack.md",
+    "Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md",
+    "README.md",
+    "sprints/sprint_0.md",
+    "sprints/sprint_1.md",
+    "Drone_Firmware_Choices.md",
+    "pull_request_template.md",
+    "Li-Po_Battery_Tests.md",
+    "INAV.md",
+    "extras/Drone_XYZ_INAV_Calibration.txt",
+    "Drone_XYZ_INAV_Calibration.txt",
+    "Drone_XYZ_INAV_Calibration.md",
+    "extras/Drone_INAV_Backup_26_10_26.txt",
+    "Drone_INAV_Backup_26_10_26.txt",
+    "Drone_INAV_Backup_26_10_26.md",
+    "extras/Drone_Betaflight_Backup.txt",
+    "Drone_Betaflight_Backup.md",
+    "Drone_Betaflight_Backup.txt",
+    "limitations.md",
+    "extras/wanhao12-230_MOUNT.ini",
+    "Wanhao Duplicator 12-230.md",
+    "extras/ESC_configurator_log.txt",
+    "extras/receiver_crsf_ping.py",
+    "extras/ODDITYRCF7AIO_inav_9.1.0_v2.zip",
+    "extras/ESC_settings.png",
+    "sprints/ALL_1-4.md"
+  ]
+}

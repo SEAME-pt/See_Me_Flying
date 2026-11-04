@@ -41,4 +41,7 @@ The original **custom INAV target** had a bug regarding the gyro, present only i
 | failsafe\_procedure | DROP, 1.5 s guard | Disarm on radio loss |
 | msp\_override\_failsafe | OFF | Wi-Fi path cannot keep the drone flying on radio loss |
 | vbat\_warning\_cell\_voltage / vbat\_min\_cell\_voltage | 3.50 V / 3.30 V | With 100% sag compensation |
+# Tags
+
+#firmware
 

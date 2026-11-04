@@ -1,3 +1,6 @@
+---
+title: Simulation
+---
 # Nodes Information: Drone Sim Stack
 
 Oct 20, 2026 · @Someone · updated Oct 23, 2026
@@ -188,3 +191,7 @@ The 5 s start delay of `setpoint_pub` is wall time, which could look risky on a 
 
 **Resolved since Oct 20, 2026:** NaN passing through the clamp (now rejected in `fc_bridge`), the watchdog and `fc_bridge` timeouts disagreeing (both 0.3 s from `sim.yaml`), no odometry in ROS (`/fc/odom`), and the unverified velocity frame (body frame confirmed).
 
+# Tags
+
+#firmware 
+#hardware 

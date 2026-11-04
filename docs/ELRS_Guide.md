@@ -149,3 +149,8 @@ Link quality (**RQly**, **TQly**), signal strength (**1RSS**) and the drone’s 
 
 One motor (left unscrewed so the USB-C cable could reach the port) began running visibly slower. Its wire sleeve was found to be damaged, and a single copper wire had been severed near the coils. Arming tests were put on hold for further inspection. A right-angle USB-C cable will be employed in the future to avoid the clash.  
 A pack left connected to the drone discharged too far, and the charger’s safety procedure refused it. Battery-off-after-use was added to the checklist.
+
+# Tags
+
+#guides
+#firmware 

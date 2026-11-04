@@ -1,3 +1,6 @@
+---
+title: Project Overview
+---
 # See Me Flying — Autonomous Indoor Drone
 
 SEA:ME 2.0 drone track · Team 4 · last updated Oct 27, 2026
@@ -115,7 +118,7 @@ ros2 launch drone_bringup sim.launch.py
 
 Gazebo opens, the drone climbs for 4 s at 0.3 m/s, then flies circles of 0.6 m radius. On the `test` branch the launch also takes `source:=circle|joy|none` (circle flight, RadioMaster Pocket via USB, or keyboard/manual) and `world:=<sdf>`.
 
-Full setup and troubleshooting: [`seame-docker/GUIDE.md`](seame-docker/GUIDE.md).
+Full setup and troubleshooting: [SEA:ME Docker Guide](./seame-docker/GUIDE.md).
 
 | Daily task | Command |
 | --- | --- |
@@ -173,7 +176,7 @@ Wiring plan (Sprint 0): ESP8266 → **UART1** (5 V), ThoneFlow → **UART4** (3.
 - **Calibration:** accelerometer gains X 4096 / Y 4098 / Z 4095; board alignment fixed from the Sensors tab.
 - **Motors:** DSHOT300, 12 poles, props-out, Bluejay ESCs.
 
-Backups: [`docs/Drone_INAV_Backup_26_10_26.md`](docs/Drone_INAV_Backup_26_10_26.md) (current) and [`docs/Drone_Betaflight_Backup.md`](docs/Drone_Betaflight_Backup.md) (original). Reasoning: [`docs/Drone_Firmware_Choices.md`](docs/Drone_Firmware_Choices.md).
+Backups: `docs/extras/Drone_Inav_Backup_26_10_26.txt` (current) and `docs/extras/Drone_Betaflight_Backup.txt`. Reasoning: [`docs/Drone_Firmware_Choices.md`](docs/Drone_Firmware_Choices.md).
 
 ## Telemetry over Wi-Fi
 
@@ -218,7 +221,7 @@ USB UVC receiver on the ground computer (`/dev/video2`) → `usb_cam` in the con
 - `safety_manager` (grows out of the watchdog) and `mission` node (takeoff, waypoints, landing; replaces `setpoint_pub`)
 - Perception node on `/image_raw`; optical-flow position hold indoors
 
-Sprint docs: [`docs/sprints/`](docs/sprints/).
+Sprint docs: [Sprints](./docs/sprints/README.md)
 
 ## Team
 
@@ -252,4 +255,8 @@ Sprint docs: [`docs/sprints/`](docs/sprints/).
 
 ## Sources
 
-PX4 PMW3901 docs · Pilotix Brook · OddityRC F7 40A AIO · MicroPython ESP8266 · Wanhao D12/230 · INAV docs — links in [`docs/Sources.md`](docs/Sources.md).
+PX4 PMW3901 docs · Pilotix Brook · OddityRC F7 40A AIO · MicroPython ESP8266 · Wanhao D12/230 · INAV docs — links in [sources file](./docs/Sources.md).
+
+# Tags
+
+#resources 
