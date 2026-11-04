@@ -1,10 +1,13 @@
+---
+title: Sprint 0
+---
 # Sprint 0 — Onboarding & Baseline
 
 - **Period:** 6 October – 16 October 2026
 - **Duration:** 2 weeks
 - **Phase:** Onboarding & Baseline
 
-### [Documents the selection of INAV 9.1.1 as the drone’s flight firmware, custom flight controller target configuration, sensor calibration, safety switch setup, and the technical challenges encountered during setup.](../../.assets/Hardware_software%20choices%20for%20Drone.md)
+### [Documents the selection of INAV 9.1.1 as the drone’s flight firmware, custom flight controller target configuration, sensor calibration, safety switch setup, and the technical challenges encountered during setup.](../Drone_Firmware_Choices.md)
 
 ## 1. Sprint Objective
 
@@ -21,7 +24,7 @@ The sprint also establishes the initial drone architecture, communication paths,
 
 ### 2.1 Hardware
 
-![Diagram](../../.assets/diagram.png)
+![Diagram](../extras/wire_diagram.png)
 
 - Drafted the initial wiring plan covering the camera, Wi-fi module and optical flow sensor.
 - Defined the ESP8266 to UART1, and the ThoneFlow sensor to UART4, leaving UART6 free for eventual hardware add-on.
@@ -83,3 +86,9 @@ The intended behavior is to detect command loss and trigger a predefined safe re
 ## 7. Sprint Outcome
 
 Sprint 0 established the initial hardware plan, shared software environment, command-monitoring concept, and system architecture. These provide the baseline for moving into implementation, integration, and validation in the following sprints.
+
+# Tags
+
+#sprints
+#hardware 
+#firmware 

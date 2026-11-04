@@ -1,4 +1,6 @@
-
+---
+title: Hardware Overview
+---
 The hardware given to us is very straightforward, a Pilotix Brook 2.5" fully equiped and ready to fly. Some supporting tools were also given to us, a RadioMaster Pocket controller and some modules, namely, a PMW 3901 sensor and an ESP12-E WiFi module.
 
 ## The Drone
@@ -13,7 +15,7 @@ This is the flight controller, every drone needs one, it's like the motherboard 
 
 This specific board came flashed with Betaflight, a great program for FPV not so much for an autonomous drone so we took the liberty to flash it with another compatible software called [[INAV]] which can communicate with the [[UART interfaces]] and also be used of autonomous flying
 
-### Video transmission system
+### [Video transmission system](./Video_Transmission.md)
 
 #### Caddx Ratel 2
 
@@ -27,7 +29,7 @@ A video transmission antenna that, in normal FPV use, exists so the pilot can se
 
 A powerfull video transmitter with more than enough range for our use case
 
-### ELRS Receiver
+### [ELRS Receiver](./ELRS_Guide.md)
 
 The ELRS Reicever that came soldered into our drone is quite the mystery, in most listing for this drone it says "ELRS 2.4GHz" which is true, we know this because we can connect to the drone through ELRS using the RadioMaster Pocket. We couldn't figure out any brand or 
 
@@ -49,7 +51,7 @@ This sensor has a very small notch on the "camera", that notch points to the bac
 
 Our model is specifically the Thone ThoneFlow-3901U which is basically the same sensor as the Holybro PMW3901 but it doesn't come presoldered it does not come inside a 3D printed case.
 
-### ESP12-E WiFi
+### [ESP12-E WiFi](../telemetry/README.md)
 
 A compact and low-power device created for IoT applications. It comes with an ESP8266 and an onboard antenna.
 
@@ -66,7 +68,7 @@ The drone has no mounts for the ESP and PMW so we took the liberty to model some
 > [!NOTE]  
 > None of the members had previous experience with 3D modelling and 3D printing so there was a lot of trial and error
 
-The SEA:ME 3D printer is a **[[Wanhao Duplicator 12-230]]** which has a ready to go Cura profile but the team opted in using the PrusaSlicer since there was no easy way to install the Wanhao version on Linux, so tinkering on the profile was necessary for each print.
+The SEA:ME 3D printer is a [Wanhao Duplicator 12-230](./Wanhao_Duplicator_12-230.md) which has a ready to go Cura profile but the team opted in using the PrusaSlicer since there was no easy way to install the Wanhao version on Linux, so tinkering on the profile was necessary for each print.
 
 The mount for the PMW module is meant to go on the underside of the drone and screwed with the screws that already come installed on the bottom plate of the drone.
 
@@ -90,12 +92,16 @@ The drone that was offered to us is an amazing FPV drone kitted out with amazing
 
 The TBS Crossfire antenna had to be removed and changed out for an ExpressLRS antenna because having a proprietery antenna was a no go for our project.
 
-BetaFlight is the industry standard when it comes to FPV firmware, but it has absolute no autonomous flight capabilities and it's communications to the UART interfaces isn't ideal so we changed it for [[INAV]]
+BetaFlight is the industry standard when it comes to FPV firmware, but it has absolute no autonomous flight capabilities and it's communications to the UART interfaces isn't ideal so we changed it for [INAV](./INAV.md)
 
 Battery life was also a constraint that comes with the drone specifications, the high KV motors that the drone uses are amazing for speed and nimble drones but, at full throtle, use up way more battery than a lower KV motor and we don't plan to run the drone on super high speeds so the higher KV count is completely wasted.
 
 ## Wiring
 
-![[wire_diagram.png]]
+The ESP12, ThoneFlow sensor and the ELRS antenna was wired by us and it was all made during the [Sprint 0](./sprints/sprint_0.md)
 
-[[Sources]]
+# Tags
+
+#hardware
+
+[Sources](./Sources.md)

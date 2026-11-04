@@ -112,3 +112,7 @@ Each teammate runs sections 0–5 on their own machine and reports back:
 - **Host ROS (Lyrical) and container ROS (Jazzy) talking to each other**: avoid it. Cross-distro communication often works but isn't guaranteed. Run everything in the container.
 
 Next: Gazebo + GPU passthrough (step 3).
+
+# Tags
+
+#guides 
