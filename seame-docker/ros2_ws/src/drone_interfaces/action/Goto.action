@@ -1,0 +1,16 @@
+# Relative move from where the drone is when the goal starts, in its heading
+# at that moment. Relative because optical flow position drifts: fine for a
+# few metres, not for coming back to an absolute spot. Height is held.
+# Accepted only while hovering (after Takeoff, between goals).
+
+float32 forward       # m
+float32 left          # m
+float32 yaw           # rad, counter-clockwise, relative to the heading at the start
+float32 speed         # m/s; 0 means the mission's default speed
+---
+bool success
+float32 distance_error   # m, from fc/odom when it finished (an estimate: flow drifts)
+string message
+---
+float32 distance_remaining   # m
+float32 yaw_remaining        # rad
