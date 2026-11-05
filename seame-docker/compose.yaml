@@ -11,7 +11,7 @@ services:
     ipc: host            # Fast DDS shared-memory transport
     environment:
       - DISPLAY=${DISPLAY}
-      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-42}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-6}
       - XDG_RUNTIME_DIR=/tmp/runtime-dev   # silences the Qt warning; dir is created in the Dockerfile
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix

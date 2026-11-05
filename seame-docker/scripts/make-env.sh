@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Creates .env for the SEA:ME dev container from your host's user/group IDs.
-# Usage: ./scripts/make-env.sh [ROS_DOMAIN_ID]     e.g. ./scripts/make-env.sh 42
+# Usage: ./scripts/make-env.sh [ROS_DOMAIN_ID]     e.g. ./scripts/make-env.sh 6
 set -euo pipefail
 
 # Always write .env next to compose.yaml, wherever the script is called from.
@@ -13,8 +13,8 @@ fi
 
 domain="${1:-}"
 if [[ -z "$domain" ]]; then
-  read -rp "Team ROS_DOMAIN_ID (0-101) [42]: " domain
-  domain="${domain:-42}"
+  read -rp "Team ROS_DOMAIN_ID (0-101) [6]: " domain
+  domain="${domain:-6}"
 fi
 if ! [[ "$domain" =~ ^[0-9]+$ ]] || (( domain > 101 )); then
   echo "ROS_DOMAIN_ID must be a number from 0 to 101 (got '$domain')." >&2
