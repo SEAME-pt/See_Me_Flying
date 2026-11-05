@@ -3,7 +3,7 @@
 <package format="3">
   <name>drone_interfaces</name>
   <version>0.1.0</version>
-  <description>Custom messages and actions of the drone stack: FcStatus, and the mission's Takeoff, Land and Goto actions.</description>
+  <description>Custom messages and actions of the drone stack: FcStatus, OpticalFlow, and the mission's Takeoff, Land and Goto actions.</description>
   <maintainer email="joao.barros@seame.pt">João Barros</maintainer>
   <license>Apache-2.0</license>
 
