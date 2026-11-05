@@ -7,6 +7,7 @@ find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/FcStatus.msg"
+  "msg/OpticalFlow.msg"
   "action/Takeoff.action"
   "action/Land.action"
   "action/Goto.action"
