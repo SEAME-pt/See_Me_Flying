@@ -191,4 +191,3 @@ First connect the battery to the drone, a few seconds after, a wi-fi network SSI
 # Tags
 
 #guides 
-#firmware 

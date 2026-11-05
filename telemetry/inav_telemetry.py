@@ -25,8 +25,18 @@ import termios
 import time
 import tty
 
+# Address of the ESP bridge. With the ESP in station mode, put the address it
+# prints at boot (or its STATIC_IP from main.py) here, or pass --host.
+DEFAULT_HOST = "192.168.1.50"
+
 
 # ---------- MSP v2 framing ----------
+
+def d_opflow(p):                                  # MSP2_INAV_OPTICAL_FLOW (0x2001)
+    quality, fx, fy, bx, by = struct.unpack_from("<Bhhhh", p)
+    return {"quality": quality,                   # raw surface quality, 0-255
+            "flow_rate_x_dps": fx, "flow_rate_y_dps": fy,
+            "body_rate_x_dps": bx, "body_rate_y_dps": by}
 
 def crc8_dvb_s2(data):
     crc = 0
@@ -254,18 +264,19 @@ STATIC = {
 LIVE = {
     "attitude": (108, d_attitude),
     "altitude": (109, d_altitude),
-    "gps": (106, d_raw_gps),
-    "gps_home": (107, d_comp_gps),
-    "analog": (110, d_analog),
+    #"gps": (106, d_raw_gps),
+    #"gps_home": (107, d_comp_gps),
+    #"analog": (110, d_analog),
     "imu_raw": (102, d_raw_imu),
     "rc_channels": (105, u16_list),
     "motors": (104, u16_list),
-    "servos": (103, u16_list),
-    "status": (101, d_status),
-    "status_ex": (150, d_status_ex),
+    #"servos": (103, u16_list),
+    #"status": (101, d_status),
+    #"status_ex": (150, d_status_ex),
     "inav_status": (0x2000, d_inav_status),
     "inav_analog": (0x2002, d_inav_analog),
-    "inav_airspeed": (0x2009, d_raw),
+    #"inav_airspeed": (0x2009, d_raw),
+    "opflow": (0x2001, d_opflow),
 }
 
 
@@ -401,7 +412,8 @@ def run(msp, args, show):
 def main():
     ap = argparse.ArgumentParser(
         description="Poll INAV telemetry over MSP through the ESP's Wi-Fi bridge\n"
-                    "and print it on this computer. Join the ESP's Wi-Fi network first.",
+                    "and print it on this computer. This computer must be on the same\n"
+                    "Wi-Fi network as the ESP.",
         epilog="""output modes:
   --read and --info cannot be used together. With neither, --read is used.
 
@@ -415,8 +427,9 @@ examples:
   %(prog)s --timeout 0.8            wait longer for slow replies""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    ap.add_argument("--host", default="192.168.4.1",
-                    help="IP address of the ESP bridge (default: %(default)s)")
+    ap.add_argument("--host", default=DEFAULT_HOST,
+                    help="IP address of the ESP bridge (default: %(default)s). Use "
+                         "192.168.4.1 when the ESP is on its fallback network")
     ap.add_argument("--port", type=int, default=5760,
                     help="TCP port of the ESP bridge, matching TCP_PORT in main.py "
                          "(default: %(default)s)")
@@ -444,7 +457,8 @@ examples:
         msp = MSPClient(args.host, args.port, timeout=args.timeout)
     except OSError as e:
         error(f"Could not connect to the ESP bridge at {args.host}:{args.port} ({e}).\n"
-              "Check that this computer is on the ESP's Wi-Fi network and that the bridge is running.")
+              "Check that this computer is on the same Wi-Fi network as the ESP, that --host\n"
+              "is the address the ESP printed at boot, and that the bridge is running.")
         return 1
 
     print("Connected - press q to quit.", file=sys.stderr, flush=True)
