@@ -5,6 +5,11 @@ fc_bridge:
     max_speed_xy: 0.5
     max_speed_z: 0.3
     max_yaw_rate: 1.0
+  # Rangefinder: MicoAir MTF-02P (range 2cm to 6 m, precision +/-2cm under 2 m)
+    range_min: 0.02
+    range_max: 6.0
+    range_noise: 0.01 # 1cm placeholder until bench tests
+    range_fov: 0.070  # rad, 4 deg full cone (spec: 2 deg half-angle)
 
 safety_manager:
   ros__parameters:

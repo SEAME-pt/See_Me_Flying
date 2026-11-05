@@ -93,9 +93,12 @@ public:
       declare_parameter<std::string>("sim_odom_topic", "/X3/odom");
     declare_parameter<double>("flow_vel_noise", 0.02);  // m/s, white noise on velocity
     declare_parameter<double>("flow_drift", 0.002);     // m/s per sqrt(s), random-walk bias
+    // keeps defaults for rangefinder vaules as in model VL53L1X
+    // overrides rangefinder defaults in drone_bringup/config/sim.yaml
     declare_parameter<double>("range_noise", 0.005);    // m
     declare_parameter<double>("range_min", 0.04);       // m, VL53L1X-like
     declare_parameter<double>("range_max", 4.0);        // m
+    declare_parameter<double>("range_fov", 0.47);       // rad, full cone
     // Sim: true when nothing arms it (no radio); the launch sets it. inav: unknown
     // until MSP reports it, so false.
     const bool armed_at_start = declare_parameter<bool>("armed_at_start", true);
@@ -276,7 +279,9 @@ private:
     range.header.stamp = sim.header.stamp;
     range.header.frame_id = "rangefinder";
     range.radiation_type = Range::INFRARED;
-    range.field_of_view = 0.47;   // rad, about 27 degrees
+    //added during MTF-02P rangefinder sim changes
+    range.field_of_view = param("range_fov");
+    range.variance = std::pow(param("range_noise"), 2);
     range.min_range = param("range_min");
     range.max_range = param("range_max");
     const double up_z = 1.0 - 2.0 * (q.x * q.x + q.y * q.y);
