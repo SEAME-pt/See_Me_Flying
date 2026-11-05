@@ -279,7 +279,15 @@ The 5 s start delay of `setpoint_pub` is wall time, which could look risky on a 
 
 ## Tests
 
-The failsafes have automated tests. Run them inside the container:
+**To run every test and keep the results:** on the host, in `seame-docker/`, with the container running:
+
+```bash
+./scripts/run_tests.sh
+```
+
+A clean build and `colcon test` with the same commands as CI; each run gets a dated folder in `logs/tests/` with a report, every test's result, the full log, and a line in `logs/tests/history.csv`. See [`logs/README.md`](logs/README.md).
+
+For a quick check while working, inside the container:
 
 ```bash
 cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission drone_safety && colcon test-result --verbose

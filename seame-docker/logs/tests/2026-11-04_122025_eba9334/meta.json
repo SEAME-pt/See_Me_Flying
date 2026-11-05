@@ -1,0 +1,15 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-04T12:20:25+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "eba93345699952f80f57bb65fefb5589bf858114",
+  "commit_short": "eba9334",
+  "commit_subject": "Add logs/ for test runs and measurements, and the tester",
+  "branch": "staging",
+  "uncommitted_code": [],
+  "uncommitted_other": [
+    "seame-docker/PLAN.md",
+    ".claude/skills/run-tests/SKILL.md"
+  ]
+}

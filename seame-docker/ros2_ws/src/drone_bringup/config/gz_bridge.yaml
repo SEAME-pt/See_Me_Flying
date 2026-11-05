@@ -22,3 +22,10 @@
   ros_type_name: "nav_msgs/msg/Odometry"
   gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS
+
+  # Ground truth for tests only. Never feed this to the estimator.
+- ros_topic_name: "/sim/ground_truth"
+  gz_topic_name: "/model/x3/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
