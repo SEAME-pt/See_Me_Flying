@@ -30,7 +30,7 @@ install(TARGETS fc_bridge DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake REQUIRED)
-  # Own domain and localhost only, so a running sim (domain 42) cannot interfere.
+  # Own domain and localhost only, so a running sim (domain 6) cannot interfere.
   add_launch_test(test/test_failsafes.py TIMEOUT 120
     ENV ROS_DOMAIN_ID=199 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST)
   add_launch_test(test/test_state.py TIMEOUT 120

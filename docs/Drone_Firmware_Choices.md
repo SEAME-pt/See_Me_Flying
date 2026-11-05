@@ -15,7 +15,7 @@ No target existed for our specific build, so we took a very similar F7 from Aoco
 
 **Betaflight backup** on ver 4.5.1 (build key a72a9e7809ef36ab0db31291e4b21362). Its diff all and CLI outputs (version, status, serial, resource, aux, get vbat, get failsafe, get pinio, get msp\_override) were saved as a fallback.
 
-Update of **Radio Controller Firmware** to Queen Anne’s Revenge (09/02/2026), and **ExpressLRS** to version 4.0.
+Update of **Radio Controller Firmware** to Queen Anne’s Revenge (09/02/2026), and **ExpressLRS** to version 4.1.0.
 
 **Killswitch setup** on ARM on channel 5 (AUX1), and PREARM on channel 6 (AUX2), active in a high range for these two state switches, expected to hit 2000 (1700-2100 \= armed), with a prearm timeout of 3 seconds (INAV default is 10\)
 
@@ -38,7 +38,7 @@ The original **custom INAV target** had a bug regarding the gyro, present only i
 | motor\_poles | 12 | For RPM data |
 | vtx\_power | 5 | 1.3 W, far too high for the cage |
 | ARM on AUX1 (ch5), PREARM and ANGLE on AUX2 | (modes) | Two-switch arming interlock |
-| failsafe\_procedure | DROP, 1.5 s guard | Disarm on radio loss |
+| failsafe\_procedure | DROP, 1.5 s guard | Disarm on radio loss. (Betaflight values, for comparison. Our INAV values: DROP after 0.5 s) | 
 | msp\_override\_failsafe | OFF | Wi-Fi path cannot keep the drone flying on radio loss |
 | vbat\_warning\_cell\_voltage / vbat\_min\_cell\_voltage | 3.50 V / 3.30 V | With 100% sag compensation |
 # Tags

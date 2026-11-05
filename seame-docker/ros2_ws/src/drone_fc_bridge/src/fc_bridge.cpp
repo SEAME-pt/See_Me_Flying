@@ -332,7 +332,7 @@ private:
   bool holding_{false};
   bool range_valid_{false};
 
-  std::mt19937 rng_{42};   // fixed seed: the same run drifts the same way
+  std::mt19937 rng_{6};   // fixed seed: the same run drifts the same way
   std::normal_distribution<double> normal_{0.0, 1.0};
   std::optional<rclcpp::Time> last_odom_stamp_;
   double pos_x_{0.0}, pos_y_{0.0};
