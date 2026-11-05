@@ -96,7 +96,7 @@ We accessed, on the Radio, **SYS \-\> ExpressLRS \-\> Bind** and gained a teleme
 On **MDL \-\> Mixes \-\> CH5** (Aux1) for **ARM**, the **arming/killswitch** input Source was set as **SD**, the two state right shoulder button.  
 **CH6** (Aux2) for the **PREARM** safety input that arming requires beforehand, Source was set as **SE**, the two state temporary back left shoulder button.
 
-With SE being a momentary button, **SE** has to be held while **SD** is flipped. So, first the **PREARM**, then activating **ARM** within **3 seconds** (*set prearm\_timeout \= 10000*, on INAV CLI ) to allow the drone to activate its motors. Letting go of **SE** or holding it for over 10 seconds before flipping **SD** does not result in arming.
+With SE being a momentary button, **SE** has to be held while **SD** is flipped. So, first the **PREARM**, then activating **ARM** within **3 seconds** (*set prearm\_timeout \= 3000*, on INAV CLI ) to allow the drone to activate its motors. Letting go of **SE** or holding it for over 3 seconds before flipping **SD** does not result in arming.
 
 ## Arming Only From the Radio
 

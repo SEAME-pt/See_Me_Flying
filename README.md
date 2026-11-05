@@ -11,39 +11,39 @@ An indoor autonomous drone built on a Pilotix Brook 2.5" running **INAV 9.1.1**,
 
 | Item | Value |
 | --- | --- |
-| **`ROS_DOMAIN_ID`** | **`42`** |
+| **`ROS_DOMAIN_ID`** | **`6`** |
 | ROS 2 distro | Jazzy (Docker container `seame-dev`) |
 | Simulator | Gazebo Harmonic, world `multicopter_velocity_control.sdf`, drone X3 |
 | Flight controller | OddityRC F7 40A AIO (STM32F722), INAV 9.1.1, custom target `ODDITYRCF7AIO` |
 | FC ↔ ground link | ESP-12E/F (ESP8266, MicroPython), Wi-Fi AP `SeeMeFlying`, TCP `192.168.4.1:5760`, UART 115200 baud |
-| Radio | RadioMaster Pocket, ExpressLRS 4.0, 2.4 GHz |
+| Radio | RadioMaster Pocket, ExpressLRS 4.1.0 (BETAFPV Nano RX), 2.4 GHz |
 | Video | Caddx Ratel 2 analog → 5.8 GHz VTX → USB UVC receiver → ROS `/image_raw` |
 | Ground station | Raspberry Pi 5 (16 GB, AI HAT+) and team laptops |
 
-### ROS_DOMAIN_ID = 42
+### ROS_DOMAIN_ID = 6
 
-The SEA:ME network is shared between teams. ROS 2 nodes only discover each other when they share the same `ROS_DOMAIN_ID`, so **every machine and container on our team must use `42`**, and no other team may use it. Valid range is 1–101 (`0` is the default and likely used by others by accident; above 101 can clash with OS ephemeral ports).
+The SEA:ME network is shared between teams. ROS 2 nodes only discover each other when they share the same `ROS_DOMAIN_ID`, so **every machine and container on our team must use `6`**, and no other team may use it. Valid range is 1–101 (`0` is the default and likely used by others by accident; above 101 can clash with OS ephemeral ports).
 
 It is already the default everywhere in the repo:
 
-- `seame-docker/compose.yaml` → `ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-42}`
-- `seame-docker/.env.example` → `ROS_DOMAIN_ID=42`
-- `seame-docker/make-env.sh` → prompts with `[42]` as default
+- `seame-docker/compose.yaml` → `ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-6}`
+- `seame-docker/.env.example` → `ROS_DOMAIN_ID=6`
+- `seame-docker/make-env.sh` → prompts with `[6]` as default
 
 Check it inside the container:
 
 ```bash
-echo $ROS_DOMAIN_ID   # must print 42
+echo $ROS_DOMAIN_ID   # must print 6
 ```
 
-On the Raspberry Pi or any machine running ROS outside Docker, add `export ROS_DOMAIN_ID=42` to `~/.bashrc`.
+On the Raspberry Pi or any machine running ROS outside Docker, add `export ROS_DOMAIN_ID=6` to `~/.bashrc`.
 
 > The CI tests in `drone_fc_bridge` (on the `test` branch) deliberately use `ROS_DOMAIN_ID=199` with `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST`, so test runs never leak onto the team domain.
 
 ## Architecture
 
 ```
-                         ┌──────────────── Ground station (ROS 2 Jazzy, domain 42) ───────────────┐
+                         ┌──────────────── Ground station (ROS 2 Jazzy, domain 6) ───────────────┐
  setpoint_pub / radio_teleop / keyboard ──► /fc/setpoint_velocity ──► fc_bridge ──┬─► sim backend ──► ros_gz_bridge ──► Gazebo (X3)
                          watchdog (listens only) ◄────────────────────────────────┘
                                                                                   └─► inav backend (planned) ── MSP over TCP/UDP
@@ -59,7 +59,7 @@ Key design rules:
 
 - **`fc_bridge` is the only node allowed to command the drone.** All sources publish to `/fc/setpoint_velocity`; the bridge clamps and forwards them.
 - **Arming stays on the radio.** ROS never arms the real drone. The sim-only "enable" topic will not exist in the `inav` backend.
-- **Two failsafe layers.** ROS side: `fc_bridge` sends zero velocity (hover) when setpoints go stale. FC side: INAV's RX failsafe (`DROP`, 1.5 s guard) if the radio link is lost. `msp_override_failsafe` is OFF, so Wi-Fi can't keep the drone flying on radio loss.
+- **Two failsafe layers.** ROS side: `fc_bridge` sends zero velocity (hover) when setpoints go stale. FC side: INAV's RX failsafe `DROP` after 0.5 s; MSP RC override is not enabled, so Wi-Fi can't keep the drone flying on radio loss.
 
 ## Repository layout
 
@@ -101,7 +101,7 @@ Prerequisites: Linux host (Ubuntu 22.04–26.04 or Arch), Docker Engine with the
 ```bash
 git clone https://github.com/SEAME-pt/See_Me_Flying.git
 cd See_Me_Flying/seame-docker
-./make-env.sh 42                 # writes .env with your UID/GID, ROS_DOMAIN_ID=42 and GPU groups
+./make-env.sh 6                 # writes .env with your UID/GID, ROS_DOMAIN_ID=6 and GPU groups
 docker compose build             # first time: a few minutes
 docker compose up -d
 docker compose exec dev bash     # shell inside; repeat for more terminals
@@ -158,11 +158,11 @@ Details for every node, parameter and known issue: [`docs/Doc-ROS2/Drone-SIM-Sta
 | --- | --- | --- |
 | Frame | Pilotix Brook 2.5" cinewhoop | Prop guards; high-KV motors (short battery life) |
 | Flight controller | OddityRC F7 40A AIO, STM32F722RET6 (512 KB flash) | 5 UARTs; too little flash for ArduPilot |
-| Receiver | ELRS 2.4 GHz | Replaced the original TBS Crossfire antenna |
-| Camera / VTX | Caddx Ratel 2 + PandaRC VT5804 Bat Lite (5.8 GHz) | Analog; `vtx_power` far too high for indoor use |
+| Receiver | ELRS 2.4 GHz | Replaced the TBS Crossfire XF Nano RX V3 with a BETAFPV Nano RX on ELRS 4.1.0 |
+| Camera / VTX | Caddx Ratel 2 + PandaRC VT5804 Bat Lite (5.8 GHz) | Analog; VTX (IRC Tramp, UART3) set to band A ch1, 5865 MHz, 25 mW |
 | Optical flow | ThoneFlow-3901U (PMW3901) | UART, no rangefinder; notch points to the back |
 | Wi-Fi | ESP-12E/F (ESP8266), MicroPython | Replaces the GoPro mount |
-| Radio | RadioMaster Pocket | ELRS 4.0 |
+| Radio | RadioMaster Pocket | ELRS 4.1.0 |
 | 3D printer | Wanhao Duplicator 12/230 | Mounts sliced with PrusaSlicer |
 
 Wiring plan (Sprint 0): ESP8266 → **UART1** (5 V), ThoneFlow → **UART4** (3.3 V), UART6 free for add-ons. Diagram: [`docs/extras/wire_diagram.png`](docs/extras/wire_diagram.png). Full hardware write-up: [`docs/README.md`](docs/README.md).
@@ -171,8 +171,8 @@ Wiring plan (Sprint 0): ESP8266 → **UART1** (5 V), ThoneFlow → **UART4** (3.
 
 - **INAV 9.1.1** on custom target `ODDITYRCF7AIO`, derived from `AOCODARCF722AIO` (gyro `CW180_DEG → CW90_DEG`, LEDs on PA14/PA13, sensor scale 250 → 179).
 - **Why INAV:** ArduPilot doesn't fit in 512 KB; Betaflight has no autonomous modes and no ThoneFlow/optical-flow position hold. INAV has baro altitude hold, controlled emergency landing and optical-flow support.
-- **Arming:** ARM on AUX1 (ch5) and PREARM on AUX2 (ch6), active at 1700–2100. Two-switch interlock.
-- **Failsafe:** `DROP` on radio loss, 1.5 s guard.
+- **Arming:** ARM on AUX1 (ch5) and PREARM on AUX2 (ch6), active at 1700–2100. Two-switch interlock. Arm on SD, prearm on SE, prearm window 3 s
+- **Failsafe:** `DROP` on radio loss, after 0.5 s.
 - **Calibration:** accelerometer gains X 4096 / Y 4098 / Z 4095; board alignment fixed from the Sensors tab.
 - **Motors:** DSHOT300, 12 poles, props-out, Bluejay ESCs.
 

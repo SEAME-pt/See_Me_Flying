@@ -7,7 +7,7 @@ else
     if [ ! -f .env ]; then
         echo "⚙️ Generating .env file automatically..."
         if [ -f ./scripts/make-env.sh ]; then
-            ./scripts/make-env.sh 42
+            ./scripts/make-env.sh 6
         else
             cp .env.example .env
             sed -i "s/^HOST_UID=.*/HOST_UID=$(id -u)/; s/^HOST_GID=.*/HOST_GID=$(id -g)/" .env
