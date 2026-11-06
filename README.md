@@ -180,7 +180,7 @@ Backups: `docs/extras/Drone_Inav_Backup_26_10_26.txt` (current) and `docs/extras
 
 ## Telemetry over Wi-Fi
 
-The ESP12 runs [`telemetry/main.py`](telemetry/main.py): it opens its own access point and passes every byte between a TCP client and the FC UART (no MSP parsing on the ESP).
+The ESP12 runs `main.py`: it opens its own access point and passes every byte between a TCP client and the FC UART (no MSP parsing on the ESP).
 
 | Setting | Value |
 | --- | --- |

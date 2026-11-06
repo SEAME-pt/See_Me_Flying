@@ -10,8 +10,14 @@ Each sample sends one small MSP request (API/variant/version, in rotation) and
 times how long the matching reply takes. Lost replies, late replies and the
 latency spread are reported at the end. Ctrl-C stops early and still prints
 the summary.
+
+Every sample is also saved as a row in a CSV file (default:
+latency_<host>_<date>-<time>.csv, or choose one with --csv), ready to import
+into Google Sheets: File > Import > Upload.
 """
 import argparse
+import csv
+import datetime
 import socket
 import statistics
 import struct
@@ -36,7 +42,8 @@ def build_frame(cmd):
 
 
 class Link:
-    def __init__(self, host, port):
+    def __init__(self, host, port, quickack=False):
+        self.quickack = quickack
         t = time.monotonic()
         self.sock = socket.create_connection((host, port), timeout=5)
         self.connect_ms = (time.monotonic() - t) * 1000
@@ -78,10 +85,33 @@ class Link:
         if not chunk:
             raise ConnectionError("bridge closed the connection")
         self.buf += chunk
+        if self.quickack:                        # Linux resets this after every ACK
+            try:
+                self.sock.setsockopt(socket.IPPROTO_TCP,
+                                     getattr(socket, "TCP_QUICKACK", 12), 1)
+            except OSError:
+                pass
 
     def ping(self, cmd, timeout):
         """Return round-trip ms, or None if no reply. Also counts stale frames."""
         stale = 0
+        # Throw away anything left over from earlier requests first. Otherwise a
+        # late reply to a previous request with the same command would be taken
+        # as the answer to this one and show up as an impossible ~0 ms sample.
+        self.sock.setblocking(False)
+        try:
+            while True:
+                chunk = self.sock.recv(4096)
+                if not chunk:
+                    raise ConnectionError("bridge closed the connection")
+                self.buf += chunk
+        except (BlockingIOError, socket.timeout):
+            pass
+        finally:
+            self.sock.settimeout(0.02)
+        for _frame in self.frames():
+            stale += 1
+        self.buf = b""
         self.sock.sendall(build_frame(cmd))
         t0 = time.monotonic()
         while time.monotonic() - t0 < timeout:
@@ -108,10 +138,18 @@ def main():
                     help="pause between samples in seconds (default 0.05)")
     ap.add_argument("--timeout", type=float, default=2.0,
                     help="seconds before a reply counts as lost (default 2.0)")
+    ap.add_argument("--quickack", action="store_true",
+                    help="ACK every reply at once (Linux TCP_QUICKACK) instead of "
+                         "delaying ACKs; compare runs with and without it")
+    ap.add_argument("--csv", metavar="FILE",
+                    help="CSV file for the per-sample results (default: "
+                         "latency_<host>_<date>-<time>.csv)")
     args = ap.parse_args()
+    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    csv_path = args.csv or f"latency_{args.host.replace(':', '-')}_{stamp}.csv"
 
     try:
-        link = Link(args.host, args.port)
+        link = Link(args.host, args.port, args.quickack)
     except OSError as e:
         print(f"Could not connect to {args.host}:{args.port} ({e}).", file=sys.stderr)
         if args.host == "192.168.4.1":
@@ -120,11 +158,26 @@ def main():
     print(f"Connected to {args.host}:{args.port} in {link.connect_ms:.0f} ms "
           f"- sending {args.count} requests...")
 
+    csv_file = open(csv_path, "w", newline="")
+    writer = csv.writer(csv_file)
+    writer.writerow(["sample", "time", "host", "msp_command", "result",
+                     "rtt_ms", "late_frames", "corrupted_total"])
+
     rtts, lost, stale = [], 0, 0
     try:
         for i in range(args.count):
-            ms, late = link.ping(COMMANDS[i % len(COMMANDS)], args.timeout)
+            cmd = COMMANDS[i % len(COMMANDS)]
+            ms, late = link.ping(cmd, args.timeout)
             stale += late
+            writer.writerow([
+                i + 1,
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3],
+                args.host, cmd,
+                "lost" if ms is None else "ok",
+                "" if ms is None else f"{ms:.2f}",
+                late, link.bad_crc,
+            ])
+            csv_file.flush()                     # keep rows even if it stops early
             if ms is None:
                 lost += 1
                 print(f"  #{i + 1}: lost", flush=True)
@@ -138,6 +191,8 @@ def main():
     except OSError as e:
         print(f"connection lost: {e}", file=sys.stderr)
 
+    csv_file.close()
+
     sent = len(rtts) + lost
     print(f"\n{args.host}: {sent} sent, {len(rtts)} answered, {lost} lost "
           f"({lost / max(sent, 1) * 100:.1f}%), {stale} late, {link.bad_crc} corrupted")
@@ -150,6 +205,7 @@ def main():
             print("-> many replies take longer than the telemetry script's 0.4 s timeout")
     if link.bad_crc:
         print("-> corrupted frames: bytes are being lost or mangled on the way")
+    print(f"per-sample results saved to {csv_path}")
     return 0
 
 

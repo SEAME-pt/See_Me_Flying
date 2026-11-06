@@ -1,3 +1,6 @@
+---
+title: Simulator Overview
+---
 # Nodes Information: Drone Sim Stack
 
 Oct 20, 2026 · @Someone · updated Oct 23, 2026
@@ -301,9 +304,14 @@ Breaking the timeout check in `fc_bridge` makes three tests fail (checked Oct 26
 
 What the fc\_bridge interface contract asks for that does not exist today. The first group is the next step.
 
-| Item | Kind | Notes |
-| --- | --- | --- |
-| `fc/imu` | Topic out, `sensor_msgs/Imu` | The X3 model has no IMU sensor; needs our own world and model copy |
-| `fc/battery` | Topic out | Battery from INAV over MSP; nothing in the sim yet |
-| `inav` backend | `fc_bridge` code | A stub since Oct 30 (`backend:=inav`). MSP (MultiWii Serial Protocol) over the ESP8266 Wi-Fi link: TCP (Transmission Control Protocol) for bring-up, UDP (User Datagram Protocol) before flight |
-| Low-battery action | `safety_manager` | Only warns today; return or land comes with `fc/battery` from the `inav` backend |
+| Item               | Kind                         | Notes                                                                                                                                                                                           |
+| ------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fc/imu`           | Topic out, `sensor_msgs/Imu` | The X3 model has no IMU sensor; needs our own world and model copy                                                                                                                              |
+| `fc/battery`       | Topic out                    | Battery from INAV over MSP; nothing in the sim yet                                                                                                                                              |
+| `inav` backend     | `fc_bridge` code             | A stub since Oct 30 (`backend:=inav`). MSP (MultiWii Serial Protocol) over the ESP8266 Wi-Fi link: TCP (Transmission Control Protocol) for bring-up, UDP (User Datagram Protocol) before flight |
+| Low-battery action | `safety_manager`             | Only warns today; return or land comes with `fc/battery` from the `inav` backend                                                                                                                |
+|                    |                              |                                                                                                                                                                                                 |
+
+# Tags
+
+#simulator

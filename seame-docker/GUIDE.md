@@ -1,3 +1,6 @@
+---
+title: Simulator Guide
+---
 # Dev Container Setup · Steps 1 & 2
 
 Goal: everyone on the team runs the same ROS 2 Jazzy environment, whatever their host OS (Ubuntu 22.04–26.04, Arch). The test is the setpoint publisher + watchdog from the crash course.

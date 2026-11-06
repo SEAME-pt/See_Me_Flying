@@ -228,3 +228,7 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 - `README.md` (Oct 29): new `mission` section, launch table, known issues, Tests table.
 - `SIM_TELEOP.md` (Oct 29): `source:=mission` how-to and result.
 - `PLAN.md`: steps 1–4 marked done; steps 3 and 4 rewritten around optical flow + rangefinder.
+
+# Tags
+
+#simulator 

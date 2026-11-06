@@ -27,7 +27,7 @@ import tty
 
 # Address of the ESP bridge. With the ESP in station mode, put the address it
 # prints at boot (or its STATIC_IP from main.py) here, or pass --host.
-DEFAULT_HOST = "192.168.1.50"
+DEFAULT_HOST = "192.168.4.1"
 
 
 # ---------- MSP v2 framing ----------

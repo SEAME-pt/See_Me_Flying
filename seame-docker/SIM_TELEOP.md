@@ -1,8 +1,9 @@
+---
+title: SIM Tests
+---
 # Sim Stack: Parameters, Odometry, Failsafes and Teleop
 
-Oct 23, 2026 · João Barros
-
-What was added on top of "the X3 flies circles on its own", and how to try each part. Read `GUIDE.md` first if your container isn't set up yet; the Nodes Information doc (`README.md`) describes the nodes as they were before this work.
+What was added on top of "the X3 flies circles on its own", and how to try each part. Read [GUIDE](./GUIDE.md) first if your container isn't set up yet; the Nodes [Information doc](./README.md) describes the nodes as they were before this work.
 
 ## What changed, in one table
 
@@ -326,3 +327,6 @@ Flip SA on and off slowly about 20 times, then Ctrl-C. A clean switch prints one
 | Velocity-only control: height drifts down and drops in yaw | Fine with a human on the sticks; `mission` corrects it with `fc/range` | Altitude hold for the radio in `safety_manager` |
 | Frame names: commands say `base_link`, the sim says `x3/base_footprint` | Nothing yet (no tf in use) | Align when tf is introduced |
 | Radio-as-joystick is sim only and needs RF off | A transmitting radio could command a bench drone | Always the `INAV-SIM` model |
+# Tags
+
+#resources 

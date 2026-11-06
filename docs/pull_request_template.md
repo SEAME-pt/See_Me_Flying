@@ -4,7 +4,7 @@ Related Issues:
 
 #15
 
-## What was envolved
+## What was involved
 
 - [x] Documentation
 - [ ] Hardware

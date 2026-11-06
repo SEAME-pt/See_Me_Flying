@@ -10,6 +10,11 @@
 # Bytes from the flight controller that the socket can't take yet are kept in
 # a buffer and sent on the next pass, instead of being dropped (dropped bytes
 # corrupt MSP frames, which the ground script then reports as "no reply").
+#
+# A new connection always replaces the old one, so a stuck or forgotten client
+# can't lock the bridge. If a stray '#' has put the FC's port into CLI mode,
+# the bridge sends 'exit' (the FC leaves CLI and reboots) when it starts and
+# on every connect.
 
 import errno
 import machine
@@ -102,11 +107,25 @@ def close(sock):
         pass
 
 
+def leave_cli(uart):
+    """If the FC's port is stuck in CLI mode (a stray '#' got in), make it leave.
+    INAV's CLI ignores an empty Enter, so instead of probing, this always sends
+    'exit': the DELs first clear any half-typed noise in the CLI's line buffer.
+    In MSP mode none of these bytes mean anything and they are ignored.
+    Returns True if the FC answered "Leaving CLI mode" (it now reboots)."""
+    uart.read()                          # drop stale bytes
+    uart.write(b"\x7f" * 64 + b"exit\r\n")
+    time.sleep_ms(300)
+    reply = uart.read() or b""
+    return b"Leaving CLI" in reply
+
+
 def bridge():
     # Detach the REPL from UART0, otherwise MSP bytes from the flight controller
     # would be treated as typed input (0x03 = Ctrl-C, etc.).
     os.dupterm(None, 1)
     uart = machine.UART(0, BAUD, rxbuf=1024, timeout=0)
+    leave_cli(uart)
 
     srv = socket.socket()
     srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -117,15 +136,21 @@ def bridge():
     client = None
     pending = b""
     while True:
+        # a new client always replaces the old one
+        try:
+            new, _ = srv.accept()
+        except OSError:
+            new = None
+        if new is not None:
+            if client is not None:
+                close(client)
+            client = new
+            client.setblocking(False)
+            leave_cli(uart)              # also drops stale bytes
+            pending = b""
         if client is None:
-            try:
-                client, _ = srv.accept()
-                client.setblocking(False)
-                uart.read()              # drop stale bytes
-                pending = b""
-            except OSError:
-                time.sleep_ms(50)
-                continue
+            time.sleep_ms(50)
+            continue
 
         busy = False
 
