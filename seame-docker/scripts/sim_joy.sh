@@ -16,4 +16,7 @@ fi
 # SA arms (throttle centred), the takeover switch hands over the sticks.
 CMD_GAZEBO_JOY="cd '$PROJECT_DIR' && docker compose exec -e DISPLAY=\$DISPLAY dev bash -c 'cd ~/ros2_ws && source /opt/ros/jazzy/setup.bash && source install/setup.bash && ros2 launch drone_bringup sim.launch.py source:=none'"
 
+# Closes older sim processes, avoiding duplicates
+bash "$PROJECT_DIR/scripts/stop_sim.sh"
+
 open_tabs "Gazebo Joy Sim" "$CMD_GAZEBO_JOY"
