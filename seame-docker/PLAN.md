@@ -42,6 +42,11 @@ Revised Oct 27. The real drone will get a ThoneFlow-3901 (PMW3901 optical flow, 
   - horizontal position: **integrated from that velocity**, plus a slowly wandering bias (`flow_drift`), starting at 0, 0. Not Gazebo's true x, y: flow only ever gives relative position, and it drifts;
   - height and orientation: from the sim.
 - **`fc/attitude`** (`geometry_msgs/QuaternionStamped`): orientation from the sim.
+- **`fc/optical_flow`** (`drone_interfaces/OpticalFlow`): flow as INAV
+  reports it, in rad/s. Not published yet; the sim's flow model comes later.
+- **`fc/imu`** (`sensor_msgs/Imu`) and **`fc/baro`**: postponed. The X3 has no
+  IMU yet, and the barometer is a fallback if the MTF-02P is used. `fc/baro`'s
+  type is undecided, because INAV reports altitude, not pressure.
 - **`fc/range`** (`sensor_msgs/Range`), the rangefinder. New in the contract:
   - distance along the body's down axis, so it reads longer when tilted;
   - noise `range_noise`; limits `range_min` and `range_max` (VL53L1X-like defaults, 0.04 to 4.0 m);
@@ -117,7 +122,7 @@ Without writing the `inav` backend yet.
 
 ## 8. Later or watch
 
-- **Later:** per-drone namespaces (Module 3), and aligning tf frame names (`base_link` vs `x3/base_footprint`) when tf comes in.
+- **Later:** aligning tf frame names (`base_link` vs `x3/base_footprint`) when tf comes in.
 - **Watch:** the one-off timeout right after the first setpoint. Act if it comes back while setpoints are flowing.
 # Tags
 

@@ -221,6 +221,20 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 
 **Checked** (launch only, which nodes start): `radio:=false` → `mission` only; `+ demo:=true` → `+ demo_flight`; `source:=circle radio:=false` → no flight node; `+ demo:=true` → `setpoint_pub`; no arguments → `mission` and the radio nodes.
 
+## Nov 4: `logs/` for test runs and measurements
+
+**Purpose:** results scattered in the repo root (`TEST_REPORT.md`, a console log) and no way to see a trend. Now every test run and measurement gets a dated folder with the commit it ran on, and a `history.csv` per kind.
+
+| File | Change |
+| --- | --- |
+| `scripts/run_tests.sh` | Clean build + `colcon test` in the container (CI's commands, built under `/tmp`), results into `logs/tests/<date>_<time>_<commit>/` |
+| `scripts/test_report.py` | Writes `report.md` (verdict, failures, comparison with the previous run, every test, warnings), `results.json`, `console.log.gz`, and the `history.csv` line |
+| `scripts/logbook.py` | Run folders, `meta.json` (commit, branch, uncommitted files; `-dirty` only for code under `ros2_ws/`), `history.csv`; also `logbook.py measure <name> key=value ...` for measurements |
+| `logs/README.md` | The layout, and how to record a measurement |
+| `logs/tests/2026-11-02_162848_ed2219d/` | The Nov 2 run, moved from `TEST_REPORT.md` and `test_report_console.log` (its raw result files weren't kept, so no `results.json`) |
+
+**Checked:** a full run (123 cases, 119 passed, 4 skipped, 0 failed, about 1.5 min) compared itself with Nov 2 ("same tests, same results"); two measurements in the same second get separate folders, and a new key adds a column to `history.csv`.
+
 ## Docs updated
 
 - `README.md`: `fc_bridge` section (state topics and parameters), bridge table, `radio_teleop` debounce, a **Tests** section, known issues and the resolved list.

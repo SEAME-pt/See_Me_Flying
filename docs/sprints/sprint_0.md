@@ -61,7 +61,7 @@ The sprint also establishes the initial drone architecture, communication paths,
 
 The initial design includes a watchdog to detect missing or delayed setpoint messages.
 
-At a publishing frequency of 10 Hz, the expected interval between messages is 50 ms. A timeout of 300 ms corresponds to approximately six expected publishing intervals.
+At 10 Hz the expected interval between messages is 100 ms. The Sprint 0 timeout of 0.5 s is 5 intervals; the Sprint 1 timeout of 0.3 s is 3 intervals.
 
 The intended behavior is to detect command loss and trigger a predefined safe response. The exact response, recovery behavior, and integration with the flight controller must be validated during implementation and testing.
 
