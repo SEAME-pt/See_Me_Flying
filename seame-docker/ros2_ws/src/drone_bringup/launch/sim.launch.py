@@ -14,7 +14,7 @@ TO_MISSION = [('setpoint_velocity', '/cmd/mission')]
 TO_RADIO = [('setpoint_velocity', '/cmd/radio')]
 
 PACKAGES = ['ros_gz_sim', 'ros_gz_bridge', 'drone_fc_bridge', 'drone_safety', 'drone_mission',
-            'drone_basics_py', 'joy']
+            'drone_basics_py', 'joy', 'drone_sim_sensors']
 REAL_PACKAGES = ['drone_fc_bridge', 'drone_safety', 'drone_mission', 'drone_basics_py']
 
 
@@ -77,6 +77,11 @@ def setup(context):
             package='ros_gz_bridge', executable='parameter_bridge',
             parameters=[{'config_file': os.path.join(config, 'gz_bridge.yaml')}],
             output='screen',
+        ))
+        # Synthetic optical flow from ground truth; tuned in sim.yaml (flow_model).
+        actions.append(Node(
+            package='drone_sim_sensors', executable='flow_model',
+            parameters=[params, clock], output='screen',
         ))
 
     actions.append(Node(
