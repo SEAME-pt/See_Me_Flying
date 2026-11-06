@@ -1,3 +1,12 @@
+flow_model:
+  ros__parameters:
+    # Optical flow: MicoAir MTF-02P (flow from 8 cm, up to 7 m/s at 1 m)
+    min_height: 0.08      # m, below this the sensor reports no quality
+    max_flow_rate: 7.0    # rad/s, about 7 m/s at 1 m
+    flow_noise: 0.01      # rad/s, PLACEHOLDER until bench data
+    quantize: true        # whole deg/s, as INAV's MSP sends
+    seed: -1              # < 0: different noise every run
+
 fc_bridge:
   ros__parameters:
     rate_hz: 20.0
@@ -5,7 +14,7 @@ fc_bridge:
     max_speed_xy: 0.5
     max_speed_z: 0.3
     max_yaw_rate: 1.0
-  # Rangefinder: MicoAir MTF-02P (range 2cm to 6 m, precision +/-2cm under 2 m)
+    # Rangefinder: MicoAir MTF-02P (range 2cm to 6 m, precision +/-2cm under 2 m)
     range_min: 0.02
     range_max: 6.0
     range_noise: 0.01 # 1cm placeholder until bench tests
