@@ -309,4 +309,4 @@ Summary: 135 tests, 0 errors, 0 failures, 4 skipped
 Summary: 135 tests, 0 errors, 0 failures, 4 skipped
 ```
 
-The full console log (1098 lines) is in `test_report_console.log` next to this file.
+The full console log (1098 lines) is in `console.log.gz` next to this file.
