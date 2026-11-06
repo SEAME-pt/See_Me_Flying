@@ -1,7 +1,8 @@
 services:
   dev:
     build:
-      context: .
+      context: seame-docker
+      dockerfile: Dockerfile
       args:
         HOST_UID: ${HOST_UID:-1000}
         HOST_GID: ${HOST_GID:-1000}
@@ -12,7 +13,7 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-42}
-      - XDG_RUNTIME_DIR=/tmp/runtime-dev   # silences the Qt warning; dir is created in the Dockerfile
+      - XDG_RUNTIME_DIR=/tmp/runtime-dev   # silences the Qt warning; dir is created in the Dockerfile  | Qt is the GUI framework (C++) used by Gazebo 
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ./ros2_ws:/home/dev/ros2_ws
