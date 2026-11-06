@@ -124,3 +124,6 @@ Without writing the `inav` backend yet.
 
 - **Later:** aligning tf frame names (`base_link` vs `x3/base_footprint`) when tf comes in.
 - **Watch:** the one-off timeout right after the first setpoint. Act if it comes back while setpoints are flowing.
+# Tags
+
+#resources 

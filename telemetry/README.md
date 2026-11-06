@@ -22,9 +22,9 @@ pipx ensurepath
 sudo usermod -aG uucp $USER
 ```
 
-#### 2 - Download and flash micropython
+#### 2 - Download and flash esp-link
 
-Head to `micropython.org/download/ESP8266_GENERIC` and download the latest stable build.
+Head to `https://github.com/jeelabs/esp-link` and download the latest stable build.
 
 Go to the folder and plug your ESP12 and check your PC recognizes it with `lsusb` and `ls /dev/tty*` a /dev/ttyUSB0 should be present.
 
@@ -32,30 +32,19 @@ Go to the folder and plug your ESP12 and check your PC recognizes it with `lsusb
 
 ```bash
 esptool erase-flash
-esptool --baud 460800 write_flash --flash_size=detect 0 ESP8266_GENERIC-*.bin
+esptool --port /dev/ttyUSB0 --baud 460800 write-flash --flash-mode dio --flash-size 4MB \ 0x00000 boot_v1.*.bin \ 0x01000 user1.bin \ 0x3FC000 esp_init_data_default.bin \ 0x3FE000 blank.bin
 ```
 
-To check if the flash went well you can use:
+###### Check if the flash was done correctly
 
-```bash
-pyserial-miniterm --rts 0 --dtr 0 /dev/ttyUSB0 115200
-```
+After flashing the esp, unplug and plug to your computer and after some time a network called `ESP_XXXXXXX` should appear, connect to it and go to `http://192.168.4.1` and there the settings can change
 
-Press the rst button and then press enter a few times and you should get `>>>` meaning that you've entered MicroPython's REPL prompt, you can now leave pressing `Ctrl + j`
+###### Settings
 
-#### 3 - Sending main.py to the ESP12
+µC Console page: set the baud rate to 115200
+Pin Assignment page: RST, ISP and LED pins disabled
 
-On this repo you'll find two python scripts, one for the ESP12 that will run on boot and one for the ground machine, download main.py and run these commands:
-
-> [!IMPORTANT]  
-> Check `main.py` and change the network's SSID and password
-
-```bash
-mpremote connect /dev/ttyUSB0 cp main.py :main.py 
-mpremote connect /dev/ttyUSB0 reset
-```
-
-After this you can go ahead and use the `pyserial` again and you should immediatly see the message `MSP bridge starts in 3 seconds[...]`, if you do, great it means that the ESP12 and you can go ahead and solder it to the flight controller.
+That's all the settings we've changed, there were some tests ran with the ESP on Soft-AP mode but overall delay was around 40ms slower so we decided to keep it on the AP mode alone.
 
 ## Running the script
 
@@ -186,9 +175,20 @@ These three overlap. `inav_status` is the most complete, so you can remove the o
 
 # How to connect to drone's wi-fi
 
-First connect the battery to the drone, a few seconds after, a wi-fi network SSID chosen with `main.py` should appear, connect that and it's done.
+By default esp-link will be an open networw.
+
+Our network was set with:
+
+```bash
+SSID: seemeflying
+Password: 123456789
+```
+
+
+# Tests
+
+Throughout tests were made with a bunch of different setups on the ESP and all are documented on the [test log](./Telemetry_test.md) file.
 
 # Tags
 
 #guides 
-#firmware 

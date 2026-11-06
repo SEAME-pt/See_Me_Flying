@@ -48,6 +48,13 @@
         "a": 1,
         "rgb": 3754080
       }
+    },
+    {
+      "query": "tag:#simulator  ",
+      "color": {
+        "a": 1,
+        "rgb": 18519
+      }
     }
   ],
   "collapse-display": true,

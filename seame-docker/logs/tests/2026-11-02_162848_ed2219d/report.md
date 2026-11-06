@@ -1,3 +1,6 @@
+---
+title: SIM Test report
+---
 # Test report: `staging` after merging `test`
 
 Run on Nov 2, 2026, on commit `ed2219d` (staging with test merged in). Produced from the test result files (xUnit/JUnit XML) and the console log of that run, not typed by hand.
@@ -309,4 +312,9 @@ Summary: 135 tests, 0 errors, 0 failures, 4 skipped
 Summary: 135 tests, 0 errors, 0 failures, 4 skipped
 ```
 
-The full console log (1098 lines) is in `console.log.gz` next to this file.
+The full console log (1098 lines) is in `test_report_console.log` next to this file.
+
+# Tags
+
+#resources 
+
