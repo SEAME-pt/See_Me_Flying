@@ -250,45 +250,45 @@ def d_raw(p):
     return Raw(p)
 
 
-### New Check ###
+# New Check #
 # Messages added for the MSP inventory (INAV-4.1, #124). Layouts checked
 # against INAV 9.1.0: src/main/fc/fc_msp.c.
- 
+
 def d_board_info(p):                              # MSP_BOARD_INFO (4)
     hw_rev, osd, comms, name_len = struct.unpack_from("<HBBB", p, 4)
     return {"board_id": d_text(p[:4]), "hardware_revision": hw_rev,
             "osd": osd == 2, "has_vcp": bool(comms & 1),
             "target": d_text(p[9:9 + name_len])}
- 
- 
+
+
 def d_rangefinder(p):                             # MSP_SONAR_ALTITUDE (58)
     (cm,) = struct.unpack_from("<i", p)
     if cm < 0:                                    # -1 = out of range, other negatives = no reading
         return {"valid": False, "code": cm}
     return {"valid": True, "distance_m": cm / 100}
- 
- 
+
+
 def d_local_pose(p):                              # MSP2_INAV_FULL_LOCAL_POSE (0x2220)
     roll, pitch, yaw = struct.unpack_from("<hhh", p)
     x, vx, y, vy, z, vz = struct.unpack_from("<ihihih", p, 6)
     return {"roll_deg": roll / 10, "pitch_deg": pitch / 10, "yaw_deg": yaw / 10,
             "pos_m": [x / 100, y / 100, z / 100],          # INAV works in cm
             "vel_ms": [vx / 100, vy / 100, vz / 100]}      # and cm/s
- 
- 
+
+
 def d_nav_status(p):                              # MSP_NAV_STATUS (121)
     mode, state, wp_action, wp_number, err = struct.unpack_from("<5B", p)
     (heading_target,) = struct.unpack_from("<h", p, 5)
     return {"mode": mode, "state": state, "wp_action": wp_action,
             "wp_number": wp_number, "error": err,
             "heading_hold_target_deg": heading_target}
- 
- 
+
+
 def d_link_stats(p):                              # MSP2_INAV_GET_LINK_STATS (0x2103)
     rssi, lq, snr = struct.unpack_from("<BBb", p)
     return {"rssi_dbm": -rssi, "link_quality_pct": lq, "snr_db": snr}
- 
-### End New Check ###
+
+# End New Check #
 
 
 # Polled once at start-up.
@@ -425,14 +425,14 @@ def run(msp, args, show):
               "Check that it is powered, that TX/RX are crossed (FC TX -> ESP RX),\n"
               "and that MSP is enabled at 115200 on that UART in INAV's Ports tab.")
         return 1
-    ### New Check ###
+    # New Check #
     for _ in range(3):                    # MSP_BOXNAMES is a long reply; retry if lost
         if info.get("mode_names"):
             break
         ok, data = msp.request(116)
         if ok:
             info["mode_names"] = d_box_names(data)
-    ### End New Check ###
+    # End New Check #
     MODE_NAMES[:] = info.pop("mode_names", None) or []
     show({"info": info})
 
