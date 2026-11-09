@@ -2,14 +2,16 @@
 """Capture raw MSPv2 replies from INAV, or measure their rates, over the esp-link TCP bridge.
 
   capture <esp-ip> <state>   save N raw replies per message to inav/msp/captures/<state>.jsonl
-  rate    <esp-ip>           measure each message alone, then the whole set together
+  rate    <esp-ip> [--seconds S] [--gap MS] [--timeout MS]
+                             measure each message alone, then the whole set together
 """
-import json, pathlib, socket, statistics, struct, sys, time
+import argparse, json, pathlib, socket, statistics, struct, sys, time
 
 PORT = 23          # esp-link serial bridge
 TIMEOUT = 0.5      # seconds to wait for one reply
 N = 20             # replies captured per message
-SECONDS = 30       # duration of each rate run
+SECONDS = 10       # duration of each rate run (--seconds)
+GAP = 0.0          # pause between requests in a rate run, in seconds (--gap, given in ms)
 SETUP = {"fc": "INAV 9.1.0", "bridge": "esp-link 3.2.47"}
 
 # Read-only messages from the final candidate list (inav/msp/candidates.md, #124),
@@ -90,11 +92,26 @@ def ask(s, cmd):
         s.settimeout(TIMEOUT)
 
 
-def check_fc(s):
-    """Stop early if the FC behind the ESP doesn't answer, instead of waiting through every timeout."""
-    for _ in range(5):
-        if ask(s, 1):                             # MSP_API_VERSION
-            return
+def open_link(host):
+    """Connect and check the FC answers. esp-link sometimes accepts a connection and
+    resets it straight away (for example while old connections still hold its slots),
+    so retry a few times before giving up."""
+    for attempt in range(3):
+        s = connect(host)
+        try:
+            for _ in range(5):
+                if ask(s, 1):                     # MSP_API_VERSION
+                    return s
+            break                                 # connected, but the FC stays silent
+        except ConnectionError:
+            s.close()
+            print(f"esp-link reset the connection, retrying ({attempt + 1}/3)...")
+            time.sleep(3)
+    else:
+        sys.exit("esp-link keeps resetting the connection.\n"
+                 "Close every other program using the bridge (inav_telemetry.py, Configurator,\n"
+                 "the esp-link web page), wait a minute or unplug the battery for 5 seconds,\n"
+                 "then try again.")
     sys.exit("Connected to the ESP bridge, but the flight controller is not answering.\n"
              "Check that the battery is plugged in, that no other program is using the link,\n"
              "and that esp-link's baud matches UART1 in INAV's Ports tab. Then try again.")
@@ -117,8 +134,7 @@ def capture(host, state):
     out = pathlib.Path("inav/msp/captures")
     out.mkdir(parents=True, exist_ok=True)
     path = out / f"{state}.jsonl"
-    s = connect(host)
-    check_fc(s)
+    s = open_link(host)
     print("capturing to", path.resolve())
     with open(path, "w") as f:
         f.write(json.dumps({"setup": SETUP, "state": state, "host": host,
@@ -148,6 +164,8 @@ def run(s, names):
                 stats[n][2].append(r[2])
             else:
                 stats[n][1] += 1
+            if GAP:
+                time.sleep(GAP)
         loops += 1
     return stats, loops
 
@@ -161,8 +179,9 @@ def report(label, stats):
 
 
 def rate(host):
-    s = connect(host)
-    check_fc(s)
+    s = open_link(host)
+    print(f"rate test: {SECONDS:g} s per run, {GAP * 1000:g} ms gap between requests, "
+          f"{TIMEOUT * 1000:g} ms reply timeout")
     for n in LIVE:
         report("alone", run(s, [n])[0])
     stats, loops = run(s, list(LIVE_MSGS))       # the set ROS-6 polls; optional ones excluded
@@ -171,9 +190,25 @@ def rate(host):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) >= 4 and sys.argv[1] == "capture":
-        capture(sys.argv[2], sys.argv[3])
-    elif len(sys.argv) >= 3 and sys.argv[1] == "rate":
-        rate(sys.argv[2])
-    else:
-        sys.exit(__doc__)
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="mode", required=True)
+    c = sub.add_parser("capture")
+    c.add_argument("host")
+    c.add_argument("state")
+    c.add_argument("--timeout", type=float, default=TIMEOUT * 1000, help="reply timeout in ms (default %(default)g)")
+    r = sub.add_parser("rate")
+    r.add_argument("host")
+    r.add_argument("--seconds", type=float, default=SECONDS, help="duration of each run (default %(default)s)")
+    r.add_argument("--gap", type=float, default=0, help="pause between requests, in ms (default 0)")
+    r.add_argument("--timeout", type=float, default=TIMEOUT * 1000, help="reply timeout in ms (default %(default)g)")
+    a = ap.parse_args()
+    TIMEOUT = a.timeout / 1000
+    try:
+        if a.mode == "capture":
+            capture(a.host, a.state)
+        else:
+            SECONDS, GAP = a.seconds, a.gap / 1000
+            rate(a.host)
+    except ConnectionError as e:
+        sys.exit(f"The connection to the ESP bridge dropped during the run ({e}).\n"
+                 "Results so far are incomplete; check the battery and Wi-Fi, then run it again.")

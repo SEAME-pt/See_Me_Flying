@@ -1,0 +1,23 @@
+rate test: 10 s per run, 0 ms gap between requests, 1500 ms reply timeout
+alone  MSP2_INAV_STATUS            10.7 Hz  median   15.8 ms  p95  827.4 ms  loss   0.0 %
+alone  MSP_ATTITUDE                12.1 Hz  median   13.9 ms  p95  630.9 ms  loss   0.0 %
+alone  MSP_ALTITUDE                11.4 Hz  median   16.5 ms  p95  777.3 ms  loss   0.0 %
+alone  MSP_RAW_IMU                 22.5 Hz  median   14.0 ms  p95   95.5 ms  loss   0.0 %
+alone  MSP2_INAV_ANALOG             3.7 Hz  median   18.2 ms  p95  970.6 ms  loss   5.1 %
+alone  MSP2_INAV_OPTICAL_FLOW      11.9 Hz  median   13.8 ms  p95  784.2 ms  loss   0.8 %
+alone  MSP_RC                      11.4 Hz  median   14.3 ms  p95  792.3 ms  loss   0.9 %
+alone  MSP_SONAR_ALTITUDE           9.6 Hz  median   17.9 ms  p95  791.0 ms  loss   1.0 %
+alone  MSP2_INAV_FULL_LOCAL_POSE     4.6 Hz  median   17.9 ms  p95  800.0 ms  loss   4.2 %
+alone  MSP_NAV_STATUS              13.6 Hz  median   13.9 ms  p95  440.6 ms  loss   0.0 %
+alone  MSP2_INAV_GET_LINK_STATS     5.9 Hz  median   10.3 ms  p95 1115.5 ms  loss   4.8 %
+alone  MSP_MOTOR                   14.3 Hz  median   13.4 ms  p95  181.9 ms  loss   0.7 %
+set    MSP2_INAV_STATUS             1.6 Hz  median   18.4 ms  p95    nan ms  loss   0.0 %
+set    MSP_ATTITUDE                 1.6 Hz  median   12.3 ms  p95    nan ms  loss   0.0 %
+set    MSP_ALTITUDE                 1.6 Hz  median   39.9 ms  p95    nan ms  loss   0.0 %
+set    MSP_RAW_IMU                  1.6 Hz  median   16.1 ms  p95    nan ms  loss   0.0 %
+set    MSP2_INAV_ANALOG             1.6 Hz  median   11.2 ms  p95    nan ms  loss   0.0 %
+set    MSP2_INAV_OPTICAL_FLOW       1.6 Hz  median   13.8 ms  p95    nan ms  loss   0.0 %
+set    MSP_RC                       1.6 Hz  median   55.0 ms  p95    nan ms  loss   0.0 %
+set    MSP_SONAR_ALTITUDE           1.6 Hz  median   13.1 ms  p95    nan ms  loss   0.0 %
+set    MSP2_INAV_FULL_LOCAL_POSE     1.6 Hz  median   14.7 ms  p95    nan ms  loss   0.0 %
+full set: 1.6 cycles/s

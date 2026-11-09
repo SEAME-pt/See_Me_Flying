@@ -41,3 +41,24 @@ Roll, pitch and yaw are from MSP_ATTITUDE in the capture. Fill in the Configurat
 - **Altitude:** the estimate reads 0; the baro altitude moves between −85 and +41 cm from sensor noise.
 - **Lost replies:** about 19–24% of requests timed out in each file. MSP_BOXNAMES (the longest reply, 368 bytes as a frame) got through only 1 to 8 times out of 20. Every message still has at least one good reply in every file.
 - **Damaged frames:** `flat_still.jsonl` has three MSP_BOXNAMES replies marked `ok: false`. Bytes are missing from the middle of the reply and the next reply's start follows straight after, so the CRC fails. Use them to test that the decoder rejects damaged frames.
+
+## Medians of the three runs
+
+| Message | Rate alone (Hz) | Median RTT (ms) | p95 RTT (ms) | Loss (%) |
+| --- | ---: | ---: | ---: | ---: |
+| MSP2_INAV_STATUS | 10.4 | 15.8 | 827 | 0.0 |
+| MSP_ATTITUDE | 12.1 | 13.9 | 631 | 0.6 |
+| MSP_ALTITUDE | 11.4 | 14.0 | 777 | 0.6 |
+| MSP_RAW_IMU | 11.1 | 14.0 | 466 | 0.9 |
+| MSP2_INAV_ANALOG | 4.8 | 18.2 | 971 | 2.0 |
+| MSP2_INAV_OPTICAL_FLOW | 11.9 | 13.8 | 784 | 0.0 |
+| MSP_RC | 5.0 | 17.5 | 906 | 2.0 |
+| MSP_SONAR_ALTITUDE | 13.7 | 12.5 | 229 | 0.7 |
+| MSP2_INAV_FULL_LOCAL_POSE | 9.1 | 17.9 | 439 | 2.2 |
+| MSP_NAV_STATUS | 12.6 | 13.9 | 739 | 0.0 |
+| MSP2_INAV_GET_LINK_STATS | 8.8 | 16.4 | 551 | 3.3 |
+| MSP_MOTOR | 14.3 | 14.1 | 205 | 0.7 |
+
+**Full set** (the 9 live messages polled in turn): 1.4 cycles/s (runs: 1.4, 1.6, 1.2).
+
+**Conditions:** 2026-11-09 · INAV 9.1.0 on ODF7 · esp-link 3.2.47, UART1 at 115200 baud · laptop on the drone's own Wi-Fi · sequential polling, no gap · 1500 ms reply timeout · 10 s per message · raw output in `run1.txt` to `run3.txt`.
