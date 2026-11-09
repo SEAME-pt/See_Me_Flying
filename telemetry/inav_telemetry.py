@@ -316,12 +316,12 @@ LIVE = {
     "inav_analog": (0x2002, d_inav_analog),
     # "inav_airspeed": (0x2009, d_raw),
     "opflow": (0x2001, d_opflow),
-    ### New Check ###
+    # New Check #
     "rangefinder": (58, d_rangefinder),             # MTF-02P; reads invalid until fitted
     "local_pose": (0x2220, d_local_pose),
     "nav_status": (121, d_nav_status),              # optional, decide with ROS-5.1
     "link_stats": (0x2103, d_link_stats),           # optional, needs the radio on
-    ### End New Check ###
+    # End New Check #
 }
 
 

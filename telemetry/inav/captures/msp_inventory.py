@@ -5,7 +5,14 @@
   rate    <esp-ip> [--seconds S] [--gap MS] [--timeout MS]
                              measure each message alone, then the whole set together
 """
-import argparse, json, pathlib, socket, statistics, struct, sys, time
+import argparse
+import json
+import pathlib
+import socket
+import statistics
+import struct
+import sys
+import time
 
 PORT = 23          # esp-link serial bridge
 TIMEOUT = 0.5      # seconds to wait for one reply
