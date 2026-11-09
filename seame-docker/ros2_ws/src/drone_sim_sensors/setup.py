@@ -24,7 +24,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'flow_model = drone_sim_sensors.flow_model:main'
+            'flow_model = drone_sim_sensors.flow_model:main',
+            'flow_check = drone_sim_sensors.flow_check:main',
         ],
     },
 )
