@@ -25,6 +25,10 @@ if(BUILD_TESTING)
   # a copyright and license is added to all source files
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+
+  # Drone limits: values in config/sim.yaml that must agree across nodes.
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_config test/test_config.py TIMEOUT 30)
 endif()
 
 ament_package()
