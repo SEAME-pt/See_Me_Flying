@@ -282,6 +282,8 @@ The 5 s start delay of `setpoint_pub` is wall time, which could look risky on a 
 
 ## Tests
 
+Every test in the project, including CI, the checks done by hand and the hardware tests, is listed in [docs/TESTS.md](../docs/TESTS.md). This section is the detail for the ROS tests.
+
 **To run every test and keep the results:** on the host, in `seame-docker/`, with the container running:
 
 ```bash
