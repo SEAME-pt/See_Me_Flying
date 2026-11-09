@@ -1,0 +1,10 @@
+{
+	"id": "node-factor",
+	"name": "Node Factor",
+	"version": "3.0.1",
+	"minAppVersion": "0.15.0",
+	"description": "Customize factors effecting node size in graph.",
+	"author": "CalfMoon",
+	"authorUrl": "https://github.com/CalfMoon",
+	"isDesktopOnly": false
+}
