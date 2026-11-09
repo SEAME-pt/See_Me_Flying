@@ -12,6 +12,7 @@ logs/
 │       ├── results.json                     every test case, with any failure message
 │       └── console.log.gz                   the full output (zcat console.log.gz | less)
 └── measurements/
+    ├── measure_wifi_rtt.py                  the measuring tools live next to their results
     └── <name>/                              e.g. wifi_rtt, cmd_rate
         ├── history.csv                      one line per measurement
         └── <date>_<commit>/
@@ -44,7 +45,7 @@ Anything measured over time: Wi-Fi round-trip time and drops (STK-5), command ra
 **Wi-Fi round trip (`wifi_rtt`)**, with the laptop on the drone's network:
 
 ```bash
-python3 scripts/measure_wifi_rtt.py --note "bench, AP mode, radio on" -n 1000 --interval 0.05
+python3 logs/measurements/measure_wifi_rtt.py --note "bench, AP mode, radio on" -n 1000 --interval 0.05
 ```
 
 It runs [`telemetry/latency_test.py`](../../telemetry/latency_test.py) (any of its flags pass through) and keeps its per-sample CSV as `samples.csv`. `values.json` and `history.csv` hold: `host`, `duration_s`, `rate_hz` (the real request rate; `--interval` is the pause between samples, so it's lower than 1/interval), `sent`, `answered`, `lost`, `lost_pct`, `late`, `corrupted`, `min_ms`, `median_ms`, `p90_ms`, `p99_ms`, `max_ms`, `jitter_ms`, plus the flags used and the note. Ctrl-C stops early and still records the run; a run that never connected records nothing.

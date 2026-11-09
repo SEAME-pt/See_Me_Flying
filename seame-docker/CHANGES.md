@@ -256,6 +256,7 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 | `scripts/logbook.py` | New runs go to `<date>_<commit>[-dirty]/`; the same commit run again that day gets `-2`, `-3`, ... |
 | `logs/tests/` | The four existing runs renamed (e.g. `2026-11-02_162848_ed2219d` → `2026-11-02_ed2219d`), with `history.csv` and each `report.md` updated to match |
 | `logs/README.md` | The layout, and what `-2` means |
+| `logs/measurements/measure_wifi_rtt.py` | Moved from `scripts/`, next to the results it records |
 
 The previous run is still found from the order of `history.csv`, so the comparison in `report.md` doesn't depend on folder names.
 
