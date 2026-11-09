@@ -6,7 +6,7 @@ Every test run and every measurement gets its own dated folder, so results can b
 logs/
 ├── tests/
 │   ├── history.csv                          one line per run: the trend at a glance
-│   └── 2026-11-04_121721_c240f26/           <date>_<time>_<commit>, one per run
+│   └── 2026-11-04_eba9334/                  <date>_<commit>, one per run
 │       ├── meta.json                        when, commit, branch, uncommitted files
 │       ├── report.md                        the readable report
 │       ├── results.json                     every test case, with any failure message
@@ -14,12 +14,14 @@ logs/
 └── measurements/
     └── <name>/                              e.g. wifi_rtt, cmd_rate
         ├── history.csv                      one line per measurement
-        └── <date>_<time>_<commit>/
+        └── <date>_<commit>/
             ├── meta.json
             └── values.json                  (plus whatever the measuring tool saves)
 ```
 
 **`-dirty` in a folder name** means the run included uncommitted changes under `ros2_ws/`, so the commit alone doesn't say what ran; `meta.json` and the report list the files. Uncommitted docs are listed but don't make a run dirty.
+
+**`-2`, `-3` at the end** means the same commit was run again that day. The exact time of every run is in `meta.json` and in the `date` column of `history.csv`.
 
 ## Tests
 

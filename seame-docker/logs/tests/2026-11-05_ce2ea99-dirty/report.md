@@ -1,4 +1,4 @@
-# Test run 2026-11-05_143323_ce2ea99-dirty: PASSED
+# Test run 2026-11-05_ce2ea99-dirty: PASSED
 
 - **When:** 2026-11-05T14:33:23+00:00, on joao-barros-Vostro-5568
 - **Code:** `ce2ea99` on `staging`: Add the first tester run, the run-tests skill and a test-run commit hook
@@ -19,7 +19,7 @@ colcon's own summary counts 135 "tests": the 123 test cases plus 12 CTest entrie
 
 ## Compared with the previous run
 
-Previous: `2026-11-04_122025_eba9334` (`eba9334`): 123 cases, 0 failed. Now: 123 cases, 0 failed.
+Previous: `2026-11-04_eba9334` (`eba9334`): 123 cases, 0 failed. Now: 123 cases, 0 failed.
 
 Same tests, same results.
 

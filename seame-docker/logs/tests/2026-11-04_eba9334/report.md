@@ -1,11 +1,10 @@
-# Test run 2026-11-05_144126_ab8985a-dirty: PASSED
+# Test run 2026-11-04_eba9334: PASSED
 
-- **When:** 2026-11-05T14:41:26+00:00, on joao-barros-Vostro-5568
-- **Code:** `ab8985a` on `staging`: Merge test into staging: MTF-02P rangefinder model and OpticalFlow message
-- **Uncommitted code changes were part of this run** (2 file(s)), so the commit alone does not say what ran: `seame-docker/ros2_ws/src/drone_fc_bridge/CMakeLists.txt`, `seame-docker/ros2_ws/src/drone_fc_bridge/src/fc_bridge.cpp`
-- Other uncommitted files (not code, don't affect the tests): `.assets/diagram.png`, `.obsidian/app.json`, `.obsidian/appearance.json`, `.obsidian/community-plugins.json`, `.obsidian/core-plugins.json`, `.obsidian/graph.json`, `.obsidian/plugins/colored-tags/data.json`, `.obsidian/plugins/colored-tags/main.js`, `.obsidian/plugins/colored-tags/manifest.json`, `.obsidian/plugins/colored-tags/styles.css`, `.obsidian/plugins/obsidian-front-matter-title-plugin/data.json`, `.obsidian/plugins/obsidian-front-matter-title-plugin/main.js`, `.obsidian/plugins/obsidian-front-matter-title-plugin/manifest.json`, `.obsidian/workspace.json`, `README.md`, `docs/.obsidian/app.json`, `docs/.obsidian/appearance.json`, `docs/.obsidian/core-plugins.json`, `docs/.obsidian/graph.json`, `docs/.obsidian/workspace.json`, `"docs/3D Print Files/box.stl"`, `"docs/3D Print Files/esp12.stl"`, `"docs/3D Print Files/holder.stl"`, `"docs/3D Print Files/pmw3901.stl"`, `"docs/3D Print Files/wanhao_d12_230_fixed.ini"`, `docs/Doc-ROS2/Drone-SIM-Stack.md`, `docs/Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md`, `docs/Drone_Firmware_Choices.md`, `docs/ELRS_Guide.md`, `docs/INAV.md`, `docs/Li-Po_Battery_Tests.md`, `docs/README.md`, `docs/Sources.md`, `docs/Video_Transmission.md`, `docs/Wanhao_Duplicator_12-230.md`, `docs/extras/Drone_Betaflight_Backup.txt`, `docs/extras/Drone_INAV_Backup_26_10_26.txt`, `docs/extras/Drone_XYZ_INAV_Calibration.txt`, `docs/extras/ELRS-v4.1.0-betafpv.rx_2400.nano-LBT-bindphrase.bin.gz`, `docs/extras/ESC_configurator_log.txt`, `docs/extras/ESC_settings.png`, `docs/extras/ODDITYRCF7AIO_inav_9.1.0_v2.zip`, `docs/extras/receiver_crsf_ping.py`, `docs/extras/wanhao12-230_MOUNT.ini`, `docs/extras/wire_diagram.png`, `docs/pull_request_template.md`, `docs/sprints/README.md`, `docs/sprints/sprint_0.md`, `docs/sprints/sprint_1.md`, `seame-docker/.env.example`, `seame-docker/Dockerfile`, `seame-docker/GUIDE.md`, `seame-docker/compose.yaml`, `seame-docker/make-env.sh`, `seame-docker/scripts/make-env.sh`, `seame-docker/start.sh`, `telemetry/README.md`, `telemetry/inav_telemetry.py`, `telemetry/main.py`
+- **When:** 2026-11-04T12:20:25+00:00, on joao-barros-Vostro-5568
+- **Code:** `eba9334` on `staging`: Add logs/ for test runs and measurements, and the tester
+- Other uncommitted files (not code, don't affect the tests): `seame-docker/PLAN.md`, `.claude/skills/run-tests/SKILL.md`
 - **Environment:** ROS jazzy, Ubuntu 24.04.5 LTS, Python 3.12.3, dev container; clean build, the same commands as CI
-- **Build:** exit 0, 45 s. **Tests:** exit 0, 42 s
+- **Build:** exit 0, 44 s. **Tests:** exit 0, 43 s
 
 ## Result
 
@@ -19,20 +18,18 @@ colcon's own summary counts 135 "tests": the 123 test cases plus 12 CTest entrie
 
 ## Compared with the previous run
 
-Previous: `2026-11-05_143323_ce2ea99-dirty` (`ce2ea99`): 123 cases, 0 failed. Now: 123 cases, 0 failed.
-
-Same tests, same results.
+Previous: `2026-11-02_ed2219d` (`ed2219d`): 123 cases, 0 failed. Now: 123 cases, 0 failed.
 
 ## By package
 
 | Package | Behaviour | Lint | Passed | Skipped | Failed | Time |
 | --- | --- | --- | --- | --- | --- | --- |
-| `drone_basics_cpp` | 0 | 4 | 3 | 1 | 0 | 2.15 s |
-| `drone_basics_py` | 24 | 5 | 28 | 1 | 0 | 11.9 s |
-| `drone_bringup` | 0 | 5 | 5 | 0 | 0 | 1.37 s |
-| `drone_fc_bridge` | 23 | 0 | 23 | 0 | 0 | 40.4 s |
-| `drone_mission` | 43 | 5 | 47 | 1 | 0 | 11.0 s |
-| `drone_safety` | 9 | 5 | 13 | 1 | 0 | 9.44 s |
+| `drone_basics_cpp` | 0 | 4 | 3 | 1 | 0 | 2.23 s |
+| `drone_basics_py` | 24 | 5 | 28 | 1 | 0 | 11.5 s |
+| `drone_bringup` | 0 | 5 | 5 | 0 | 0 | 1.47 s |
+| `drone_fc_bridge` | 23 | 0 | 23 | 0 | 0 | 41.3 s |
+| `drone_mission` | 43 | 5 | 47 | 1 | 0 | 11.7 s |
+| `drone_safety` | 9 | 5 | 13 | 1 | 0 | 12.4 s |
 
 ## Every test
 
@@ -70,54 +67,54 @@ Same tests, same results.
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_flake8` | pass | 0.410 |  |
+| `test_flake8` | pass | 0.399 |  |
 
 ### `drone_basics_py` · `test_mypy` (1)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_mypy` | pass | 7.911 |  |
+| `test_mypy` | pass | 7.307 |  |
 
 ### `drone_basics_py` · `test_pep257` (1)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_pep257` | pass | 0.054 |  |
+| `test_pep257` | pass | 0.064 |  |
 
 ### `drone_basics_py` · `test_radio_teleop` (24)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_switch_off_publishes_nothing` | pass | 0.105 |  |
-| `test_engage_after_hold` | pass | 0.064 |  |
-| `test_no_engage_before_hold` | pass | 0.014 |  |
-| `test_bounce_while_arming_does_not_engage` | pass | 0.014 |  |
-| `test_engages_once_bounce_settles` | pass | 0.014 |  |
-| `test_off_is_immediate` | pass | 0.015 |  |
-| `test_bounce_while_disarming_does_not_reengage` | pass | 0.016 |  |
-| `test_engage_refused_with_throttle_off_centre` | pass | 0.013 |  |
-| `test_throttle_moves_freely_once_engaged` | pass | 0.016 |  |
-| `test_sticks_scaled_to_limits` | pass | 0.015 |  |
-| `test_deadband_gives_zero` | pass | 0.015 |  |
-| `test_reengage_needs_throttle_centred_again` | pass | 0.016 |  |
-| `test_switch_at_threshold_is_off` | pass | 0.013 |  |
-| `test_missing_arm_axis_is_off` | pass | 0.013 |  |
-| `test_arm_switch_arms_the_fc_once` | pass | 0.013 |  |
-| `test_arm_switch_off_disarms_even_in_flight` | pass | 0.016 |  |
-| `test_arm_switch_on_at_start_must_be_cycled` | pass | 0.016 |  |
-| `test_arming_refused_with_throttle_off_centre` | pass | 0.015 |  |
-| `test_arm_alone_does_not_take_over` | pass | 0.014 |  |
-| `test_takeover_alone_does_nothing` | pass | 0.016 |  |
-| `test_takeover_with_arm_on_engages_after_hold` | pass | 0.014 |  |
-| `test_takeover_off_releases_at_once` | pass | 0.016 |  |
-| `test_arm_off_releases_even_with_takeover_on` | pass | 0.015 |  |
-| `test_missing_takeover_axis_is_off` | pass | 0.015 |  |
+| `test_switch_off_publishes_nothing` | pass | 0.134 |  |
+| `test_engage_after_hold` | pass | 0.107 |  |
+| `test_no_engage_before_hold` | pass | 0.018 |  |
+| `test_bounce_while_arming_does_not_engage` | pass | 0.020 |  |
+| `test_engages_once_bounce_settles` | pass | 0.021 |  |
+| `test_off_is_immediate` | pass | 0.025 |  |
+| `test_bounce_while_disarming_does_not_reengage` | pass | 0.023 |  |
+| `test_engage_refused_with_throttle_off_centre` | pass | 0.023 |  |
+| `test_throttle_moves_freely_once_engaged` | pass | 0.022 |  |
+| `test_sticks_scaled_to_limits` | pass | 0.025 |  |
+| `test_deadband_gives_zero` | pass | 0.020 |  |
+| `test_reengage_needs_throttle_centred_again` | pass | 0.028 |  |
+| `test_switch_at_threshold_is_off` | pass | 0.020 |  |
+| `test_missing_arm_axis_is_off` | pass | 0.018 |  |
+| `test_arm_switch_arms_the_fc_once` | pass | 0.023 |  |
+| `test_arm_switch_off_disarms_even_in_flight` | pass | 0.023 |  |
+| `test_arm_switch_on_at_start_must_be_cycled` | pass | 0.022 |  |
+| `test_arming_refused_with_throttle_off_centre` | pass | 0.023 |  |
+| `test_arm_alone_does_not_take_over` | pass | 0.019 |  |
+| `test_takeover_alone_does_nothing` | pass | 0.019 |  |
+| `test_takeover_with_arm_on_engages_after_hold` | pass | 0.022 |  |
+| `test_takeover_off_releases_at_once` | pass | 0.023 |  |
+| `test_arm_off_releases_even_with_takeover_on` | pass | 0.024 |  |
+| `test_missing_takeover_axis_is_off` | pass | 0.020 |  |
 
 ### `drone_basics_py` · `test_xmllint` (1)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_xmllint` | pass | 0.462 |  |
+| `test_xmllint` | pass | 0.218 |  |
 
 ### `drone_bringup` · `flake8` (1)
 
@@ -148,44 +145,44 @@ Same tests, same results.
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_fresh_setpoint_is_forwarded` | pass | 1.807 |  |
-| `test_horizontal_clamp_keeps_direction` | pass | 1.817 |  |
-| `test_inf_is_rejected` | pass | 1.821 |  |
-| `test_nan_is_rejected_and_times_out` | pass | 2.319 |  |
+| `test_fresh_setpoint_is_forwarded` | pass | 1.812 |  |
+| `test_horizontal_clamp_keeps_direction` | pass | 1.822 |  |
+| `test_inf_is_rejected` | pass | 1.809 |  |
+| `test_nan_is_rejected_and_times_out` | pass | 2.318 |  |
 | `test_roll_and_pitch_rates_are_zeroed` | pass | 1.810 |  |
-| `test_sim_enable_is_published` | pass | 2.311 |  |
-| `test_timeout_sends_zero` | pass | 2.822 |  |
-| `test_vertical_and_yaw_clamp` | pass | 2.817 |  |
-| `test_zero_without_setpoints` | pass | 1.811 |  |
+| `test_sim_enable_is_published` | pass | 2.301 |  |
+| `test_timeout_sends_zero` | pass | 2.821 |  |
+| `test_vertical_and_yaw_clamp` | pass | 2.828 |  |
+| `test_zero_without_setpoints` | pass | 1.810 |  |
 
 ### `drone_fc_bridge` · `test_inav` (3)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_arm_is_refused` | pass | 0.007 |  |
-| `test_nothing_reaches_the_sim` | pass | 0.000 |  |
-| `test_status_says_inav_and_disarmed` | pass | 0.000 |  |
+| `test_arm_is_refused` | pass | 0.003 |  |
+| `test_nothing_reaches_the_sim` | pass | 0.002 |  |
+| `test_status_says_inav_and_disarmed` | pass | 0.001 |  |
 
 ### `drone_fc_bridge` · `test_services` (4)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_disarm_and_rearm` | pass | 3.021 |  |
-| `test_hold_sends_zero_despite_setpoints` | pass | 1.528 |  |
+| `test_disarm_and_rearm` | pass | 3.012 |  |
+| `test_hold_sends_zero_despite_setpoints` | pass | 1.519 |  |
 | `test_starts_armed` | pass | 0.000 |  |
-| `test_status_reports_setpoint_age` | pass | 1.450 |  |
+| `test_status_reports_setpoint_age` | pass | 1.467 |  |
 
 ### `drone_fc_bridge` · `test_state` (7)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_body_velocity_rotated_by_heading` | pass | 1.534 |  |
-| `test_height_and_orientation_from_sim` | pass | 0.413 |  |
-| `test_position_is_integrated_not_copied` | pass | 1.530 |  |
-| `test_range_level` | pass | 0.417 |  |
-| `test_range_out_of_range_is_inf` | pass | 1.248 |  |
-| `test_range_reads_longer_when_tilted` | pass | 0.418 |  |
-| `test_velocity_passes_through` | pass | 0.616 |  |
+| `test_body_velocity_rotated_by_heading` | pass | 1.524 |  |
+| `test_height_and_orientation_from_sim` | pass | 0.414 |  |
+| `test_position_is_integrated_not_copied` | pass | 1.522 |  |
+| `test_range_level` | pass | 0.410 |  |
+| `test_range_out_of_range_is_inf` | pass | 1.246 |  |
+| `test_range_reads_longer_when_tilted` | pass | 0.413 |  |
+| `test_velocity_passes_through` | pass | 0.618 |  |
 
 ### `drone_mission` · `test_copyright` (1)
 
@@ -197,7 +194,7 @@ Same tests, same results.
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_flake8` | pass | 0.531 |  |
+| `test_flake8` | pass | 0.467 |  |
 
 ### `drone_mission` · `test_logic` (43)
 
@@ -251,19 +248,19 @@ Same tests, same results.
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_mypy` | pass | 7.842 |  |
+| `test_mypy` | pass | 8.592 |  |
 
 ### `drone_mission` · `test_pep257` (1)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_pep257` | pass | 0.105 |  |
+| `test_pep257` | pass | 0.129 |  |
 
 ### `drone_mission` · `test_xmllint` (1)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_xmllint` | pass | 0.212 |  |
+| `test_xmllint` | pass | 0.471 |  |
 
 ### `drone_safety` · `test_arbiter` (9)
 
@@ -289,32 +286,32 @@ Same tests, same results.
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_flake8` | pass | 0.282 |  |
+| `test_flake8` | pass | 0.323 |  |
 
 ### `drone_safety` · `test_mypy` (1)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_mypy` | pass | 6.313 |  |
+| `test_mypy` | pass | 9.278 |  |
 
 ### `drone_safety` · `test_pep257` (1)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_pep257` | pass | 0.032 |  |
+| `test_pep257` | pass | 0.055 |  |
 
 ### `drone_safety` · `test_xmllint` (1)
 
 | Test | Result | Time (s) | Note |
 | --- | --- | --- | --- |
-| `test_xmllint` | pass | 0.417 |  |
+| `test_xmllint` | pass | 0.309 |  |
 
 ## Warnings in the output
 
 Lines mentioning a warning (node log lines at WARN level left out: those are the behaviour under test):
 
 ```text
-Warning: This process (pid=4606) is multi-threaded, use of fork() may lead to deadlocks in the child.
+Warning: This process (pid=4267) is multi-threaded, use of fork() may lead to deadlocks in the child.
 ```
 
 ## Console summary lines
@@ -322,20 +319,20 @@ Warning: This process (pid=4606) is multi-threaded, use of fork() may lead to de
 Packages are tested in parallel, so these lines interleave.
 
 ```text
-Finished <<< drone_interfaces [0.50s]
+Finished <<< drone_interfaces [0.53s]
 100% tests passed, 0 tests failed out of 4
-Finished <<< drone_basics_cpp [2.15s]
-======================== 13 passed, 1 skipped in 7.23s =========================
-Finished <<< drone_safety [9.44s]
-================== 28 passed, 1 skipped, 4 warnings in 10.13s ==================
-Finished <<< drone_basics_py [11.9s]
-======================== 47 passed, 1 skipped in 8.99s =========================
-Finished <<< drone_mission [11.0s]
+Finished <<< drone_basics_cpp [2.23s]
+================== 28 passed, 1 skipped, 4 warnings in 9.58s ===================
+======================== 13 passed, 1 skipped in 10.21s ========================
+Finished <<< drone_basics_py [11.5s]
+Finished <<< drone_safety [12.4s]
+======================== 47 passed, 1 skipped in 9.92s =========================
+Finished <<< drone_mission [11.7s]
 100% tests passed, 0 tests failed out of 4
-Finished <<< drone_fc_bridge [40.4s]
+Finished <<< drone_fc_bridge [41.3s]
 100% tests passed, 0 tests failed out of 4
-Finished <<< drone_bringup [1.37s]
-Summary: 7 packages finished [42.4s]
+Finished <<< drone_bringup [1.47s]
+Summary: 7 packages finished [43.5s]
 Summary: 135 tests, 0 errors, 0 failures, 4 skipped
 ```
 
