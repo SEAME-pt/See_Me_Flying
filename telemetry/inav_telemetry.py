@@ -38,6 +38,7 @@ def d_opflow(p):                                  # MSP2_INAV_OPTICAL_FLOW (0x20
             "flow_rate_x_dps": fx, "flow_rate_y_dps": fy,
             "body_rate_x_dps": bx, "body_rate_y_dps": by}
 
+
 def crc8_dvb_s2(data):
     crc = 0
     for b in data:
@@ -302,11 +303,18 @@ STATIC = {
 LIVE = {
     "attitude": (108, d_attitude),
     "altitude": (109, d_altitude),
+    # "gps": (106, d_raw_gps),
+    # "gps_home": (107, d_comp_gps),
+    # "analog": (110, d_analog),
     "imu_raw": (102, d_raw_imu),
     "rc_channels": (105, u16_list),
     "motors": (104, u16_list),
+    # "servos": (103, u16_list),
+    # "status": (101, d_status),
+    # "status_ex": (150, d_status_ex),
     "inav_status": (0x2000, d_inav_status),
     "inav_analog": (0x2002, d_inav_analog),
+    # "inav_airspeed": (0x2009, d_raw),
     "opflow": (0x2001, d_opflow),
     ### New Check ###
     "rangefinder": (58, d_rangefinder),             # MTF-02P; reads invalid until fitted
