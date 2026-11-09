@@ -235,6 +235,18 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 
 **Checked:** a full run (123 cases, 119 passed, 4 skipped, 0 failed, about 1.5 min) compared itself with Nov 2 ("same tests, same results"); two measurements in the same second get separate folders, and a new key adds a column to `history.csv`.
 
+## Nov 6: Wi-Fi round trip into `logs/measurements/`
+
+**Purpose:** `telemetry/latency_test.py` prints its results and saves a CSV wherever it runs, so runs couldn't be compared or traced to a commit. Now each run lands in `logs/measurements/wifi_rtt/`, without changing the script.
+
+| File | Change |
+| --- | --- |
+| `scripts/measure_wifi_rtt.py` | Runs `latency_test.py` (its flags pass through, `--note` required), keeps its CSV as `samples.csv`, writes the summary to `values.json` and a line to `history.csv`. Adds `rate_hz`: `--interval` is the pause between samples, so the real rate is lower than 1/interval |
+| `logs/README.md` | A `wifi_rtt` section; the generic examples now use `cmd_rate`, so they don't show `wifi_rtt` with other keys |
+| `scripts/logbook.py` | Docstring example changed the same way |
+
+**Checked** (against a fake bridge on localhost, not the drone yet): the summary matches `latency_test.py`'s own; Ctrl-C mid-run still records the run; no bridge records nothing and exits 1.
+
 ## Docs updated
 
 - `README.md`: `fc_bridge` section (state topics and parameters), bridge table, `radio_teleop` debounce, a **Tests** section, known issues and the resolved list.

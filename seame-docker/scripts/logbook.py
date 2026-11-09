@@ -14,8 +14,8 @@ commit alone doesn't say what ran. Other changes (docs) are only listed.
 As a library (scripts that run tests or measurements):
     from logbook import new_run, append_history
 As a command, to record a measurement taken by hand:
-    python3 scripts/logbook.py measure wifi_rtt mean_ms=12.4 p95_ms=30 drops=0 \\
-        --note "bench, radio on"
+    python3 scripts/logbook.py measure cmd_rate hz=19.8 jitter_ms=4.1 \\
+        --note "sim demo, /cmd/mission"
 """
 import argparse
 import csv

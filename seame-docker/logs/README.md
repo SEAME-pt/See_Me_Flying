@@ -39,22 +39,30 @@ Commit the run folder together with the code it tested, or right after, so the h
 
 Anything measured over time: Wi-Fi round-trip time and drops (STK-5), command rates (ROS-7.1), and later anything else worth tracking.
 
+**Wi-Fi round trip (`wifi_rtt`)**, with the laptop on the drone's network:
+
+```bash
+python3 scripts/measure_wifi_rtt.py --note "bench, AP mode, radio on" -n 1000 --interval 0.05
+```
+
+It runs [`telemetry/latency_test.py`](../../telemetry/latency_test.py) (any of its flags pass through) and keeps its per-sample CSV as `samples.csv`. `values.json` and `history.csv` hold: `host`, `duration_s`, `rate_hz` (the real request rate; `--interval` is the pause between samples, so it's lower than 1/interval), `sent`, `answered`, `lost`, `lost_pct`, `late`, `corrupted`, `min_ms`, `median_ms`, `p90_ms`, `p99_ms`, `max_ms`, `jitter_ms`, plus the flags used and the note. Ctrl-C stops early and still records the run; a run that never connected records nothing.
+
 **From a measuring script** (Python), the way `run_tests.sh` does it:
 
 ```python
 import sys; sys.path.insert(0, 'scripts')
 from logbook import new_run, append_history, write_json
 
-run = new_run('measurements', 'wifi_rtt', {'note': 'bench, radio on'})
+run = new_run('measurements', 'cmd_rate', {'note': 'sim demo, /cmd/mission'})
 # ... measure, save raw data into run/ ...
-write_json(f'{run}/values.json', {'mean_ms': 12.4, 'p95_ms': 30.1, 'drops': 0})
-append_history(run, {'mean_ms': 12.4, 'p95_ms': 30.1, 'drops': 0, 'note': 'bench, radio on'})
+write_json(f'{run}/values.json', {'hz': 19.8, 'jitter_ms': 4.1})
+append_history(run, {'hz': 19.8, 'jitter_ms': 4.1, 'note': 'sim demo, /cmd/mission'})
 ```
 
 **Measured by hand or with another tool:**
 
 ```bash
-python3 scripts/logbook.py measure wifi_rtt mean_ms=12.4 p95_ms=30.1 drops=0 --note "bench, radio on"
+python3 scripts/logbook.py measure cmd_rate hz=19.8 jitter_ms=4.1 --note "sim demo, /cmd/mission"
 ```
 
 Use one name per kind of measurement, and keep the same keys between runs so `history.csv` stays comparable; a new key just adds a column. Always say the conditions in `--note` (where, what was running, anything unusual): a number without its setup can't be compared.
