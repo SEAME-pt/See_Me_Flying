@@ -1,0 +1,12 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-10T12:44:43+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "92117ca4722a6218d6c6887f5e2257574ea2a15f",
+  "commit_short": "92117ca",
+  "commit_subject": "Merge main into staging: INAV-4 inventory and captures, real_flow, lint fix",
+  "branch": "staging",
+  "uncommitted_code": [],
+  "uncommitted_other": []
+}
