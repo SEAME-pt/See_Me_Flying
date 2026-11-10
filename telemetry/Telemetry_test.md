@@ -29,6 +29,9 @@ This test consisted in sending and receiving MSP packages, and the ms listed is 
 > [!TIP]  
 > If power saving is enabled on the computer the results of the tests will be way higher and lost packages will be common
 
+# TCP vs UDP
+
+This isn't really a debate TCP is the only logical solution, esp-link does work with UDP but the micro controller would need to run esp-link client code which isn't fesable since we need inav
 # Tags
 
 #resources 
