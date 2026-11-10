@@ -1,3 +1,6 @@
+---
+title: Simulator Measurements
+---
 # Logs: test runs and measurements
 
 Every test run and every measurement gets its own dated folder, so results can be compared over time (getting better or worse) and traced back to the exact code that produced them. Nothing here is written by hand except notes.
@@ -58,3 +61,7 @@ python3 scripts/logbook.py measure wifi_rtt mean_ms=12.4 p95_ms=30.1 drops=0 --n
 ```
 
 Use one name per kind of measurement, and keep the same keys between runs so `history.csv` stays comparable; a new key just adds a column. Always say the conditions in `--note` (where, what was running, anything unusual): a number without its setup can't be compared.
+
+# Tags
+
+#resources 

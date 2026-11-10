@@ -8,28 +8,21 @@
   "collapse-color-groups": false,
   "colorGroups": [
     {
-      "query": "tag:#hardware  ",
+      "query": "tag:#firmware  ",
       "color": {
         "a": 1,
         "rgb": 14701138
       }
     },
     {
-      "query": "tag:#firmware  ",
+      "query": "tag:#hardware",
       "color": {
         "a": 1,
         "rgb": 14725458
       }
     },
     {
-      "query": "tag:#guides  ",
-      "color": {
-        "a": 1,
-        "rgb": 11657298
-      }
-    },
-    {
-      "query": "tag:#resources  ",
+      "query": "tag:#simulator  ",
       "color": {
         "a": 1,
         "rgb": 9589472
@@ -39,25 +32,32 @@
       "query": "tag:#sprints  ",
       "color": {
         "a": 1,
-        "rgb": 5431473
+        "rgb": 5431378
+      }
+    },
+    {
+      "query": "tag:#resources  ",
+      "color": {
+        "a": 1,
+        "rgb": 19538
       }
     },
     {
       "query": "tag:#tools  ",
       "color": {
         "a": 1,
-        "rgb": 3754080
+        "rgb": 5419488
       }
     },
     {
-      "query": "tag:#simulator  ",
+      "query": "tag:#guides  ",
       "color": {
         "a": 1,
-        "rgb": 18519
+        "rgb": 5395168
       }
     }
   ],
-  "collapse-display": true,
+  "collapse-display": false,
   "showArrow": false,
   "textFadeMultiplier": 0,
   "nodeSizeMultiplier": 1,
