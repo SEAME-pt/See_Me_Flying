@@ -328,6 +328,14 @@ Job outline:
 
 The real flight controller can't be reached from GitHub's machines. Turn the bench checks into a script, `telemetry/bench_check.py`, that connects to the drone and runs the A3 checks live, and log its result with `logbook.py`. Run it before each flight session. The INAV-4 branch's `msp_inventory.py` is already most of the way there.
 
+### A7. The Python decoders where fc_bridge's C++ decoders disagree (done)
+
+ROS-6 step A on `main` added C++ decoders for fc_bridge (`drone_fc_bridge/src/inav_decode.cpp`), written from the INAV 9.1.0 source. Their comments name three bugs in `inav_telemetry.py`: arming blockers include the simulator and unused bits; 0 cm from the rangefinder counts as a valid distance; power and the drawn counters are read unsigned. Each is now a strict expected fail at the end of `telemetry/tests/test_decoders.py`, replacing `test_unknown_arming_bit_is_kept`, which expected the wrong arming behaviour. Two passing rangefinder tests were added too (it had none). Details: [TESTS.md](../TESTS.md#33-test_decoderspy-decoders-59-cases-3-expected-fail).
+
+### A8. The C++ tests' copies of the recordings match (done)
+
+`drone_fc_bridge/test/data/` on `main` holds copies of the four recordings. `telemetry/tests/test_capture_copies.py` checks that every file under `ros2_ws/src` with a recording's name is identical to the original, and prints the `cp` command if not. It skips until `main` is merged into this branch.
+
 ## B. Drone limits and configuration
 
 ### B1. Config consistency: `drone_bringup/test/test_config.py`
@@ -431,7 +439,9 @@ Also add `test_mypy.py` and `test_xmllint.py` to this package, as the other Pyth
 
 A launch test that checks the warning appears after `timeout_s` with no setpoint, and doesn't appear while setpoints arrive at 20 Hz. Also run `setpoint_pub` for 2 s and check it publishes at 20 Hz with the configured speed.
 
-### C6. Launch files: `drone_bringup/test/test_launch_files.py`
+### C6. Launch files: `drone_bringup/test/test_launch_files.py` (done)
+
+Done as planned, for all 48 argument combinations, plus: the clock (`use_sim_time`) per backend, `sim.yaml` given to every node, the pre-start package check covering every package started, and the guard against a second sim. 24 cases, about 1 s. Details: [TESTS.md](../TESTS.md#42-what-the-launch-file-starts-test_launch_filespy-24-cases). The original plan:
 
 Without running anything, build the launch description for each combination of arguments and inspect it:
 
@@ -446,31 +456,38 @@ Without running anything, build the launch description for each combination of a
 
 **Catches:** a renamed executable or wrong path, which today is only found when someone launches the sim.
 
+### C7. The Gazebo worlds: `drone_bringup/test/test_worlds.py` (done)
+
+Reads every world in `drone_bringup/worlds/` and the default world as XML, without Gazebo: the drone is there, its velocity controller and odometry use the topics in `gz_bridge.yaml`, it starts on the ground, its Fuel model is pinned, and every model, texture and mesh exists and is installed. It is the cheap half of D2, on every PR. It does little in CI until `feature/153` brings `worlds/`, because the default world is Gazebo's own and CI has no Gazebo. Details: [TESTS.md](../TESTS.md#43-the-gazebo-worlds-test_worldspy-9-cases).
+
 ## D. Simulation in Gazebo (new CI job: nightly, and from the Actions tab)
 
-### D0. What's needed first
+### D0. What's needed first (done)
 
-1. A `headless:=true` argument in `sim.launch.py` that runs `gz_args = '-s -r --headless-rendering ' + world` (server only, no GUI). Today `gz_args` is always `'-r ' + world`, which opens a GUI.
-2. A CI job that runs **inside the project's Docker image**, which already includes `ros-jazzy-ros-gz`, instead of plain `ros:jazzy`. Build the image as the `docker-image` job already does, then run the tests in it.
-3. Run it on `schedule:` (nightly) and `workflow_dispatch`, not on every push, because it's slow (5–15 min).
+1. `headless:=true` in `sim.launch.py`: `gz_args = '-s -r ' + world`, server only, no window. Not `--headless-rendering`: nothing in these worlds renders, and in the dev container that option tries the GPU without its driver and Gazebo never starts. A world with a camera would need it.
+2. The job runs **inside the project's Docker image** (`seame/ros2-dev:jazzy`), the same sim as on our laptops. `.github/workflows/nightly.yml` builds it from the `docker-image` job's layer cache, then runs `seame-docker/scripts/sim_flight_test.sh`, which anyone can also run on the host.
+3. It runs every night (02:00 UTC), from the Actions tab, and on PRs that change the sim (launch, config, the test, the script). It takes 4–5 min and isn't part of `block-red-pr`.
 
-### D1. Flight tests in Gazebo: `drone_bringup/test/test_sim_flight.py`
+### D1. Flight tests in Gazebo: `drone_bringup/test/test_sim_flight.py` (done)
 
-A launch test that includes `sim.launch.py headless:=true radio:=false` and uses `ROS_DOMAIN_ID=198`.
+A launch test that includes `sim.launch.py headless:=true radio:=false` (own `ROS_DOMAIN_ID`, localhost only, own `GZ_PARTITION`). One flight, in order; after a failed step the rest are skipped. Every check uses Gazebo's ground truth (`/sim/ground_truth`). Not registered with colcon, so PR CI never runs it (only its lint).
 
-| Test | Checks | Pass if |
-| --- | --- | --- |
-| `test_sim_comes_up` | `/X3/odom`, `fc/range`, `fc/optical_flow` and `fc/status` are all published within 60 s | All four seen; backend `sim` |
-| `test_on_ground_at_start` | The drone is on the ground | `fc/range` < `ground_h`; mission GROUNDED |
-| `test_takeoff` | `Takeoff(1.2)` action | SUCCEEDED within 20 s; `fc/range` 1.2 ± 0.1 |
-| `test_hover_drift` | Hold for 10 s | Height ± 0.05 m; horizontal drift < 0.3 m |
-| `test_goto_square` | Four sides of a 1 m square | All succeed; ends < 0.3 m from start in Gazebo's ground truth |
-| `test_speed_never_exceeds_limits` | Throughout the flight, the Gazebo velocity | Always ≤ max_speed_xy + 10 % and ≤ max_speed_z + 10 % |
-| `test_setpoint_loss_stops_drone` | Kill the mission node mid-goto | Gazebo velocity < 0.05 m/s within 1 s |
-| `test_land` | `Land` action | SUCCEEDED; range < ground_h; the drone is still upright (attitude) |
-| `test_flow_matches_motion` | During the goto | Flow sign and size are consistent with Gazebo's velocity ÷ height |
+| Step | Checks | Pass if | Measured |
+| --- | --- | --- | --- |
+| `test_1_sim_comes_up` | Ground truth, `fc/status`, `fc/range`, the action servers, sim time | All within 180 s (the first run downloads the X3 from Fuel); backend `sim` | about 3 s |
+| `test_2_on_the_ground_at_start` | The drone is on the ground | Height and `fc/range` < `ground_h`; still; upright | z 0.054 m |
+| `test_3_takeoff` | `Takeoff` to `target_h` | SUCCEEDED; true height and rangefinder 1.2 ± 0.1 m | 1.16–1.18 m |
+| `test_4_hover_drift` | 3 s to settle, then hold 10 s | No overshoot above 1.3 m; drift < 0.1 m; height 1.2 ± 0.05 m | drift 0.000 m, 1.196–1.204 m |
+| `test_5_square` | The demo's square: 1 m forward, quarter turn left, 4 times | Sides 1 ± (`pos_tolerance` + 0.1) m; turns 90° ± (`yaw_tolerance` + 0.02); closes < 0.3 m; heading within 4 turn tolerances | sides 0.87–0.94 m, turns 88–91°, closes 0.085 m |
+| `test_6_speed_capped_at_the_limit` | A Goto asking 2 m/s, and speeds since takeoff | Reaches > 80 % of `max_speed_xy`, never > limit + 10 %; z and yaw rate too; fc_bridge never sends over a limit | 0.459 m/s, z 0.300 m/s |
+| `test_7_land` | `Land` | SUCCEEDED; back on the ground; upright; the mission disarms | z 0.055 m |
+| `test_8_mission_dies_and_the_drone_stops` | Take off again, kill the mission node (SIGKILL) mid-Goto, then land by hand on `cmd/manual` | Stopped (< 0.05 m/s) within `setpoint_timeout_s` + 1 s; coasts < 0.5 m; holds height; lands; disarms | 1.07 s, 0.228 m |
 
-On failure, save a rosbag of `fc/*`, `/X3/odom` and `cmd/*` as a CI artifact so the flight can be replayed.
+Not done yet: `test_flow_matches_motion` (flow sign and size against Gazebo's velocity ÷ height).
+
+Every run keeps the test log, the xUnit report, every node's log and a rosbag of the flight (`ros2 bag play flight_bag`) as the `sim-flight` artifact.
+
+**Known failure today:** the mission node's commands stall for up to 0.8 s (rclpy's multi-threaded executor), so fc_bridge times out every 1–2 s and Goto aborts with "rangefinder lost" or is rejected. The flight fails at the square on most runs until that's fixed. With the mission on the single-threaded executor and `await` in `execute()`, it passed with no timeouts.
 
 ### D2. Run it for every world
 
@@ -493,8 +510,8 @@ Publish fake `/joy` messages, as the real radio would send, into the full sim: e
 | E7 | Add a `sim-nightly` job (part D) with `schedule:` and `workflow_dispatch:` | Gazebo tests without slowing PRs |
 | E8 | Add a `inav-sitl` job (A5), nightly | Real firmware protocol check |
 | E9 | Make the jobs **required status checks** on `main` (GitHub settings → Branches) | Otherwise a red CI can still be merged |
-| E10 | Remove `Develop` from the triggers, or delete the branch | It's 123 commits behind and unused |
-| E11 | Before merging `tsk/re-estructure`, check it doesn't delete tests | It currently removes `drone_safety`, the `drone_mission` tests and their lint |
+| E10 | Remove `Develop` from the triggers | The branch was deleted (Nov 12); `ci.yml` still lists it |
+| E11 | ~~Before merging `tsk/re-estructure`, check it doesn't delete tests~~ | The branch was deleted without being merged (Nov 12) |
 
 ---
 
@@ -506,7 +523,7 @@ Publish fake `/joy` messages, as the real radio would send, into the full sim: e
 | 2 | **A1 + A2** MSP framing and decoders | Small | +seconds |
 | 3 | Merge INAV-4 → **A3** capture replay | Small | +seconds |
 | 4 | **C2** full stack with a fake drone ⭐ | Medium | +~30 s |
-| 5 | **B2** fc_bridge with `sim.yaml`, **C6** launch files | Small | +~20 s |
+| 5 | **B2** fc_bridge with `sim.yaml`, **C6** launch files (done), **C7** worlds (done) | Small | +~20 s |
 | 6 | **C1, C3, C4** node tests, **E2–E5** lint | Medium | +~1 min |
 | 7 | **D0 + D1** Gazebo flight tests, nightly | Large | Nightly only |
 | 8 | **A5** INAV SITL, nightly | Medium/large | Nightly only |

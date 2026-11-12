@@ -10,6 +10,7 @@ import math
 
 from drone_mission.logic import (ABORTED, CANCELED, GOTO, GROUNDED, HOLD, LAND, Mission,
                                  OVERRIDDEN, Params, RANGE_LOST, SUCCEEDED, TAKEOFF)
+import pytest
 
 DT = 0.05
 
@@ -499,6 +500,27 @@ def test_disarm_in_the_air_aborts_and_goes_quiet():
     assert goal.status == ABORTED and goal.message == 'disarmed'
     assert f.m.state == GROUNDED
     assert f.m.step(f.t) is None, 'silent: nothing commands a disarmed drone'
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    'Known bug: on_armed ignores a disarm while OVERRIDDEN (not in AIRBORNE). If control '
+    'comes back while the drone is still falling, set_control goes to HOLD, and the '
+    'mission keeps commanding a climb, disarmed on the ground; re-armed, it climbs with '
+    'no Takeoff. Found by drone_bringup/test/test_stack.py. Fix it, then remove this xfail.'))
+def test_disarm_while_overridden_is_not_forgotten():
+    f = Flight()
+    f.takeoff()
+    f.m.set_control(f.t, False, 'radio')
+    f.m.on_armed(f.t, False)          # the pilot's kill switch, while the radio flies
+    f.plant.h = 0.85                  # still falling when the sticks are released
+    f.run(0.1)
+    f.m.set_control(f.t, True)
+    f.plant.h = 0.0                   # then it hits the ground
+    f.run(2.0)
+    assert f.cmd is None, 'commanding a disarmed drone on the ground'
+    f.m.on_armed(f.t, True)           # re-armed on the ground, no Takeoff sent
+    f.run(2.0)
+    assert f.plant.h == 0.0, 'climbed with no Takeoff'
 
 
 def test_disarm_on_the_ground_changes_nothing():

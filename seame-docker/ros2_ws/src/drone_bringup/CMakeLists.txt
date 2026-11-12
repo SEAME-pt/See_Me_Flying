@@ -29,6 +29,16 @@ if(BUILD_TESTING)
   # Drone limits: values in config/sim.yaml that must agree across nodes.
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_config test/test_config.py TIMEOUT 30)
+  # What sim.launch.py starts for every combination of arguments, without starting it.
+  ament_add_pytest_test(test_launch_files test/test_launch_files.py TIMEOUT 60)
+  # The Gazebo worlds: the drone is in each one and wired to gz_bridge.yaml (SDF only).
+  ament_add_pytest_test(test_worlds test/test_worlds.py TIMEOUT 30)
+
+  # The whole stack without Gazebo: mission, safety_manager and fc_bridge with a fake drone.
+  # Own domain and localhost only, so a running sim (domain 6) cannot interfere.
+  find_package(launch_testing_ament_cmake REQUIRED)
+  add_launch_test(test/test_stack.py TIMEOUT 180
+    ENV ROS_DOMAIN_ID=198 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST)
 endif()
 
 ament_package()

@@ -26,6 +26,22 @@
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>python3-pytest</test_depend>
   <test_depend>python3-yaml</test_depend>
+  <!-- test_launch_files.py, test_worlds.py: load sim.launch.py without running it -->
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>launch</test_depend>
+  <!-- test_stack.py: starts these three nodes and talks to them -->
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>launch_testing</test_depend>
+  <test_depend>launch_ros</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>drone_fc_bridge</test_depend>
+  <test_depend>drone_mission</test_depend>
+  <test_depend>drone_safety</test_depend>
+  <test_depend>drone_interfaces</test_depend>
+  <test_depend>geometry_msgs</test_depend>
+  <test_depend>nav_msgs</test_depend>
+  <test_depend>std_msgs</test_depend>
+  <test_depend>std_srvs</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

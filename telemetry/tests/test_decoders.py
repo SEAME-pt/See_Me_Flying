@@ -1,9 +1,11 @@
 """Payload decoders in inav_telemetry.py: units, scaling, bit fields.
 
-Two kinds of tests:
+Three kinds of tests:
 - hand-made payloads (struct.pack) with chosen values, to pin the units;
 - real payloads from the INAV-4 captures (INAV 9.1.0), checked against what
-  the drone was doing (telemetry/inav/captures/README.md on that branch).
+  the drone was doing (telemetry/inav/captures/README.md on that branch);
+- known bugs, at the end: where fc_bridge's C++ decoders, written from the
+  INAV source, disagree with this script. Marked xfail until it is fixed.
 """
 import struct
 
@@ -82,6 +84,14 @@ def test_every_battery_state(state, name):
     assert t.d_inav_analog(p)["battery_state"] == name
 
 
+def test_rangefinder_cm_to_m():
+    assert t.d_rangefinder(struct.pack("<i", 123)) == {"valid": True, "distance_m": 1.23}
+
+
+def test_rangefinder_minus_one_is_out_of_range():
+    assert t.d_rangefinder(struct.pack("<i", -1)) == {"valid": False, "code": -1}
+
+
 def test_raw_gps_degrees_and_optional_hdop():
     p = struct.pack("<BBiihHH", 2, 9, 387223456, -91393210, 120, 250, 1805)
     d = t.d_raw_gps(p)
@@ -128,11 +138,6 @@ def test_arming_blockers_named_in_bit_order():
     d = t.arming_fields(1 << 8 | 1 << 18 | 1 << 28)
     assert d["armed"] is False
     assert d["arming_blockers"] == ["not_level", "rc_link", "no_prearm"]
-
-
-def test_unknown_arming_bit_is_kept():
-    assert t.arming_fields(1 << 17 | 1 << 31)["arming_blockers"] == [
-        "flag_bit_17", "flag_bit_31"]
 
 
 def test_flight_modes_from_names(monkeypatch):
@@ -235,6 +240,54 @@ def test_real_optical_flow_while_moving():
     d = t.d_opflow(reply("24583e00012009005c2e00090000000000c3")[1])
     assert d == {"quality": 92, "flow_rate_x_dps": 46, "flow_rate_y_dps": 9,
                  "body_rate_x_dps": 0, "body_rate_y_dps": 0}
+
+
+# ---------- known bugs: fc_bridge's C++ decoders disagree ----------
+# drone_fc_bridge/src/inav_decode.cpp (ROS-6 step A) was written from the INAV
+# 9.1.0 source, and its comments name three places where this script is wrong.
+# Each test says what INAV sends. They fail today; strict=True turns a pass into
+# a failure, so whoever fixes the script is told to remove the xfail mark.
+
+# The reasons arming is blocked: bits 6-16 and 18-30 of armingFlag_e
+# (ARMING_DISABLED_ALL_FLAGS), the same as ARMING_BLOCKERS in inav_decode.hpp.
+INAV_BLOCKER_BITS = [*range(6, 17), *range(18, 31)]
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "arming_fields counts every set bit except armed and was_ever_armed as a blocker, "
+    "so the simulator modes (bits 4, 5: set on INAV SITL) and unused bits (0, 1, 17, 31) "
+    "are reported as reasons arming is blocked. Keep only INAV_BLOCKER_BITS, "
+    "then remove this xfail."))
+def test_only_real_arming_blockers_are_listed():
+    # INAV SITL, tilted: the only reason it can't arm is not_level.
+    assert t.arming_fields(1 << 5 | 1 << 8)["arming_blockers"] == ["not_level"]
+    every_bit = t.arming_fields(0xFFFFFFFF)["arming_blockers"]
+    assert every_bit == [t.ARMING_BITS[i] for i in INAV_BLOCKER_BITS]
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "INAV sends 0 cm when no rangefinder is running (its MSP rangefinder driver turns "
+    "a real 0 into -1), so 0 is not a distance; d_rangefinder reports a valid 0.0 m. "
+    "fc_bridge calls it NO_READING. Treat 0 as not valid, then remove this xfail."))
+def test_rangefinder_zero_is_not_a_distance():
+    # The reply in every capture: no rangefinder fitted on the bench.
+    cmd, payload = reply("24583e003a0004000000000079")
+    assert cmd == 58
+    assert t.d_rangefinder(payload)["valid"] is False
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "Power, mAh drawn and mWh drawn are int32 in INAV; d_inav_analog reads them as "
+    "uint32, so a negative current gives a power of about 42949 kW. Unpack them with "
+    "'<BHhiiiIBH', then remove this xfail."))
+def test_inav_analog_negative_power_and_drawn():
+    # The payload of AnalogHandBuilt in drone_fc_bridge/test/test_inav_decode.cpp.
+    p = struct.pack("<BHhiiiIBH", 0x3B, 1110, -150, -1665, -7, -80, 0xF0000001, 17, 1023)
+    d = t.d_inav_analog(p)
+    assert d["current_a"] == -1.5
+    assert d["power_w"] == -16.65
+    assert (d["mah_drawn"], d["mwh_drawn"]) == (-7, -80)
+    assert d["remaining_capacity"] == 0xF0000001
 
 
 def test_real_rc_and_motors():

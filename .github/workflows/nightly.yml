@@ -1,0 +1,59 @@
+name: Nightly sim
+
+# The Gazebo flight test (drone_bringup/test/test_sim_flight.py): takeoff, hover,
+# a square, the speed limits, the mission dying mid-flight, landing. Too slow for
+# every push (4-5 min with the image), so: every night, from the Actions tab, and
+# on PRs that change the sim itself. Not part of the block-red-pr check.
+# Same as running seame-docker/scripts/sim_flight_test.sh on a laptop.
+
+on:
+  schedule:
+    - cron: '0 2 * * *'         # every night at 02:00 UTC
+  workflow_dispatch:            # "Run workflow" button in the Actions tab
+  pull_request:
+    paths:
+      - 'seame-docker/ros2_ws/src/drone_bringup/launch/**'
+      - 'seame-docker/ros2_ws/src/drone_bringup/config/**'
+      - 'seame-docker/ros2_ws/src/drone_bringup/test/test_sim_flight.py'
+      - 'seame-docker/scripts/sim_flight_test.sh'
+      - '.github/workflows/nightly.yml'
+
+concurrency:                    # a new run cancels the older one on the same branch
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gazebo-flight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # The image the team develops in, so the sim here is the sim on our laptops.
+      # Layers come from the docker-image job's cache (ci.yml): usually 1-2 min.
+      - name: Build the dev image
+        uses: docker/build-push-action@v6
+        with:
+          context: seame-docker
+          load: true
+          tags: seame/ros2-dev:jazzy
+          cache-from: type=gha
+
+      - name: Fly in Gazebo (headless)
+        run: seame-docker/scripts/sim_flight_test.sh "$RUNNER_TEMP/sim_flight"
+
+      - name: Keep the results (log, xUnit, rosbag of the flight)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sim-flight
+          path: ${{ runner.temp }}/sim_flight
+          retention-days: 14
+          if-no-files-found: ignore
