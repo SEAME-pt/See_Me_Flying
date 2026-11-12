@@ -2,7 +2,9 @@
 
 Every automated test in this project: where it lives, what it checks, who runs it and when, what kind of bug it catches, and how to run it yourself.
 
-The plan for tests that don't exist yet is in [docs/CI_Tests.md](docs/CI_Tests.md). This file describes what exists today, on branch `ci/test_implementation` (November 2026). Section 1 says which tests are on `main`, which are committed only on this branch, and which aren't committed yet.
+The plan for tests that don't exist yet is in [docs/CI_Tests.md](docs/CI_Tests.md). This file describes what exists on branch `ci/test_implementation`, with `main` merged in on 2026-11-12 (commit `581471b`). Section 1 says which tests are already on `main` and which are only on this branch. Section 2 says how CI runs them and how it was doing on Nov 12.
+
+[docs/TESTS.md](docs/TESTS.md), on `main`, is the short index: one line per test, with the last result of the checks done by hand (sim, Wi-Fi link, drone hardware). This file is the detailed one: every automated test, what it catches and why. Section 13 lists the checks done by hand.
 
 ## Contents
 
@@ -25,18 +27,18 @@ The plan for tests that don't exist yet is in [docs/CI_Tests.md](docs/CI_Tests.m
 
 ## 1. At a glance
 
-**Cases** counts each check pytest or unittest reports, so a parametrized test counts once per row. **Time** is from the last full run (`scripts/run_tests.sh`, 2026-11-10); totals were updated on 2026-11-12 with a full run in a fresh dev-image container.
+**Cases** counts each check pytest or unittest reports, so a parametrized test counts once per row. **Time** is from the last full run (`scripts/run_tests.sh`, 2026-11-10). Totals are from 2026-11-12: CI's own commands on commit `581471b`, in a fresh `ros:jazzy` container.
 
 | Area | File | Cases | Time | Run by | Added by |
 | --- | --- | --- | --- | --- | --- |
-| MSP framing | [telemetry/tests/test_msp_frame.py](telemetry/tests/test_msp_frame.py) | 32 (1 expected fail) | < 1 s | CI `telemetry-python` | jit-23 |
-| MSP decoders | [telemetry/tests/test_decoders.py](telemetry/tests/test_decoders.py) | 59 (3 expected fail) | < 1 s | CI `telemetry-python` | jit-23 |
+| MSP framing | [telemetry/tests/test_msp_frame.py](telemetry/tests/test_msp_frame.py) | 32 | < 1 s | CI `telemetry-python` | jit-23 |
+| MSP decoders | [telemetry/tests/test_decoders.py](telemetry/tests/test_decoders.py) | 59 | < 1 s | CI `telemetry-python` | jit-23 |
 | Real drone recordings | [telemetry/tests/test_captures.py](telemetry/tests/test_captures.py) | 47 | < 1 s | CI `telemetry-python` | jit-23 |
-| Copies of the recordings | [telemetry/tests/test_capture_copies.py](telemetry/tests/test_capture_copies.py) | 2 (1 skipped until `main` is merged) | < 1 s | CI `telemetry-python` | this branch, not committed yet |
+| Copies of the recordings | [telemetry/tests/test_capture_copies.py](telemetry/tests/test_capture_copies.py) | 2 | < 1 s | CI `telemetry-python` | jit-23 |
 | Drone limits in `sim.yaml` | [drone_bringup/test/test_config.py](seame-docker/ros2_ws/src/drone_bringup/test/test_config.py) | 17 | < 1 s | CI `ros2-build-test` | jit-23 |
-| What the launch file starts | [drone_bringup/test/test_launch_files.py](seame-docker/ros2_ws/src/drone_bringup/test/test_launch_files.py) | 24 (1 skipped in CI) | about 1 s | CI `ros2-build-test` | this branch, not committed yet |
-| Gazebo worlds | [drone_bringup/test/test_worlds.py](seame-docker/ros2_ws/src/drone_bringup/test/test_worlds.py) | 9 (8 skipped in CI, 2 in the dev container, until `feature/153` is merged) | < 1 s | CI `ros2-build-test` | this branch, not committed yet |
-| Mission state machine | [drone_mission/test/test_logic.py](seame-docker/ros2_ws/src/drone_mission/test/test_logic.py) | 44 (1 expected fail) | < 1 s | CI `ros2-build-test` | João Barros |
+| What the launch file starts | [drone_bringup/test/test_launch_files.py](seame-docker/ros2_ws/src/drone_bringup/test/test_launch_files.py) | 24 (1 skipped in CI) | about 1 s | CI `ros2-build-test` | jit-23 |
+| Gazebo worlds | [drone_bringup/test/test_worlds.py](seame-docker/ros2_ws/src/drone_bringup/test/test_worlds.py) | 9 (8 skipped in CI, 2 in the dev container, until `feature/153` is merged) | < 1 s | CI `ros2-build-test` | jit-23 |
+| Mission state machine | [drone_mission/test/test_logic.py](seame-docker/ros2_ws/src/drone_mission/test/test_logic.py) | 44 | < 1 s | CI `ros2-build-test` | João Barros |
 | Command arbitration | [drone_safety/test/test_arbiter.py](seame-docker/ros2_ws/src/drone_safety/test/test_arbiter.py) | 9 | < 1 s | CI `ros2-build-test` | João Barros |
 | Radio switches and sticks | [drone_basics_py/test/test_radio_teleop.py](seame-docker/ros2_ws/src/drone_basics_py/test/test_radio_teleop.py) | 24 | < 1 s | CI `ros2-build-test` | João Barros |
 | Optical flow model | [drone_sim_sensors/test/test_flow_model.py](seame-docker/ros2_ws/src/drone_sim_sensors/test/test_flow_model.py) | 11 | < 1 s | CI `ros2-build-test` | David Roque |
@@ -44,21 +46,22 @@ The plan for tests that don't exist yet is in [docs/CI_Tests.md](docs/CI_Tests.m
 | fc_bridge state outputs | [drone_fc_bridge/test/test_state.py](seame-docker/ros2_ws/src/drone_fc_bridge/test/test_state.py) | 7 | 6 s | CI `ros2-build-test` | João Barros |
 | fc_bridge services | [drone_fc_bridge/test/test_services.py](seame-docker/ros2_ws/src/drone_fc_bridge/test/test_services.py) | 4 | 6 s | CI `ros2-build-test` | João Barros |
 | fc_bridge `inav` backend | [drone_fc_bridge/test/test_inav.py](seame-docker/ros2_ws/src/drone_fc_bridge/test/test_inav.py) | 3 | < 1 s | CI `ros2-build-test` | João Barros |
-| Whole stack, no Gazebo | [drone_bringup/test/test_stack.py](seame-docker/ros2_ws/src/drone_bringup/test/test_stack.py) + [fake_drone.py](seame-docker/ros2_ws/src/drone_bringup/test/fake_drone.py) | 5 (1 skipped) | 60 s | CI `ros2-build-test` | this branch, not committed yet |
-| Flight in Gazebo | [drone_bringup/test/test_sim_flight.py](seame-docker/ros2_ws/src/drone_bringup/test/test_sim_flight.py) | 8 steps | 90 s + Gazebo | [nightly.yml](.github/workflows/nightly.yml) | this branch, not committed yet |
+| MSP framing for the real drone (C++) | [drone_fc_bridge/test/test_msp.cpp](seame-docker/ros2_ws/src/drone_fc_bridge/test/test_msp.cpp) | 21 | < 1 s | CI `ros2-build-test` | João Barros |
+| INAV decoders for the real drone (C++) | [drone_fc_bridge/test/test_inav_decode.cpp](seame-docker/ros2_ws/src/drone_fc_bridge/test/test_inav_decode.cpp) | 16 | < 1 s | CI `ros2-build-test` | João Barros |
+| Whole stack, no Gazebo | [drone_bringup/test/test_stack.py](seame-docker/ros2_ws/src/drone_bringup/test/test_stack.py) + [fake_drone.py](seame-docker/ros2_ws/src/drone_bringup/test/fake_drone.py) | 5 | 60 s | CI `ros2-build-test` | jit-23 |
+| Flight in Gazebo | [drone_bringup/test/test_sim_flight.py](seame-docker/ros2_ws/src/drone_bringup/test/test_sim_flight.py) | 8 steps | 90 s + Gazebo | [nightly.yml](.github/workflows/nightly.yml) | jit-23 |
 | Lint and style | `test_flake8.py`, `test_pep257.py`, … in each package | 33 | about 10 s | CI `ros2-build-test` | package templates |
 | Telemetry syntax and lint | `telemetry/*.py` | (job steps) | seconds | CI `telemetry-python` | — |
 | Docker image | [seame-docker/Dockerfile](seame-docker/Dockerfile) | (job step) | minutes | CI `docker-image` | — |
 
 **Totals:**
-- `colcon test` (all ROS packages): 199 cases, 166 behaviour and 33 lint, 9 skipped, about 105 s. colcon's own summary says 215: it also counts the 16 CTest entries, which wrap cases already counted.
-- `pytest telemetry`: 140 cases, 135 passed, 4 expected fail and 1 skipped, under 1 s.
+- `colcon test` (all ROS packages): 236 cases, 203 behaviour and 33 lint, in 80–105 s. 14 are skipped in CI, which has no Gazebo, `ros_gz` or `joy`, and 7 in the dev container (section 2 lists them). colcon's own summary says 254: it also counts the 18 CTest entries, which wrap cases already counted.
+- `pytest telemetry`: 140 cases, all passed, under 1 s.
 - Nightly: 8 flight steps.
 
 **Where each one is in git:**
-- On `main`: the ROS node tests (mission, safety, radio, flow, fc_bridge), the lint checks, `scripts/run_tests.sh` and `scripts/test_report.py`.
-- Committed on `ci/test_implementation` only: the telemetry tests, the recordings they use, `test_config.py`, and the pytest step in `ci.yml`.
-- Not committed yet: `test_stack.py`, `fake_drone.py`, `test_sim_flight.py`, `nightly.yml`, `scripts/sim_flight_test.sh`, the `headless` launch option, the expected-fail test added to `test_logic.py`, `test_launch_files.py`, `test_worlds.py`, `test_capture_copies.py`, and the three expected-fail tests added to `test_decoders.py`.
+- On `main`: the ROS node tests (mission, safety, radio, flow), the fc_bridge launch tests and its two C++ tests, the drone recordings and their copies in `drone_fc_bridge/test/data/`, the lint checks, `scripts/run_tests.sh` and `scripts/test_report.py`.
+- On `ci/test_implementation` only (committed and pushed, not on `main` yet): the telemetry tests, the pytest step in `ci.yml`, `test_config.py`, `test_launch_files.py`, `test_worlds.py`, `test_stack.py` and `fake_drone.py`, `test_sim_flight.py` with `nightly.yml` and `scripts/sim_flight_test.sh`, the `headless` launch option, and the bug tests added to `test_logic.py`, `test_msp_frame.py` and `test_decoders.py` (expected fails until those bugs were fixed on Nov 12).
 
 ---
 
@@ -104,6 +107,35 @@ Launch tests start real ROS nodes, so they could hear a sim running on the same 
 | `test_stack.py` | `ROS_DOMAIN_ID=198`, localhost only (set in `CMakeLists.txt`) |
 | `test_sim_flight.py` | `ROS_DOMAIN_ID=196`, localhost only, `GZ_PARTITION=flight_test`, a separate Gazebo channel (set by `sim_flight_test.sh`) |
 
+### How CI was doing on Nov 12
+
+From GitHub's Actions page (commit `581471b`, this branch with `main` merged in), and from CI's exact commands rerun on the same commit in a clean `ros:jazzy` container, which shows each test case. GitHub only shows the per-test logs to logged-in members.
+
+| Workflow and job | What it runs | Last result on GitHub | Notes |
+| --- | --- | --- | --- |
+| `ci.yml` `telemetry-python` | syntax, flake8, `pytest telemetry` (140 cases) | passed (13 s) | the 4 expected fails are reported as xfail, not as failures. **Fixed since** (Nov 12): all 140 pass, none marked xfail |
+| `ci.yml` `ros2-build-test` | `colcon build`, `colcon test` (236 cases) | passed (170 s; tests 103 s) | `test_stack.py` is **flaky**: on this commit it failed 3 times in 6 runs on Nov 12 (once with CI's exact commands, twice in 5 repeats), so GitHub's green was partly luck. The cause is bug 3: the mission runs up to half a second behind. It handled a "disarmed" status after the test had already re-armed, and dropped the `Takeoff` as "disarmed"; another time `Takeoff` wasn't accepted within 5 s. Everything else passed in every run. **Fixed since** (Nov 12): with bug 3 fixed and the test's own node on one thread (bug 8), it passed 6 runs out of 6 ([section 6](#6-the-whole-ros-stack-without-gazebo-test_stackpy)). |
+| `ci.yml` `docker-image` | builds the dev image | passed (18 s, from the cache) | |
+| `ci.yml` `block-red-pr` | only on PRs | skipped (a push, not a PR) | if `test_stack.py` fails by chance on a PR, this moves the PR back to draft |
+| `nightly.yml` `gazebo-flight` | the Gazebo flight | **never ran on GitHub** | it starts only on a PR that touches the sim, or every night once `nightly.yml` is on `main`. Run by hand on this commit (Nov 12, `scripts/sim_flight_test.sh`): **every step passed** in 121 s (sides 0.91–0.98 m, the square closes within 0.076 m, landed, the killed mission stopped in 0.97 s). An earlier run with the same mission code failed at the square ("rangefinder lost"), so bug 3 made it flaky too. **With bug 3 fixed** (Nov 12): every step passed again (sides 0.89–0.91 m, the square closes within 0.099 m, the killed mission stopped in 1.05 s). |
+
+**Known bugs kept from turning CI red on that commit, on purpose.** Each was still a test that ran; it just expected the bug, and `strict=True` makes it fail the day the bug is fixed, so the mark gets removed. All of them are fixed now:
+- 4 expected fails in the telemetry tests: bugs 1, 5, 6 and 7 in `inav_telemetry.py`. **Fixed since** (Nov 12): those 4 tests now pass ([section 10](#10-bugs-the-tests-have-found));
+- 1 expected fail in `test_logic.py` and 1 skip in `test_stack.py`: bug 2 (a disarm under the radio is forgotten). **Fixed since** (Nov 12): both tests now run and pass.
+
+No lint rule was turned off, no CI step is allowed to fail, and no test retries a failure. The two `Takeoff` helpers only resend a Takeoff the mission *refused* on the ground while its rangefinder settles (at most 5 s, 30 s in Gazebo), as the mission's own demo does. Once accepted, any abort fails the test. One old test was removed: `test_unknown_arming_bit_is_kept`, which expected the wrong arming behaviour (bug 5).
+
+**Skipped in CI (16 on that commit, 14 since bug 2 was fixed), all on purpose:**
+
+| Skipped | Why |
+| --- | --- |
+| `test_copyright` in 4 Python packages, cppcheck on `watchdog.cpp` | no license headers yet; cppcheck 2.13 is too slow |
+| `test_disarm_while_the_radio_flies` (`test_stack.py`), `test_disarm_while_overridden_is_not_forgotten` (`test_logic.py`) | bug 2. **Fixed since** (Nov 12): both run and pass now |
+| 6 world checks for `multicopter_velocity_control.sdf`, `test_other_programs_are_installed` | Gazebo, `ros_gz` and `joy` are not installed in CI; the dev container runs them |
+| `test_every_model_has_its_files`, `test_worlds_and_models_are_installed` | no worlds or models in `drone_bringup` until `feature/153` is merged |
+
+**Other branches:** `main`'s last run passed (Nov 12). The commit before this one, `1af31c9`, failed: lint errors in `test_config.py` (blank lines, a trailing space, the docstring's first line), fixed since. `feature/153` (the new world) has **never run CI**: its branch name isn't in the triggers and it has no PR yet, so its lint error (a 119-character line in `sim.launch.py`) will show up only when its PR is opened.
+
 ---
 
 ## 3. Telemetry tests (the MSP link to INAV)
@@ -144,13 +176,13 @@ None of these tests need the drone or a network.
   - skips a header with an impossible size;
   - waits when a frame is cut in half, or when the `$` and `X` arrive in different reads.
 - **`request()`:** sends the right bytes and returns the payload; puts a reply together from several reads; skips a late reply to an earlier command; returns "not ok" on an error reply; gives up after the timeout (0.2–0.5 s); raises an error when the connection closes.
-- **Expected fail:** `test_valid_reply_inside_a_corrupt_one_is_recovered`. See [bug 1](#10-bugs-the-tests-have-found).
+- **A good reply hidden inside a damaged one is recovered:** `test_valid_reply_inside_a_corrupt_one_is_recovered`, an expected fail until [bug 1](#10-bugs-the-tests-have-found) was fixed.
 
 **Errors it catches:** a broken checksum, which would make every real reply look damaged, or let damaged ones through; wrong byte order in command numbers, so the drone answers the wrong message; a parser that loses its place after noise, after a damaged frame or across TCP reads; replies matched to the wrong request; the program hanging forever when the drone goes quiet.
 
 **Why it helps:** the link to the drone is noisy Wi-Fi and serial. These are exactly the situations that happen in flight and are hard to reproduce by hand. Each one is checked here in milliseconds, on every push.
 
-### 3.3 `test_decoders.py`: decoders (59 cases, 3 expected fail)
+### 3.3 `test_decoders.py`: decoders (59 cases)
 
 **How:** two kinds of input:
 - payloads built by hand with `struct.pack`, with chosen values, to pin down the units;
@@ -178,13 +210,13 @@ None of these tests need the drone or a network.
 
 **Why it helps:** wrong units don't crash anything. They just show wrong numbers, and someone trusts them in flight. These tests pin every unit to a known value.
 
-**Known bugs (3 expected fails, at the end of the file):** fc_bridge's C++ decoders on `main` (`drone_fc_bridge/src/inav_decode.cpp`, ROS-6 step A) were written from the INAV 9.1.0 source, and their comments name three places where `inav_telemetry.py` is wrong. Each one is a test that says what INAV really sends:
+**Fixed bugs (3 tests, at the end of the file):** fc_bridge's C++ decoders on `main` (`drone_fc_bridge/src/inav_decode.cpp`, ROS-6 step A) were written from the INAV 9.1.0 source, and their comments named three places where `inav_telemetry.py` was wrong. All three were fixed on Nov 12. Each one is a test that says what INAV really sends, so the bug can't come back:
 
-| Test | What INAV does | What the script does today |
+| Test | What INAV does | What the script did before the fix |
 | --- | --- | --- |
-| `test_only_real_arming_blockers_are_listed` | Only bits 6–16 and 18–30 are reasons not to arm. Bits 4 and 5 mean "running as a simulator" (set on INAV SITL). | Lists every set bit, so a SITL drone shows `simulator_sitl` as a reason it can't arm. |
-| `test_rangefinder_zero_is_not_a_distance` | Sends 0 cm when no rangefinder is running (it turns a real 0 into −1). | Reports a valid 0.0 m. That's the reply in every recording, because no rangefinder is fitted. |
-| `test_inav_analog_negative_power_and_drawn` | Power, mAh drawn and mWh drawn are signed numbers. | Reads them unsigned, so a negative current shows a power of about 42 949 kW. |
+| `test_only_real_arming_blockers_are_listed` | Only bits 6–16 and 18–30 are reasons not to arm. Bits 4 and 5 mean "running as a simulator" (set on INAV SITL). | Listed every set bit, so a SITL drone showed `simulator_sitl` as a reason it can't arm. |
+| `test_rangefinder_zero_is_not_a_distance` | Sends 0 cm when no rangefinder is running (it turns a real 0 into −1). | Reported a valid 0.0 m. That's the reply in every recording, because no rangefinder is fitted. |
+| `test_inav_analog_negative_power_and_drawn` | Power, mAh drawn and mWh drawn are signed numbers. | Read them unsigned, so a negative current showed a power of about 42 949 kW. |
 
 They replace an older test, `test_unknown_arming_bit_is_kept`, which expected the wrong arming behaviour. See [section 10](#10-bugs-the-tests-have-found).
 
@@ -230,7 +262,7 @@ The files are only data: the telemetry program never uses them.
 - the four recordings are where the tests expect them (otherwise the next check would skip without anyone noticing);
 - every file under `seame-docker/ros2_ws/src` with the name of a recording is byte-for-byte the same as the original. If one differs, the failure prints the `cp` command that fixes it.
 
-On this branch the second check **skips**: the copies only exist on `main`. It runs as soon as `main` is merged in. Checked against `main`'s files: it passes, and it fails when one line is added to a copy.
+With `main` merged in, both checks run, and they pass: the four copies are identical. Adding one line to a copy makes it fail. If you copy `telemetry/` somewhere outside the repo to run the tests (as in [section 11](#telemetry-tests)), the second check skips, because there's no `ros2_ws` next to it.
 
 **Where it runs:** CI's `telemetry-python` job, because that job checks out the whole repo.
 
@@ -329,7 +361,7 @@ These tests check one node, or the logic inside it. The ones in Python packages 
 - **Rangefinder loss:** hovers, then resumes hold; aborts a Goto; lands blind if the loss lasts too long; on the ground it stays grounded; mid-takeoff it holds the height reached.
 - **Another source takes over (radio):** the goal is aborted and the mission goes quiet; goals are refused meanwhile. When control comes back it holds where the pilot left it, in the air or on the ground. Repeated messages change nothing.
 - **Arming:** with no status yet, "armed" is unknown; without `radio_arms` the node arms itself. A stale "disarmed" status doesn't abort a takeoff. Disarming in the air aborts the goal and goes quiet, and disarming on the ground changes nothing.
-- **Expected fail:** `test_disarm_while_overridden_is_not_forgotten`. See [bug 2](#10-bugs-the-tests-have-found).
+- **Disarmed while the radio flies:** the disarm isn't forgotten when control comes back, and re-arming on the ground doesn't climb (`test_disarm_while_overridden_is_not_forgotten`, an expected fail until [bug 2](#10-bugs-the-tests-have-found) was fixed).
 
 **Errors it catches:** wrong state changes; goals accepted when they're unsafe; the drone climbing on its own after something interrupted it; commands still sent after a disarm; a missing landing when the rangefinder is lost.
 
@@ -406,6 +438,38 @@ These tests check one node, or the logic inside it. The ones in Python packages 
 
 **Why these help:** fc_bridge is the last software step before the motors. Its safety behaviour (timeout, clamps, NaN guard) is checked on every push, with the real compiled program.
 
+### 5.6 fc_bridge's MSP library for the real drone: `test_msp.cpp` and `test_inav_decode.cpp` (37 cases, C++)
+
+**What's being tested:** ROS-6 step A (João Barros, merged to `main` on Nov 11) added `fc_msp`, a small C++ library for fc_bridge's `inav` backend, so it can talk to the real drone:
+- [msp.cpp](seame-docker/ros2_ws/src/drone_fc_bridge/src/msp.cpp) builds MSP v2 requests and finds the replies in the byte stream from the flight controller;
+- [inav_decode.cpp](seame-docker/ros2_ws/src/drone_fc_bridge/src/inav_decode.cpp) turns nine INAV replies into SI units (m, m/s, V, A, W, rad).
+
+It has no ROS and no network code, so it can be tested on its own. **It isn't used by `fc_bridge` yet**: the next step, ROS-6 step B, will connect it to the drone.
+
+**How:** GoogleTest, registered with `ament_add_gtest` in fc_bridge's [CMakeLists.txt](seame-docker/ros2_ws/src/drone_fc_bridge/CMakeLists.txt). `colcon test` runs them in the `ros2-build-test` job like the other C++ tests. They read the four drone recordings from [drone_fc_bridge/test/data/](seame-docker/ros2_ws/src/drone_fc_bridge/test/data/), which are copies of the telemetry recordings, kept identical by `test_capture_copies.py` ([section 3.5](#35-test_capture_copiespy-the-c-tests-use-the-same-recordings-2-cases)). [capture.hpp](seame-docker/ros2_ws/src/drone_fc_bridge/test/capture.hpp) reads those files.
+
+**[test_msp.cpp](seame-docker/ros2_ws/src/drone_fc_bridge/test/test_msp.cpp) (21 cases):**
+- **Checksum:** CRC-8/DVB-S2 gives the standard check value, and matches the checksums in the recordings.
+- **Requests:** the same bytes as `build_frame()` in the Python script. Only the nine read commands can be built: every write (such as `MSP_SET_RAW_RC`, which would fly the drone) and every other command in the whole command space is refused. A payload over the limit is refused.
+- **Recordings:** every good reply parses; damaged replies are never returned. Each whole file, fed as one stream, gives every good reply in order, **plus a good reply hidden inside a damaged one**. The Python parser lost that one until [bug 1](#10-bugs-the-tests-have-found) was fixed.
+- **Parser:** garbage between frames is skipped; a frame split at every possible byte still parses; our own requests echoed back are ignored; INAV's error reply (`$X!`) comes out as an error; a bad checksum is rejected; a header claiming 65 535 bytes doesn't hold back the replies behind it; the largest allowed payload is accepted; the buffer stays bounded on garbage; `reset()` drops a half frame; `skip_pending()` releases replies stuck behind a broken header (the damage seen in the recordings); a 2 MB backlog is read in linear time; the order is kept across partial reads.
+
+**[test_inav_decode.cpp](seame-docker/ros2_ws/src/drone_fc_bridge/test/test_inav_decode.cpp) (16 cases):**
+- **Identity:** API version, `INAV`, 9.1.0, from the recordings.
+- **Rangefinder:** cm → m; −1 is out of range; 0 and other negatives are "no reading" (the Python script got 0 wrong until [bug 6](#10-bugs-the-tests-have-found) was fixed).
+- **Attitude:** values from the recordings, and the limits (roll ±180°, pitch ±90°, heading 0–359°).
+- **Status:** in every recording, the sensors present, never armed, and the reasons it can't arm (sensors calibrating, no radio link, no prearm, plus "not level" when tilted). A hand-built one: armed, with a rangefinder and a hardware failure. The simulator bits are not counted as reasons ([bug 5](#10-bugs-the-tests-have-found)).
+- **Optical flow:** still and moving from the recordings; negative rates from a hand-built reply.
+- **Battery:** all four recordings (16.16–16.31 V, 4 cells), and a hand-built reply with negative current and power ([bug 7](#10-bugs-the-tests-have-found)).
+- **Local position:** none while disarmed on the bench; a hand-built reply pins the order of the six fields and their signs.
+- **Every decoder** refuses any reply shorter than its layout, and accepts a longer one (newer firmware adds fields at the end).
+
+**Errors they catch:** a wrong checksum; a parser that loses good replies after damage, or stalls behind a broken header; a request that could command the drone; signed fields read unsigned; wrong units or field order. João broke the code on purpose to check (wrong CRC, no resync, signed fields read unsigned), and each break made tests fail.
+
+**Why they help:** this is the code that will read the real drone in flight. The recordings make it face the real Wi-Fi link's damage (replies cut short, old replies arriving late) before it ever flies.
+
+**Limits:** nothing checks `fc_bridge` *using* the library yet. That comes with step B, ideally against a fake flight controller ([section 13](#13-what-isnt-tested-yet)). These files have no lint, because `drone_fc_bridge` has none ([section 8](#8-lint-and-style-checks)).
+
 ---
 
 ## 6. The whole ROS stack without Gazebo: `test_stack.py`
@@ -435,13 +499,20 @@ These tests check one node, or the logic inside it. The ones in Python packages 
 | `test_full_flight` | Takeoff reaches `target_h`. 1 m forward really moves 1 m. Turn 90° left, then 1 m forward, goes to the old left (body frame to world). Asking for 2 m/s still arrives. Land. No command ever exceeded the `sim.yaml` limits. |
 | `test_radio_takes_over_and_gives_back` | The radio takes control mid-Goto: the Goto is aborted ("overridden"), the mission goes silent, new goals are refused, and the drone follows the sticks. When the sticks go quiet, the mission holds where the radio left it, then lands. |
 | `test_disarm_mid_flight` | The kill switch mid-Goto: the Goto is aborted ("disarmed"), the drone drops, the mission goes silent, and Takeoff is refused. |
-| `test_disarm_while_the_radio_flies` | **Skipped:** [bug 2](#10-bugs-the-tests-have-found). |
+| `test_disarm_while_the_radio_flies` | The kill switch while the radio has control: the drone drops, and once control comes back the mission stays silent instead of holding a height (and climbing when re-armed). Skipped until [bug 2](#10-bugs-the-tests-have-found) was fixed. |
 
 **Errors it catches:** nodes that each pass their own tests but don't work together: wrong topic names or remaps, QoS mismatches, wrong frames, a broken handover between the radio and the mission, and limits that differ between nodes.
 
 **Why it helps:** it's the closest thing to a real flight that runs on every PR, in about a minute, without Gazebo.
 
-**Known problem:** it fails about 4 runs in 10 today because of [bug 3](#10-bugs-the-tests-have-found). With that bug fixed, it passed 3 out of 3 runs.
+**Was flaky, fixed on Nov 12.** It had two causes: [bug 3](#10-bugs-the-tests-have-found) in the mission, and [bug 8](#10-bugs-the-tests-have-found) in this test (its own node on a multi-threaded executor starved the radio stick player). Measured in the dev container, 6 runs each:
+
+| Mission | Test node | Passed |
+| --- | --- | --- |
+| before the fix | multi-threaded | 3 of 6 |
+| fixed | multi-threaded | 3 of 6 |
+| before the fix | single-threaded | 5 of 6 |
+| fixed | single-threaded | **6 of 6** |
 
 ---
 
@@ -482,7 +553,7 @@ The "measured" column comes from a passing run with bug 3 fixed. Tolerances are 
 
 **Why nightly and not on every push:** it builds the image, starts Gazebo and flies for about 2 minutes. That's too slow and heavy for every push, and it isn't a check every PR has to pass.
 
-**Known problem:** with today's mission code it fails at the square on most runs, because of [bug 3](#10-bugs-the-tests-have-found). With that bug fixed, the whole flight passed.
+**Was a known problem, fixed on Nov 12:** before [bug 3](#10-bugs-the-tests-have-found) was fixed, it failed at the square on most runs. With the fix, the whole flight passed (`scripts/sim_flight_test.sh`, Nov 12).
 
 ---
 
@@ -503,7 +574,7 @@ These read the code without running it. They come from the ROS package templates
 
 For `telemetry/`, the CI job runs `py_compile` (the file parses as Python) and `flake8 --max-line-length=140`.
 
-**Gaps:** `drone_fc_bridge` has no lint at all: its `CMakeLists.txt` doesn't call `ament_lint_auto`. And cppcheck is skipped, so no C++ static analysis runs anywhere.
+**Gaps:** `drone_fc_bridge` has no lint at all: its `CMakeLists.txt` doesn't call `ament_lint_auto`. With ROS-6 step A it now has five C++ files without lint. Turning it on was measured on Nov 12: uncrustify wants 42 lines reformatted (in `fc_bridge.cpp` and `test_inav_decode.cpp`, fixed automatically with `ament_uncrustify --reformat`), and cpplint finds two small things (a missing newline at the end of `fc_bridge.cpp`, a comment without a space). cppcheck is skipped, so no C++ static analysis runs anywhere.
 
 ---
 
@@ -515,17 +586,18 @@ The `docker-image` job in `ci.yml` builds [seame-docker/Dockerfile](seame-docker
 
 ## 10. Bugs the tests have found
 
-An **expected fail** is a test marked `xfail(strict=True)`. It shows a known bug without turning CI red. "Strict" means that once someone fixes the bug, the test starts passing, which pytest reports as an error. That's the reminder to remove the mark.
+An **expected fail** is a test marked `xfail(strict=True)`. It shows a known bug without turning CI red. "Strict" means that once someone fixes the bug, the test starts passing, which pytest reports as an error. That's the reminder to remove the mark. No test is marked that way now: bugs 1, 2, 5, 6 and 7 had one, and since their fixes (Nov 12) those tests just pass.
 
 | # | Bug | Where | Found by | Effect | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | After a reply with a bad checksum, the parser throws away the whole length that broken header claimed, including any good replies inside it. | `telemetry/inav_telemetry.py`, `_next_frame` | `test_msp_frame.py`, expected fail `test_valid_reply_inside_a_corrupt_one_is_recovered` (real damaged frame from `radio_off`) | Lost telemetry replies on a noisy link; `MSP_BOXNAMES` needs retries. | Open. Fix: drop only the `$X` and search again. |
-| 2 | Disarming while the radio has control is ignored. If control comes back while the drone is still falling, the mission goes to "hold" and keeps commanding a climb, disarmed on the ground. Re-armed, **it climbs by itself with no Takeoff**. | `drone_mission/logic.py`, `on_armed` | `test_stack.py`, then proven in `test_logic.py` | Unsafe: an unexpected climb after re-arming. | Open. Expected fail in `test_logic.py`, skipped in `test_stack.py`. |
-| 3 | The mission's commands stall for 0.3–0.8 s at a time. rclpy's multi-threaded executor misses its 20 Hz timer, so fc_bridge times out and sends zero, and goals abort with "rangefinder lost". | `drone_mission/mission.py` (`MultiThreadedExecutor`) | `test_stack.py` and `test_sim_flight.py` | Jerky flight in the Gazebo sim too ("Setpoint timeout" every 1–2 s). `test_stack.py` fails about 4 runs in 10; the nightly fails at the square. | Open. A fix was tried in a copy: a single-threaded executor and `await` in `execute()`. It gave 0 timeouts, `test_stack.py` 3 out of 3, and the whole flight passed. Not applied yet. |
+| 1 | After a reply with a bad checksum, the parser throws away the whole length that broken header claimed, including any good replies inside it. | `telemetry/inav_telemetry.py`, `_next_frame` | `test_msp_frame.py`, `test_valid_reply_inside_a_corrupt_one_is_recovered` (real damaged frame from `radio_off`) | Lost telemetry replies on a noisy link; `MSP_BOXNAMES` needs retries. | **Fixed** (Nov 12): on a bad checksum it drops only the `$X` and searches again, like fc_bridge's C++ parser (`Captures.RecoversFrameEmbeddedInDamagedOne` in `test_msp.cpp`). Still open: a reply right after a damaged header waits until the bytes that header claims have arrived; fc_bridge gives up on it at the reply timeout (`skip_pending()`), the script doesn't yet. |
+| 2 | Disarming while the radio has control is ignored. If control comes back while the drone is still falling, the mission goes to "hold" and keeps commanding a climb, disarmed on the ground. Re-armed, **it climbs by itself with no Takeoff**. | `drone_mission/logic.py`, `on_armed` and `set_control` | `test_stack.py`, then proven in `test_logic.py` | Unsafe: an unexpected climb after re-arming. | **Fixed** (Nov 12): when control comes back, `set_control` grounds a drone known to be disarmed instead of holding. Both tests run and pass. |
+| 3 | The mission's commands stall for 0.3–0.8 s at a time. rclpy's multi-threaded executor misses its 20 Hz timer, so fc_bridge times out and sends zero, and goals abort with "rangefinder lost". | `drone_mission/mission.py` (`MultiThreadedExecutor`) | `test_stack.py` and `test_sim_flight.py` | Jerky flight in the Gazebo sim too ("Setpoint timeout" every 1–2 s). `test_stack.py` failed about 4 runs in 10; the nightly failed at the square. | **Fixed** (Nov 12): a single-threaded executor, and `execute()` awaits the next tick instead of sleeping. `test_stack.py` passed 6 out of 6 (with bug 8 fixed too), and the whole Gazebo flight passed. |
 | 4 | `flow_model` prints a `KeyboardInterrupt` traceback every time the sim shuts down. | `drone_sim_sensors/flow_model.py`, `main()` | `test_sim_flight.py` logs | Cosmetic. | Open. One-line fix: catch `KeyboardInterrupt`. |
-| 5 | The simulator-mode bits (4, 5) and unused bits are listed as reasons arming is blocked. | `telemetry/inav_telemetry.py`, `arming_fields` | Found while writing fc_bridge's C++ decoders (ROS-6 step A); now `test_decoders.py`, expected fail | On INAV SITL every status would say it can't arm because it's a simulator. | Open. Fix: keep only bits 6–16 and 18–30. |
-| 6 | 0 cm from the rangefinder is reported as a valid 0.0 m. INAV sends 0 when no rangefinder is running. | `telemetry/inav_telemetry.py`, `d_rangefinder` | Same; `test_decoders.py`, expected fail | Telemetry shows the drone "at 0.00 m" with no sensor at all. | Open. Fix: 0 is not valid. |
-| 7 | Power, mAh drawn and mWh drawn are read unsigned. | `telemetry/inav_telemetry.py`, `d_inav_analog` | Same; `test_decoders.py`, expected fail | A negative current shows about 42 949 kW. | Open. Fix: unpack them with `'<BHhiiiIBH'`. |
+| 5 | The simulator-mode bits (4, 5) and unused bits are listed as reasons arming is blocked. | `telemetry/inav_telemetry.py`, `arming_fields` | Found while writing fc_bridge's C++ decoders (ROS-6 step A); now `test_decoders.py` | On INAV SITL every status would say it can't arm because it's a simulator. | **Fixed** (Nov 12): only bits 6–16 and 18–30 are listed (`ARMING_BLOCKER_BITS`). |
+| 6 | 0 cm from the rangefinder is reported as a valid 0.0 m. INAV sends 0 when no rangefinder is running. | `telemetry/inav_telemetry.py`, `d_rangefinder` | Same; `test_decoders.py` | Telemetry shows the drone "at 0.00 m" with no sensor at all. | **Fixed** (Nov 12): 0 is reported as not valid. |
+| 7 | Power, mAh drawn and mWh drawn are read unsigned. | `telemetry/inav_telemetry.py`, `d_inav_analog` | Same; `test_decoders.py` | A negative current shows about 42 949 kW. | **Fixed** (Nov 12): unpacked as signed, `'<BHhiiiIBH'`. |
+| 8 | `test_stack.py`'s own node spun a multi-threaded executor, which starved its radio stick player (`play_radio`) for more than `source_timeout_s` (0.3 s). safety_manager then gave control back to the mission in the middle of a takeover. | `drone_bringup/test/test_stack.py` | Its failing runs' logs: extra `Active source: radio` and `overridden -> hold` changes during the radio test | The radio test failed with "mission kept publishing under the radio". A failure there while the radio had control then hit bug 2, so the next test failed too. | **Fixed** (Nov 12): a single-threaded executor in the test too. |
 
 ---
 
@@ -553,7 +625,11 @@ colcon test-result --verbose          # every failure, with file and line
 python3 -m pytest src/drone_bringup/test/test_config.py -v
 # these two need the build (source install/setup.bash): they look up installed files
 python3 -m pytest src/drone_bringup/test/test_launch_files.py src/drone_bringup/test/test_worlds.py -v -rs
-cd src/drone_mission && python3 -m pytest test/test_logic.py -v     # 43 passed, 1 xfailed
+cd src/drone_mission && python3 -m pytest test/test_logic.py -v     # 44 passed
+
+# C++ tests (need the build): through colcon, or run the program directly
+colcon test --packages-select drone_fc_bridge --ctest-args -R 'test_msp|test_inav_decode'
+./build/drone_fc_bridge/test_msp --gtest_filter='Parser.*'          # one group, verbose
 
 # launch tests (need the build): set the domain like CMakeLists.txt does
 export ROS_DOMAIN_ID=198 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
@@ -569,7 +645,7 @@ docker cp telemetry seame-dev:/tmp/tele
 docker exec -w /tmp seame-dev python3 -m pytest tele -v
 docker exec -w /tmp seame-dev python3 -m flake8 --select=E,W,F --max-line-length=140 tele
 ```
-Expected: 135 passed, 1 skipped, 4 xfailed, and no lint output. The skip is the copies check in `test_capture_copies.py`: in `/tmp/tele` there's no `ros2_ws` next to it. Run from the repo root on the host (`python3 -m pytest telemetry -v`), it compares the copies once `main` is merged. `--select=E,W,F` makes the container's flake8, which has extra plugins, match CI's plain flake8.
+Expected: 139 passed, 1 skipped, and no lint output. The skip is the copies check in `test_capture_copies.py`: in `/tmp/tele` there's no `ros2_ws` next to it. On the host, from the repo root (`python3 -m pytest telemetry -v`, needs pytest), it runs: 140 passed. `--select=E,W,F` makes the container's flake8, which has extra plugins, match CI's plain flake8.
 
 ### Gazebo flight
 ```bash
@@ -626,7 +702,7 @@ Running the sim by hand without a window (`ros2 launch drone_bringup sim.launch.
 - `joy_node` with the real radio.
 
 **Partly tested:**
-- fc_bridge's `inav` backend is still a stub ("MSP not implemented yet"), so the tests only check that it refuses to arm and stays away from the sim.
+- fc_bridge's `inav` backend is still a stub ("MSP not implemented yet"), so the tests only check that it refuses to arm and stays away from the sim. The MSP library it will use is tested on its own ([section 5.6](#56-fc_bridges-msp-library-for-the-real-drone-test_mspcpp-and-test_inav_decodecpp-37-cases-c)), but isn't connected yet.
 - `drone_fc_bridge` has no lint, and cppcheck is skipped.
 - `sim.launch.py`: what it starts is checked (section 4.2), but the nodes only run together in `test_stack.py` and the nightly.
 - The worlds: checked as files (section 4.3), but only the default world is flown, by the nightly.
@@ -643,6 +719,22 @@ Running the sim by hand without a window (`ros2 launch drone_bringup sim.launch.
 | — | A flight step that checks optical flow against Gazebo's speed ÷ height, using the maths of `flow_check.py` (branch `test`). |
 | — | A fake flight controller: a TCP server that answers MSP with the recorded replies, for `inav_telemetry.py` now and fc_bridge's `inav` backend later. |
 | E2 | Lint for `drone_fc_bridge`: about 42 lines to reformat automatically, plus two small fixes. |
+
+**Checked by hand instead.** These need the real drone, the radio, or a person watching Gazebo, so CI can't run them. The steps are in the documents below, and the **date and result of the last run are kept in [docs/TESTS.md](docs/TESTS.md)** (update its row when you redo one), not copied here.
+
+| Area | Check | What it shows | How |
+| --- | --- | --- | --- |
+| Sim | Velocity frame (`source:=circle`), circle flight, mission demo (`demo:=true`) | Commands are in the body frame; the circle's radius and lap time; every goal of the demo succeeds at the right height | [SIM_TELEOP.md](seame-docker/SIM_TELEOP.md), "Try it" |
+| Sim | Radio takeover, with `ros2 topic pub` and with the real RadioMaster Pocket | The radio interrupts a Goto; releasing it goes to hold; re-arm and fly after a Land | same |
+| Sim | Arming in the sim, `backend:=inav` launch, which nodes each launch argument starts | Takeoff refused until armed; arm switch off in the air disarms; no Gazebo with `inav` | same. The launch arguments are now also checked automatically ([section 4.2](#42-what-the-launch-file-starts-test_launch_filespy-24-cases)). |
+| Sim | Arm switch bounce (`tools/arm_bounce.py`), odometry rate | The switch bounces 0–35 ms (fixed with `arm_hold_s`); odometry at 50 Hz | same |
+| Link | Wi-Fi round trip (`wifi_rtt`) | Lost replies, median/p90/p99/max round trip and jitter through the ESP | [measure_wifi_rtt.py](seame-docker/logs/measurements/measure_wifi_rtt.py), results in `seame-docker/logs/measurements/wifi_rtt/` |
+| Link | Every MSP message answers | Each message on the list gets a reply from INAV 9.1.0, and how many don't | `python3 telemetry/inav_telemetry.py`, see [telemetry/README.md](telemetry/README.md) |
+| Link | MSP rate and loss per message (INAV-4, #126) | Replies per second and stalls, per message | `msp_inventory.py rate`, see [the captures README](telemetry/inav/captures/README.md) |
+| Drone | Arming: kill switch, PREARM timeout, arm switch on at power-up; radio-loss failsafe; each motor's position and direction | The drone arms only when it should, drops on radio loss, and the motors match INAV's layout | [docs/ELRS_Guide.md](docs/ELRS_Guide.md) |
+| Drone | Battery voltage reading | INAV's voltage against the charger and a multimeter (`vbat_scale`) | [docs/Li-Po_Battery_Tests.md](docs/Li-Po_Battery_Tests.md) |
+
+The Wi-Fi link checks (bench rules: props off, nothing armed) are the ones that matter most for fc_bridge's `inav` backend, because they measure the link it will use.
 
 **Tools that are not tests** (run by hand, nothing passes or fails):
 

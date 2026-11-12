@@ -330,11 +330,11 @@ The real flight controller can't be reached from GitHub's machines. Turn the ben
 
 ### A7. The Python decoders where fc_bridge's C++ decoders disagree (done)
 
-ROS-6 step A on `main` added C++ decoders for fc_bridge (`drone_fc_bridge/src/inav_decode.cpp`), written from the INAV 9.1.0 source. Their comments name three bugs in `inav_telemetry.py`: arming blockers include the simulator and unused bits; 0 cm from the rangefinder counts as a valid distance; power and the drawn counters are read unsigned. Each is now a strict expected fail at the end of `telemetry/tests/test_decoders.py`, replacing `test_unknown_arming_bit_is_kept`, which expected the wrong arming behaviour. Two passing rangefinder tests were added too (it had none). Details: [TESTS.md](../TESTS.md#33-test_decoderspy-decoders-59-cases-3-expected-fail).
+ROS-6 step A on `main` added C++ decoders for fc_bridge (`drone_fc_bridge/src/inav_decode.cpp`), written from the INAV 9.1.0 source. Their comments name three bugs in `inav_telemetry.py`: arming blockers include the simulator and unused bits; 0 cm from the rangefinder counts as a valid distance; power and the drawn counters are read unsigned. Each became a strict expected fail at the end of `telemetry/tests/test_decoders.py`, replacing `test_unknown_arming_bit_is_kept`, which expected the wrong arming behaviour. All three were fixed on Nov 12, with the parser bug in `test_msp_frame.py`, and are now ordinary passing tests. Two passing rangefinder tests were added too (it had none). Details: [TESTS.md](../TESTS.md#33-test_decoderspy-decoders-59-cases).
 
 ### A8. The C++ tests' copies of the recordings match (done)
 
-`drone_fc_bridge/test/data/` on `main` holds copies of the four recordings. `telemetry/tests/test_capture_copies.py` checks that every file under `ros2_ws/src` with a recording's name is identical to the original, and prints the `cp` command if not. It skips until `main` is merged into this branch.
+`drone_fc_bridge/test/data/` on `main` holds copies of the four recordings. `telemetry/tests/test_capture_copies.py` checks that every file under `ros2_ws/src` with a recording's name is identical to the original, and prints the `cp` command if not. With `main` merged in (Nov 12) it runs and passes.
 
 ## B. Drone limits and configuration
 
@@ -487,7 +487,7 @@ Not done yet: `test_flow_matches_motion` (flow sign and size against Gazebo's ve
 
 Every run keeps the test log, the xUnit report, every node's log and a rosbag of the flight (`ros2 bag play flight_bag`) as the `sim-flight` artifact.
 
-**Known failure today:** the mission node's commands stall for up to 0.8 s (rclpy's multi-threaded executor), so fc_bridge times out every 1–2 s and Goto aborts with "rangefinder lost" or is rejected. The flight fails at the square on most runs until that's fixed. With the mission on the single-threaded executor and `await` in `execute()`, it passed with no timeouts.
+**Was a known failure, fixed on Nov 12:** the mission node's commands stalled for up to 0.8 s (rclpy's multi-threaded executor), so fc_bridge timed out every 1–2 s, Goto aborted with "rangefinder lost" or was rejected, and the flight failed at the square on most runs. The mission now runs on a single-threaded executor with `await` in `execute()`, and the whole flight passes.
 
 ### D2. Run it for every world
 

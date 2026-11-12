@@ -4,8 +4,8 @@ Three kinds of tests:
 - hand-made payloads (struct.pack) with chosen values, to pin the units;
 - real payloads from the INAV-4 captures (INAV 9.1.0), checked against what
   the drone was doing (telemetry/inav/captures/README.md on that branch);
-- known bugs, at the end: where fc_bridge's C++ decoders, written from the
-  INAV source, disagree with this script. Marked xfail until it is fixed.
+- fixed bugs, at the end: where fc_bridge's C++ decoders, written from the
+  INAV source, disagreed with this script. They keep the bugs from coming back.
 """
 import struct
 
@@ -242,45 +242,39 @@ def test_real_optical_flow_while_moving():
                  "body_rate_x_dps": 0, "body_rate_y_dps": 0}
 
 
-# ---------- known bugs: fc_bridge's C++ decoders disagree ----------
+# ---------- fixed bugs: where this script disagreed with fc_bridge ----------
 # drone_fc_bridge/src/inav_decode.cpp (ROS-6 step A) was written from the INAV
-# 9.1.0 source, and its comments name three places where this script is wrong.
-# Each test says what INAV sends. They fail today; strict=True turns a pass into
-# a failure, so whoever fixes the script is told to remove the xfail mark.
+# 9.1.0 source, and its comments named three places where this script was wrong.
+# Each test says what INAV sends, so the bugs can't come back.
 
 # The reasons arming is blocked: bits 6-16 and 18-30 of armingFlag_e
 # (ARMING_DISABLED_ALL_FLAGS), the same as ARMING_BLOCKERS in inav_decode.hpp.
+# Written out here rather than imported, so the test checks the script.
 INAV_BLOCKER_BITS = [*range(6, 17), *range(18, 31)]
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "arming_fields counts every set bit except armed and was_ever_armed as a blocker, "
-    "so the simulator modes (bits 4, 5: set on INAV SITL) and unused bits (0, 1, 17, 31) "
-    "are reported as reasons arming is blocked. Keep only INAV_BLOCKER_BITS, "
-    "then remove this xfail."))
 def test_only_real_arming_blockers_are_listed():
+    # Was: every set bit except armed and was_ever_armed counted as a blocker, so the
+    # simulator modes (bits 4, 5: set on INAV SITL) and unused bits (0, 1, 17, 31) were
+    # reported as reasons arming is blocked.
     # INAV SITL, tilted: the only reason it can't arm is not_level.
     assert t.arming_fields(1 << 5 | 1 << 8)["arming_blockers"] == ["not_level"]
     every_bit = t.arming_fields(0xFFFFFFFF)["arming_blockers"]
     assert every_bit == [t.ARMING_BITS[i] for i in INAV_BLOCKER_BITS]
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "INAV sends 0 cm when no rangefinder is running (its MSP rangefinder driver turns "
-    "a real 0 into -1), so 0 is not a distance; d_rangefinder reports a valid 0.0 m. "
-    "fc_bridge calls it NO_READING. Treat 0 as not valid, then remove this xfail."))
 def test_rangefinder_zero_is_not_a_distance():
+    # Was: reported as a valid 0.0 m. INAV sends 0 cm when no rangefinder is running
+    # (its MSP rangefinder driver turns a real 0 into -1); fc_bridge calls it NO_READING.
     # The reply in every capture: no rangefinder fitted on the bench.
     cmd, payload = reply("24583e003a0004000000000079")
     assert cmd == 58
     assert t.d_rangefinder(payload)["valid"] is False
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "Power, mAh drawn and mWh drawn are int32 in INAV; d_inav_analog reads them as "
-    "uint32, so a negative current gives a power of about 42949 kW. Unpack them with "
-    "'<BHhiiiIBH', then remove this xfail."))
 def test_inav_analog_negative_power_and_drawn():
+    # Was: power, mAh drawn and mWh drawn, int32 in INAV, were read as uint32, so a
+    # negative current gave a power of about 42949 kW.
     # The payload of AnalogHandBuilt in drone_fc_bridge/test/test_inav_decode.cpp.
     p = struct.pack("<BHhiiiIBH", 0x3B, 1110, -150, -1665, -7, -80, 0xF0000001, 17, 1023)
     d = t.d_inav_analog(p)

@@ -188,12 +188,10 @@ def test_marker_split_across_two_reads():
     assert c._next_frame()[0] == 108
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "Known weakness: on a bad CRC the parser drops the whole length the corrupt "
-    "header claimed (368 bytes here), swallowing valid replies inside it. It should "
-    "drop only the '$X' and search again. Seen on the drone: INAV-4 retries "
-    "MSP_BOXNAMES because of it. Fix _next_frame, then remove this xfail."))
 def test_valid_reply_inside_a_corrupt_one_is_recovered():
+    # Was a known bug: on a bad CRC the parser dropped the whole length the corrupt
+    # header claimed (368 bytes here), swallowing the valid replies inside it, so
+    # INAV-4 had to retry MSP_BOXNAMES. Now it drops only the '$X' and searches again.
     data = bytes.fromhex(CORRUPT_BOXNAMES + ALTITUDE_INSIDE + ATTITUDE)
     data += bytes(400)                           # later traffic, so the bad frame looks whole
     assert [f[0] for f in frames_in(data)][:2] == [109, 108]

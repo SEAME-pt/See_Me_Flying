@@ -3,7 +3,7 @@ title: Tests we run
 ---
 # Tests we run
 
-Every test and check the team runs, how to run it, and where its last result is. The details stay where they were written; this page points to them.
+Every test and check the team runs, how to run it, and where its last result is. The details stay where they were written; this page points to them. Every automated test in detail (what it checks, what it catches, how CI runs it): [TESTS.md](../TESTS.md) at the repo root.
 
 **Last results:** automated tests and measurements keep their own record in `logs/` (one dated folder per run, plus a `history.csv`), so this page links to that record instead of copying numbers that go stale. Checks done by hand have no record of their own, so their date and result are written here. **When you redo one, update its row.**
 
@@ -11,8 +11,10 @@ Every test and check the team runs, how to run it, and where its last result is.
 
 | Area | Test | How | Last result |
 | --- | --- | --- | --- |
-| ROS | Unit, launch and lint tests (174 cases) | `./scripts/run_tests.sh` | [logs/tests/history.csv](../seame-docker/logs/tests/history.csv) |
-| CI | Build + test, telemetry lint, Docker image | automatic on push and PR | GitHub → Actions |
+| ROS | Unit, launch and lint tests (236 cases) | `./scripts/run_tests.sh` | [logs/tests/history.csv](../seame-docker/logs/tests/history.csv) |
+| Telemetry | MSP framing, decoders, the drone recordings (140 cases) | `python3 -m pytest telemetry -v` (repo root) | GitHub → Actions, job `telemetry-python` |
+| CI | Build + test, telemetry lint and tests, Docker image | automatic on push and PR | GitHub → Actions |
+| Sim | Gazebo flight, automatic: takeoff, hover, square, speed limit, mission killed, land | `./scripts/sim_flight_test.sh` (in `seame-docker/`) | `ros2_ws/log/sim_flight/<date>/`; on GitHub the `sim-flight` artifact of `nightly.yml` (not run there yet) |
 | Sim | Flights, takeover, failsafes, by hand | [SIM_TELEOP.md](../seame-docker/SIM_TELEOP.md) | [below](#sim-by-hand) |
 | Link | Wi-Fi round trip (`wifi_rtt`) | `logs/measurements/measure_wifi_rtt.py` | not run on the drone yet |
 | Link | MSP messages answer (`inav_telemetry.py`) | [telemetry/README.md](../telemetry/README.md) | Nov 8, all answer, ~3% no reply |
@@ -33,19 +35,21 @@ A clean build and `colcon test` with CI's commands. Each run gets `logs/tests/<d
 **Quick check while working** (inside the container, no record kept):
 
 ```bash
-cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission drone_safety && colcon test-result --verbose
+cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge drone_basics_py drone_mission drone_safety drone_bringup drone_sim_sensors && colcon test-result --verbose
 ```
 
 | Package | Behaviour tests | Cases |
 | --- | --- | --- |
 | `drone_fc_bridge` | `test_failsafes` (timeout, NaN/inf, clamps), `test_state` (odometry, range), `test_services` (arm, hold, status), `test_inav` (the `inav` backend refuses to arm, publishes nothing to Gazebo), `test_msp` and `test_inav_decode` (MSP framing and INAV decoders, against frames captured from the real drone) | 60 |
-| `drone_mission` | `test_logic`: whole flights against a toy drone (takeoff, goto, land, range lost, overrides, arming) | 43 |
+| `drone_bringup` | `test_config` (the limits in `sim.yaml` agree), `test_launch_files` (what `sim.launch.py` starts, for all 48 argument combinations), `test_worlds` (the drone is in each Gazebo world and wired to the bridge), `test_stack` (mission, safety_manager and fc_bridge together, with a fake drone) | 55 |
+| `drone_mission` | `test_logic`: whole flights against a toy drone (takeoff, goto, land, range lost, overrides, arming) | 44 |
 | `drone_basics_py` | `test_radio_teleop`: arm switch, takeover, bounce, stick scaling | 24 |
 | `drone_safety` | `test_arbiter`: which source commands the drone | 9 |
+| `drone_sim_sensors` | `test_flow_model`: the simulated optical flow | 11 |
 
 What each file checks, case by case: the **Tests** table in [seame-docker/README.md](../seame-docker/README.md#tests).
 
-The other 24 cases are lint and style checks (flake8, pep257, mypy, xmllint, copyright, cppcheck, uncrustify, lint_cmake). Four are skipped on purpose: the copyright check in three Python packages (no license header yet) and cppcheck on `watchdog.cpp` (too slow in cppcheck 2.13).
+The other 33 cases are lint and style checks (flake8, pep257, mypy, xmllint, copyright, cppcheck, uncrustify, lint_cmake). Five are skipped on purpose: the copyright check in four Python packages (no license header yet) and cppcheck on `watchdog.cpp` (too slow in cppcheck 2.13). CI skips 7 more behaviour cases than the dev container, because it installs no Gazebo, `ros_gz` or `joy` (see [TESTS.md](../TESTS.md#how-ci-was-doing-on-nov-12)).
 
 **Are the tests real?** Each guard was broken on purpose once to see its tests fail (timeout, debounce, altitude hold, priority order, arming checks, `inav` refusing `fc/arm`; on Nov 10, the MSP parser and decoders: wrong CRC, no resync after a damaged frame, signed fields read unsigned). Dates and counts are in the "Checked" lines of [CHANGES.md](../seame-docker/CHANGES.md).
 
@@ -56,9 +60,11 @@ The other 24 cases are lint and style checks (flake8, pep257, mypy, xmllint, cop
 | Job | What it checks |
 | --- | --- |
 | `ros2-build-test` | Builds `seame-docker/ros2_ws` on a clean `ros:jazzy` image and runs `colcon test`; the result files are uploaded as `ros2-test-results` |
-| `telemetry-python` | `telemetry/*.py` compiles and passes flake8 (lines up to 140) |
+| `telemetry-python` | `telemetry/*.py` compiles and passes flake8 (lines up to 140), and `pytest telemetry` passes (MSP framing, decoders, the drone recordings) |
 | `docker-image` | The dev container still builds from scratch |
 | `block-red-pr` | If any job fails on a PR, the PR goes back to draft with a comment, so it can't be merged by accident |
+
+[.github/workflows/nightly.yml](../.github/workflows/nightly.yml), job `gazebo-flight`: the Gazebo flight test (`scripts/sim_flight_test.sh`), every night at 02:00 UTC, from the Actions tab, and on PRs that change the sim. The night run and the button work only once the file is on `main`. Its log, xUnit report and a rosbag of the flight are kept 14 days as the `sim-flight` artifact. It is not part of `block-red-pr`.
 
 Results: the PR's checks, or the repo's **Actions** tab.
 

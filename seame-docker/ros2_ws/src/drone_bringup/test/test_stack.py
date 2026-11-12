@@ -31,7 +31,7 @@ from nav_msgs.msg import Odometry
 import pytest
 import rclpy
 from rclpy.action import ActionClient
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from std_msgs.msg import String
 from std_srvs.srv import SetBool
@@ -95,7 +95,9 @@ class TestStack(unittest.TestCase):
                                      lambda m: setattr(cls, 'active', m.data), latched)
         cls.node.create_subscription(TwistStamped, '/cmd/mission', cls.on_mission_cmd, 10)
 
-        cls.executor = MultiThreadedExecutor()
+        # One thread, like the nodes under test: a multi-threaded executor here starved
+        # play_radio() for over source_timeout_s, so the radio seemed to let go mid-test.
+        cls.executor = SingleThreadedExecutor()
         cls.executor.add_node(cls.node)
         cls.spinner = threading.Thread(target=cls.executor.spin, daemon=True)
         cls.spinner.start()
@@ -313,14 +315,11 @@ class TestStack(unittest.TestCase):
         accepted, _ = self.send('takeoff', height=0.0)
         self.assertFalse(accepted, 'Takeoff accepted while disarmed')
 
-    @unittest.skip('Known bug in drone_mission/logic.py, tracked as a strict xfail in '
-                   'drone_mission/test/test_logic.py (test_disarm_while_overridden_is_not_'
-                   'forgotten). Fix it, then remove this skip.')
     def test_disarm_while_the_radio_flies(self):
-        # on_armed ignores a disarm while the mission is overridden. If control comes
-        # back while the drone is still falling, the mission goes to hold and keeps
-        # commanding a climb, disarmed on the ground; re-armed, it would climb alone.
-        # A skip, not expectedFailure: launch_testing reports that as a failure.
+        # Was a known bug (bug 2 in TESTS.md): a disarm while the mission was overridden
+        # was ignored, so when control came back with the drone still falling, the
+        # mission went to hold and kept commanding a climb, disarmed on the ground;
+        # re-armed, it would climb alone. test_logic.py checks the re-arm part.
         self.take_off()
         try:
             self.play_radio(0.5)                # the pilot takes over...
@@ -331,7 +330,8 @@ class TestStack(unittest.TestCase):
             time.sleep(1.0)
             self.assertEqual(self.mission_msgs, sent, 'mission commanding a disarmed drone')
         finally:
-            # Leave the mission grounded for the next test: Land ends its bogus hold.
+            # If the bug is back, the mission holds on the ground: Land ends that, so the
+            # next test still starts grounded. Fixed, Land is just refused.
             accepted, result = self.send('land')
             if accepted:
                 self.finish(result, 10.0)
