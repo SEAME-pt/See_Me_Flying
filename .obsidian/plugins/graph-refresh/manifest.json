@@ -1,0 +1,9 @@
+{
+  "id": "graph-redraw-nudge",
+  "name": "Graph Redraw Nudge",
+  "version": "1.1.0",
+  "minAppVersion": "1.0.0",
+  "description": "Makes Node Factor apply its node sizes whenever the graph view loads or refreshes its data.",
+  "author": "Mota494",
+  "isDesktopOnly": false
+}

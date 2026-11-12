@@ -2,9 +2,9 @@
 """
 Run folders and history for seame-docker/logs/: one folder per test run or measurement.
 
-    logs/tests/<date>_<time>_<commit>/              one per run of scripts/run_tests.sh
+    logs/tests/<date>_<commit>/                     one per run of scripts/run_tests.sh
     logs/tests/history.csv                          one line per run, to see trends
-    logs/measurements/<name>/<date>_<time>_<commit>/
+    logs/measurements/<name>/<date>_<commit>/
     logs/measurements/<name>/history.csv
 
 Every run folder has a meta.json: when, which commit and branch, and the files with
@@ -56,14 +56,14 @@ def describe_tree():
 
 
 def new_run(kind, name=None, extra=None):
-    """Create logs/<kind>[/<name>]/<date>_<time>_<commit>[-dirty]/ with meta.json; return path."""
+    """Create logs/<kind>[/<name>]/<date>_<commit>[-dirty][-N]/ with meta.json; return path."""
     now = datetime.datetime.now().astimezone()
     tree = describe_tree()
     tag = (tree['commit_short'] or 'nogit') + ('-dirty' if tree['uncommitted_code'] else '')
     parent = os.path.join(LOGS, kind, name) if name else os.path.join(LOGS, kind)
-    path = base = os.path.join(parent, f'{now:%Y-%m-%d_%H%M%S}_{tag}')
+    path = base = os.path.join(parent, f'{now:%Y-%m-%d}_{tag}')
     n = 1
-    while os.path.exists(path):          # two runs in the same second
+    while os.path.exists(path):          # same commit run again that day: -2, -3, ...
         n += 1
         path = f'{base}-{n}'
     os.makedirs(path)

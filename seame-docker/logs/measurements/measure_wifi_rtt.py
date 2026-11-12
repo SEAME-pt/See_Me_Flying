@@ -2,7 +2,7 @@
 """
 Run telemetry/latency_test.py and keep the result in logs/measurements/wifi_rtt/.
 
-    python3 scripts/measure_wifi_rtt.py --note "bench, AP mode, radio on" -n 1000 --interval 0.05
+    python3 logs/measurements/measure_wifi_rtt.py --note "bench, AP mode, radio on" -n 1000 --interval 0.05
 
 --note is required: the conditions (where, ESP mode, radio, anything unusual). Every
 other flag goes to latency_test.py unchanged (--host, --port, -n, --interval,
@@ -22,7 +22,8 @@ import statistics
 import subprocess
 import sys
 
-from logbook import ROOT, append_history, new_run, write_json
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'scripts'))
+from logbook import ROOT, append_history, new_run, write_json  # noqa: E402
 
 LATENCY_TEST = os.path.join(os.path.dirname(ROOT), 'telemetry', 'latency_test.py')
 

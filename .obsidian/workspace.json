@@ -4,21 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "360f4f3991c3b260",
+        "id": "3924fe387ffc2089",
         "type": "tabs",
         "children": [
           {
-            "id": "251d72c8baecfbdc",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
-            }
-          },
-          {
-            "id": "57a853e580b1cce5",
+            "id": "8c33d43039f6aee3",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -31,8 +21,7 @@
               "title": "Telemetry_test"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -194,47 +183,49 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "export-graph-view:Export graph view": false
     }
   },
-  "active": "57a853e580b1cce5",
+  "active": "8c33d43039f6aee3",
   "lastOpenFiles": [
+    "telemetry/README.md",
+    "telemetry/Telemetry_test.md",
+    "README.md",
+    "docs/extras/folders-graph.svg",
+    "folders-graph.svg",
+    "telemetry/Groundstation.md",
+    "Untitled.canvas",
+    "fodlers.mmd",
+    "dcvvdfvdf.mmd",
+    "aaaaa.mmd",
+    "teste1.mmd",
+    "dsadas.mmd",
+    "n_graph.mmd",
+    "graph.mmd",
+    "docs/README.md",
+    "Untitled.base",
+    "seame-docker/logs/README.md",
+    "docs/Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md",
+    "seame-docker/PLAN.md",
+    "docs/sprints/sprint_1.md",
+    "docs/sprints/sprint_0.md",
+    "seame-docker/SIM_TELEOP.md",
+    "docs/Drone_Firmware_Choices.md",
+    "2026-11-09.md",
+    "docs/pull_request_template.md",
+    "seame-docker/CHANGES.md",
     "seame-docker/logs/tests/2026-11-02_162848_ed2219d/report.md~",
     "seame-docker/scripts/test_report.py",
-    "seame-docker/scripts/run_tests.sh",
-    "seame-docker/scripts/logbook.py",
-    "seame-docker/ros2_ws/src/drone_interfaces/msg/OpticalFlow.msg",
-    "seame-docker/logs/tests/2026-11-05_144126_ab8985a-dirty/results.json",
     "seame-docker/logs/tests/2026-11-05_144126_ab8985a-dirty/report.md",
-    "seame-docker/logs/tests/2026-11-05_144126_ab8985a-dirty/meta.json",
-    "seame-docker/logs/tests/2026-11-05_144126_ab8985a-dirty/console.log.gz",
-    "seame-docker/logs/tests/2026-11-05_143323_ce2ea99-dirty/results.json",
     "seame-docker/logs/tests/2026-11-05_143323_ce2ea99-dirty/report.md",
-    "seame-docker/logs/tests/2026-11-05_143323_ce2ea99-dirty/meta.json",
-    "seame-docker/logs/tests/2026-11-05_143323_ce2ea99-dirty/console.log.gz",
     "seame-docker/logs/tests/2026-11-04_122025_eba9334/report.md",
     "seame-docker/logs/tests/2026-11-02_162848_ed2219d/report.md",
-    "seame-docker/logs/README.md",
-    "telemetry/Telemetry_test.md",
-    "telemetry/README.md",
-    "telemetry/Groundstation.md",
-    "docs/Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md",
-    "seame-docker/SIM_TELEOP.md",
     "seame-docker/TEST_REPORT.md",
     "seame-docker/GUIDE.md",
-    "seame-docker/CHANGES.md",
-    "seame-docker/PLAN.md",
-    "README.md",
     "telemetry/main.py.md",
     "seame-docker/README.md",
-    "docs/Drone_Firmware_Choices.md",
     "docs/ELRS_Guide.md",
-    "docs/README.md",
-    "docs/Wanhao_Duplicator_12-230.md",
-    "docs/Video_Transmission.md",
-    "docs/Sources.md",
-    "docs/pull_request_template.md",
-    "docs/Li-Po_Battery_Tests.md",
-    "Untitled.canvas"
+    "docs/Wanhao_Duplicator_12-230.md"
   ]
 }

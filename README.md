@@ -1,6 +1,7 @@
 ---
 title: Project Overview
 ---
+![Project graph](./docs/extras/folders-graph.svg)
 # See Me Flying — Autonomous Indoor Drone
 
 SEA:ME 2.0 drone track · Team 4 · last updated Oct 27, 2026
@@ -80,6 +81,7 @@ See_Me_Flying/
 │   └── README.md                 flashing + usage + every telemetry field
 ├── docs/
 │   ├── README.md                 hardware: drone parts, modules, mounts, limitations, wiring
+│   ├── TESTS.md                  every test we run, how to run it, its last result
 │   ├── Drone_Firmware_Choices.md why INAV (vs ArduPilot / Betaflight), custom target, calibration
 │   ├── Drone_INAV_Backup_26_10_26.md   current INAV `diff all`
 │   ├── Drone_Betaflight_Backup.md      original Betaflight 4.5.1 config (fallback)

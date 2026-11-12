@@ -1,4 +1,7 @@
 [
   "colored-tags",
-  "obsidian-front-matter-title-plugin"
+  "obsidian-front-matter-title-plugin",
+  "export-graph-view",
+  "graph-redraw-nudge",
+  "node-factor"
 ]

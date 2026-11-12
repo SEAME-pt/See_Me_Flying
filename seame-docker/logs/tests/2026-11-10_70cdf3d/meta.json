@@ -1,0 +1,12 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-10T16:17:48+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "70cdf3d38bc2826139b2b91a602c946099c9fbca",
+  "commit_short": "70cdf3d",
+  "commit_subject": "ROS-6 step A: MSP v2 framing and INAV decoders for fc_bridge (#135)",
+  "branch": "staging",
+  "uncommitted_code": [],
+  "uncommitted_other": []
+}

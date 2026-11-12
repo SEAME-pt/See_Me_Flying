@@ -231,7 +231,7 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 | `scripts/test_report.py` | Writes `report.md` (verdict, failures, comparison with the previous run, every test, warnings), `results.json`, `console.log.gz`, and the `history.csv` line |
 | `scripts/logbook.py` | Run folders, `meta.json` (commit, branch, uncommitted files; `-dirty` only for code under `ros2_ws/`), `history.csv`; also `logbook.py measure <name> key=value ...` for measurements |
 | `logs/README.md` | The layout, and how to record a measurement |
-| `logs/tests/2026-11-02_162848_ed2219d/` | The Nov 2 run, moved from `TEST_REPORT.md` and `test_report_console.log` (its raw result files weren't kept, so no `results.json`) |
+| `logs/tests/2026-11-02_ed2219d/` | The Nov 2 run, moved from `TEST_REPORT.md` and `test_report_console.log` (its raw result files weren't kept, so no `results.json`) |
 
 **Checked:** a full run (123 cases, 119 passed, 4 skipped, 0 failed, about 1.5 min) compared itself with Nov 2 ("same tests, same results"); two measurements in the same second get separate folders, and a new key adds a column to `history.csv`.
 
@@ -246,6 +246,19 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 | `scripts/logbook.py` | Docstring example changed the same way |
 
 **Checked** (against a fake bridge on localhost, not the drone yet): the summary matches `latency_test.py`'s own; Ctrl-C mid-run still records the run; no bridge records nothing and exits 1.
+
+## Nov 9: run folders named `<date>_<commit>`
+
+**Purpose:** the time in folder names (`_162848_`) was hard to read and didn't help find a run. The exact time stays in `meta.json` and in `history.csv`'s `date` column.
+
+| File | Change |
+| --- | --- |
+| `scripts/logbook.py` | New runs go to `<date>_<commit>[-dirty]/`; the same commit run again that day gets `-2`, `-3`, ... |
+| `logs/tests/` | The four existing runs renamed (e.g. `2026-11-02_162848_ed2219d` → `2026-11-02_ed2219d`), with `history.csv` and each `report.md` updated to match |
+| `logs/README.md` | The layout, and what `-2` means |
+| `logs/measurements/measure_wifi_rtt.py` | Moved from `scripts/`, next to the results it records |
+
+The previous run is still found from the order of `history.csv`, so the comparison in `report.md` doesn't depend on folder names.
 
 ## Docs updated
 
