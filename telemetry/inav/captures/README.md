@@ -1,4 +1,4 @@
-git# MSP captures (INAV-4.2, #125)
+# MSP captures (INAV-4.2, #125)
 
 Raw MSPv2 replies from the drone, for testing the ROS-6.2 decoders. They were captured with `msp_inventory.py capture` on 2026-11-09.
 
