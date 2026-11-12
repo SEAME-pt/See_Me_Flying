@@ -11,14 +11,10 @@
             "id": "8c33d43039f6aee3",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "telemetry/Telemetry_test.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Telemetry_test"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           }
         ]
@@ -159,7 +155,6 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "telemetry/Telemetry_test.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -189,43 +184,44 @@
   },
   "active": "8c33d43039f6aee3",
   "lastOpenFiles": [
-    "telemetry/README.md",
+    "telemetry/inav/captures/inav/msp/rates/run3.txt",
+    "telemetry/inav/captures/inav/msp/rates/run2.txt",
+    "telemetry/inav/captures/inav/msp/rates/run1.txt",
+    "telemetry/inav/captures/inav/msp/rates/rate_t1500.txt",
+    "telemetry/inav/captures/inav/msp/rates/rate_nops.txt",
+    "telemetry/inav/captures/inav/msp/rates/rate_gap10.txt",
+    "telemetry/inav/captures/inav/msp/rates/rate_baseline.txt",
+    "telemetry/inav/captures/inav/msp/captures/tilted.jsonl",
+    "telemetry/inav/captures/inav/msp/captures/radio_off.jsonl",
+    "telemetry/inav/captures/inav/msp/captures/flow_moving.jsonl",
+    "telemetry/inav/captures/inav/msp/captures/flat_still.jsonl",
+    "telemetry/inav/captures/README.md",
+    "telemetry/candidatesList.md",
+    "seame-docker/ros2_ws/src/drone_fc_bridge/test/data/README.md",
+    "seame-docker/logs/tests/2026-11-10_92117ca/report.md",
+    "seame-docker/logs/tests/2026-11-10_70cdf3d/report.md",
+    "seame-docker/logs/tests/2026-11-05_ce2ea99-dirty/report.md",
+    "seame-docker/logs/tests/2026-11-05_ab8985a-dirty/report.md",
+    "seame-docker/logs/tests/2026-11-04_eba9334/report.md",
+    "seame-docker/logs/tests/2026-11-02_ed2219d/report.md",
+    "docs/TESTS.md",
+    "docs/Msp_primer.md",
+    "seame-docker/logs/tests/2026-11-05_144126_ab8985a-dirty/report.md",
+    "seame-docker/logs/tests/2026-11-05_143323_ce2ea99-dirty/report.md",
+    "seame-docker/logs/tests/2026-11-04_122025_eba9334/report.md",
+    "seame-docker/logs/tests/2026-11-02_162848_ed2219d/report.md",
     "telemetry/Telemetry_test.md",
+    "telemetry/README.md",
     "README.md",
     "docs/extras/folders-graph.svg",
     "folders-graph.svg",
     "telemetry/Groundstation.md",
     "Untitled.canvas",
-    "fodlers.mmd",
-    "dcvvdfvdf.mmd",
-    "aaaaa.mmd",
-    "teste1.mmd",
-    "dsadas.mmd",
-    "n_graph.mmd",
-    "graph.mmd",
     "docs/README.md",
-    "Untitled.base",
     "seame-docker/logs/README.md",
     "docs/Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md",
     "seame-docker/PLAN.md",
     "docs/sprints/sprint_1.md",
-    "docs/sprints/sprint_0.md",
-    "seame-docker/SIM_TELEOP.md",
-    "docs/Drone_Firmware_Choices.md",
-    "2026-11-09.md",
-    "docs/pull_request_template.md",
-    "seame-docker/CHANGES.md",
-    "seame-docker/logs/tests/2026-11-02_162848_ed2219d/report.md~",
-    "seame-docker/scripts/test_report.py",
-    "seame-docker/logs/tests/2026-11-05_144126_ab8985a-dirty/report.md",
-    "seame-docker/logs/tests/2026-11-05_143323_ce2ea99-dirty/report.md",
-    "seame-docker/logs/tests/2026-11-04_122025_eba9334/report.md",
-    "seame-docker/logs/tests/2026-11-02_162848_ed2219d/report.md",
-    "seame-docker/TEST_REPORT.md",
-    "seame-docker/GUIDE.md",
-    "telemetry/main.py.md",
-    "seame-docker/README.md",
-    "docs/ELRS_Guide.md",
-    "docs/Wanhao_Duplicator_12-230.md"
+    "docs/sprints/sprint_0.md"
   ]
 }
