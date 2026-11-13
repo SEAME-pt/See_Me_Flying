@@ -260,6 +260,29 @@ What `fc_bridge` publishes now, per sim odometry message (50 Hz):
 
 The previous run is still found from the order of `history.csv`, so the comparison in `report.md` doesn't depend on folder names.
 
+## Nov 12: `mission` on one thread (bug 3)
+
+**Purpose:** the mission's 20 Hz commands stalled for 0.3–0.8 s at a time, so `fc_bridge` timed out and sent zero, goals aborted with `rangefinder lost`, and `test_stack.py` and the Gazebo flight were flaky.
+
+| File | Change |
+| --- | --- |
+| `drone_mission/drone_mission/mission.py` | `SingleThreadedExecutor` instead of `MultiThreadedExecutor`. `execute()` is a coroutine: it waits for the next tick (`next_tick()`) instead of `time.sleep(0.1)`, so a running goal no longer takes a thread away from `tick()`. Feedback still goes out at about 10 Hz. |
+| `drone_bringup/test/test_stack.py` | The test's own node on a single-threaded executor too: the multi-threaded one starved its radio stick player for more than `source_timeout_s`, so the radio seemed to let go mid-test. |
+
+**Result:** `test_stack.py` passed 6 runs out of 6 (3 out of 6 before). The Gazebo flight passed every step. Ctrl-C still exits in about 0.2 s, also during a goal. Details: TESTS.md, section 10, bugs 3 and 8.
+
+## Nov 12: a disarm under the radio is no longer forgotten (bug 2)
+
+**Purpose:** a disarm while the radio had control was ignored (`on_armed` only acts in an airborne state). If control came back while the drone was still falling, the mission went to `hold`, kept commanding a climb while disarmed on the ground, and **climbed with no Takeoff once re-armed**.
+
+| File | Change |
+| --- | --- |
+| `drone_mission/drone_mission/logic.py` | `set_control`: when control comes back and `fc/status` says disarmed, go to `grounded` whatever the height. An unknown arm state (no status yet) changes nothing. |
+| `drone_mission/test/test_logic.py` | `test_disarm_while_overridden_is_not_forgotten` is no longer an expected fail. |
+| `drone_bringup/test/test_stack.py` | `test_disarm_while_the_radio_flies` is no longer skipped. |
+
+**Result:** both pass; the whole suite passed (236 cases, 0 failed; run `logs/tests/2026-11-12_581471b-dirty`).
+
 ## Docs updated
 
 - `README.md`: `fc_bridge` section (state topics and parameters), bridge table, `radio_teleop` debounce, a **Tests** section, known issues and the resolved list.

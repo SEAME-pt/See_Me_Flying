@@ -83,10 +83,14 @@ def setup(context):
         ours = os.path.join(share, 'worlds', world)
         if os.path.isfile(ours):
             world = ours
+        # headless:=true: server only (-s), no window, for CI and the nightly flight tests
+        gz_args = '-r ' + world
+        if arg('headless') == 'true':
+            gz_args = '-s ' + gz_args
         actions.append(IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(
                 get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')),
-            launch_arguments={'gz_args': '-r ' + world}.items(),
+            launch_arguments={'gz_args': gz_args}.items(),
         ))
         actions.append(Node(
             package='ros_gz_bridge', executable='parameter_bridge',
@@ -173,6 +177,9 @@ def generate_launch_description():
                                           'or the circle (source:=circle)'),
         DeclareLaunchArgument('world', default_value='multicopter_velocity_control.sdf',
                               description='Sim only: SDF world file name or full path'),
+        DeclareLaunchArgument('headless', default_value='false', choices=['true', 'false'],
+                              description='Sim only. true: Gazebo without its window '
+                                          '(server only), for CI and the nightly tests'),
         # Everything else is decided once the arguments are known, and checked
         # before any process starts.
         OpaqueFunction(function=setup),

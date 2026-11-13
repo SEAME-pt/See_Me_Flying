@@ -1,0 +1,26 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-12T18:58:20+00:00",
+  "host": "seame-10",
+  "commit": "581471b9b2de374c88c84adaa1fafbabde01adf7",
+  "commit_short": "581471b",
+  "commit_subject": "Tests: stack, Gazebo flight, launch files, worlds, decoder bugs, capture copies",
+  "branch": "ci/test_implementation",
+  "uncommitted_code": [
+    "seame-docker/ros2_ws/src/drone_bringup/test/test_stack.py",
+    "seame-docker/ros2_ws/src/drone_mission/drone_mission/logic.py",
+    "seame-docker/ros2_ws/src/drone_mission/drone_mission/mission.py",
+    "seame-docker/ros2_ws/src/drone_mission/test/test_logic.py"
+  ],
+  "uncommitted_other": [
+    "TESTS.md",
+    "docs/CI_Tests.md",
+    "docs/TESTS.md",
+    "seame-docker/CHANGES.md",
+    "seame-docker/README.md",
+    "telemetry/inav_telemetry.py",
+    "telemetry/tests/test_decoders.py",
+    "telemetry/tests/test_msp_frame.py"
+  ]
+}
