@@ -1,3 +1,6 @@
+---
+title: MSP captures
+---
 # MSP captures (INAV-4.2, #125)
 
 Raw MSPv2 replies from the drone, for testing the ROS-6.2 decoders. They were captured with `msp_inventory.py capture` on 2026-11-09.
@@ -62,3 +65,7 @@ Roll, pitch and yaw are from MSP_ATTITUDE in the capture. Fill in the Configurat
 **Full set** (the 9 live messages polled in turn): 1.4 cycles/s (runs: 1.4, 1.6, 1.2).
 
 **Conditions:** 2026-11-09 · INAV 9.1.0 on ODF7 · esp-link 3.2.47, UART1 at 115200 baud · laptop on the drone's own Wi-Fi · sequential polling, no gap · 1500 ms reply timeout · 10 s per message · raw output in `run1.txt` to `run3.txt`.
+
+# Tags
+
+#tests  
