@@ -19,6 +19,12 @@ fc_bridge:
     range_max: 6.0
     range_noise: 0.01 # 1cm placeholder until bench tests
     range_fov: 0.070  # rad, 4 deg full cone (spec: 2 deg half-angle)
+    publish_odom: false   # fc/odom comes from the estimator
+
+estimator:
+  ros__parameters:
+    hold_s: 0.3      # s, keep the last speed this long after flow is lost
+    vz_window: 0.6   # s, heights used for vertical speed
 
 safety_manager:
   ros__parameters:
