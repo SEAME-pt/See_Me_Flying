@@ -28,10 +28,13 @@ target_link_libraries(fc_bridge PUBLIC
 
 install(TARGETS fc_bridge DESTINATION lib/${PROJECT_NAME})
 
-# MSP framing and INAV decoders for the inav backend. No ROS in it, so the
-# tests below run it against captured frames. Not linked into fc_bridge yet.
-add_library(fc_msp STATIC src/msp.cpp src/inav_decode.cpp)
+# MSP framing, INAV decoders and the TCP link for the inav backend. No ROS in
+# it, so the tests below run it against captured frames and a fake FC. Not
+# linked into fc_bridge yet.
+find_package(Threads REQUIRED)
+add_library(fc_msp STATIC src/msp.cpp src/inav_decode.cpp src/inav_link.cpp)
 target_include_directories(fc_msp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(fc_msp PUBLIC Threads::Threads)
 
 if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake REQUIRED)
@@ -47,7 +50,7 @@ if(BUILD_TESTING)
 
   # Captured frames from the real drone live in test/data (see its README).
   find_package(ament_cmake_gtest REQUIRED)
-  foreach(name test_msp test_inav_decode)
+  foreach(name test_msp test_inav_decode test_inav_link)
     ament_add_gtest(${name} test/${name}.cpp)
     target_link_libraries(${name} fc_msp)
     target_compile_definitions(${name} PRIVATE
