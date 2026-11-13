@@ -29,6 +29,7 @@ class FakeDrone(Node):
         self.cmd = Twist()
         self.enabled = False
         self.pub = self.create_publisher(Odometry, '/X3/odom', 10)
+        self.truth_pub = self.create_publisher(Odometry, '/sim/ground_truth', 10)
         self.create_subscription(Twist, '/X3/gazebo/command/twist', self.on_cmd, 10)
         self.create_subscription(Bool, '/X3/enable', self.on_enable, 10)
         self.last = time.monotonic()
@@ -69,6 +70,8 @@ class FakeDrone(Node):
         v.linear.x, v.linear.y, v.linear.z = vx, vy, vz   # body frame, like Gazebo's
         v.angular.z = wz
         self.pub.publish(odom)
+        self.truth_pub.publish(odom)
+
 
 
 def main():
