@@ -66,6 +66,13 @@ Roll, pitch and yaw are from MSP_ATTITUDE in the capture. Fill in the Configurat
 
 **Conditions:** 2026-11-09 · INAV 9.1.0 on ODF7 · esp-link 3.2.47, UART1 at 115200 baud · laptop on the drone's own Wi-Fi · sequential polling, no gap · 1500 ms reply timeout · 10 s per message · raw output in `run1.txt` to `run3.txt`.
 
+## Tests run on 2026-11-12 — Results were worse than in the previous test run.
+
+| Measurement | Place | Mean | Median | p95 | Max | Drops | Date | Conditions | Source |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |
+| MSP round trip over Wi-Fi | Bench | 131.1 ms | 40.1 ms | 794.4 ms | 1594.0 ms | 1.0% | 2026-11-12 | esp-link 3.2.47, AP mode, power save off, 500 samples at 50 ms, 2 s timeout | `telemetry/bench.csv` |
+| MSP round trip over Wi-Fi | Cage | 135.7 ms | 100.3 ms | 760.0 ms | 1072.7 ms | 0.0% | 2026-11-12 | same | `telemetry/cage.csv` |
+
 # Tags
 
-#tests  
+#tests

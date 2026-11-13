@@ -93,7 +93,9 @@ public:
       declare_parameter<std::string>("sim_odom_topic", "/X3/odom");
     declare_parameter<double>("flow_vel_noise", 0.02);  // m/s, white noise on velocity
     declare_parameter<double>("flow_drift", 0.002);     // m/s per sqrt(s), random-walk bias
-    // keeps defaults for rangefinder vaules as in model VL53L1X
+    publish_odom_ = declare_parameter<bool>("publish_odom", true);  // false: the estimator publishes fc/odom
+
+    // keeps defaults for rangefinder values as in model VL53L1X
     // overrides rangefinder defaults in drone_bringup/config/sim.yaml
     declare_parameter<double>("range_noise", 0.005);    // m
     declare_parameter<double>("range_min", 0.04);       // m, VL53L1X-like
@@ -108,7 +110,10 @@ public:
       cmd_pub_ = create_publisher<Twist>(gz_twist_topic, 10);
       enable_pub_ = create_publisher<Bool>(gz_enable_topic, 10);
     }
-    odom_pub_ = create_publisher<Odometry>("fc/odom", 10);
+    // unused by default now that estimator is set up
+    if (publish_odom_) {
+      odom_pub_ = create_publisher<Odometry>("fc/odom", 10);
+    }
     attitude_pub_ = create_publisher<QuaternionStamped>("fc/attitude", 10);
     range_pub_ = create_publisher<Range>("fc/range", 10);
     status_pub_ = create_publisher<FcStatus>("fc/status", 10);
@@ -266,7 +271,9 @@ private:
     odom.twist.twist.linear.y = vy;
     odom.twist.twist.linear.z = vz;
     odom.twist.twist.angular = sim.twist.twist.angular;
-    odom_pub_->publish(odom);
+    if (publish_odom_) {
+      odom_pub_->publish(odom);
+    }
 
     QuaternionStamped attitude;
     attitude.header = odom.header;
@@ -348,6 +355,7 @@ private:
   std::optional<rclcpp::Time> last_odom_stamp_;
   double pos_x_{0.0}, pos_y_{0.0};
   double bias_x_{0.0}, bias_y_{0.0};
+  bool publish_odom_{true};
 };
 
 int main(int argc, char ** argv)

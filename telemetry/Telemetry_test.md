@@ -26,6 +26,28 @@ There are two modes where both softwares were tested, first mode is where the ES
 | Test 5 | 89ms           | 408ms            | 13ms        | 60ms          |
 This test consisted in sending and receiving MSP packages, and the ms listed is the average after sending 200 packages, the averages were taken from tests that had 0 lost packages.
 
+# Latency measurement (STK-5.2, #82)
+
+Measured on 2026-11-12 with `latency_test.py`, at the bench and inside the cage. Every sample is kept, including lost ones, so drops and slow replies are visible.
+
+**Setup:** esp-link 3.2.47 in AP mode (laptop on the drone's own Wi-Fi) · INAV 9.1.0 on the OddityRC F7 AIO, MSP on UART1 at 115200 · laptop Wi-Fi power saving off · 500 requests per run, 50 ms apart, 2 s timeout.
+
+```python3 latency_test.py --port 23 -n 500 --csv bench.csv```
+
+| Place | Mean (ms) | Median (ms) | p95 (ms) | Max (ms) | Drops |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Bench | 131.1 | 40.1 | 794.4 | 1594.0 | 1.0% (5 of 500) |
+| Cage | 135.7 | 100.3 | 760.0 | 1072.7 | 0.0% (0 of 500) |
+
+No corrupted frames in either run. Raw samples: `bench.csv` and `cage.csv`.
+
+**What it shows:**
+
+- The link is much slower than the earlier esp-link figures above (9–15 ms). Those averages left out runs with lost packages; these include everything.
+- Round-trip times fall into two groups: about half take 0–40 ms, and many of the rest take 140–180 ms. The link seems to switch between a fast and a slow mode.
+- 1 reply in 20 takes over 0.75 s, and the worst took 1.6 s. Plan control loops around this tail, not the mean.
+- Bench and cage are similar, so the drone's position in the room is not the main factor.
+
 > [!TIP]  
 > If power saving is enabled on the computer the results of the tests will be way higher and lost packages will be common
 
