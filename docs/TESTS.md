@@ -11,7 +11,7 @@ Every test and check the team runs, how to run it, and where its last result is.
 
 | Area | Test | How | Last result |
 | --- | --- | --- | --- |
-| ROS | Unit, launch and lint tests (181 cases) | `./scripts/run_tests.sh` | [logs/tests/history.csv](../seame-docker/logs/tests/history.csv) |
+| ROS | Unit, launch and lint tests (191 cases) | `./scripts/run_tests.sh` | [logs/tests/history.csv](../seame-docker/logs/tests/history.csv) |
 | CI | Build + test, telemetry lint, Docker image | automatic on push and PR | GitHub → Actions |
 | Sim | Flights, takeover, failsafes, by hand | [SIM_TELEOP.md](../seame-docker/SIM_TELEOP.md) | [below](#sim-by-hand) |
 | Link | Wi-Fi round trip (`wifi_rtt`) | `logs/measurements/measure_wifi_rtt.py` | not run on the drone yet |
@@ -38,7 +38,7 @@ cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge dr
 
 | Package | Behaviour tests | Cases |
 | --- | --- | --- |
-| `drone_fc_bridge` | `test_failsafes` (timeout, NaN/inf, clamps), `test_state` (odometry, range), `test_services` (arm, hold, status), `test_inav` (the `inav` backend refuses to arm, publishes nothing to Gazebo), `test_msp` and `test_inav_decode` (MSP framing and INAV decoders, against frames captured from the real drone), `test_inav_link` (the TCP link against a fake FC: pipelined polling, lost replies, a silent link, reconnects) | 67 |
+| `drone_fc_bridge` | `test_failsafes` (timeout, NaN/inf, clamps), `test_state` (odometry, range), `test_services` (arm, hold, status), `test_inav` (the `inav` backend refuses to arm, publishes nothing to Gazebo), `test_msp` and `test_inav_decode` (MSP framing and INAV decoders, against frames captured from the real drone), `test_inav_link` (the TCP link against a fake FC: pipelined polling, lost replies, a silent link, reconnects), `test_inav_state` (the `inav` backend's topics and frame conversions against a fake INAV) | 77 |
 | `drone_mission` | `test_logic`: whole flights against a toy drone (takeoff, goto, land, range lost, overrides, arming) | 43 |
 | `drone_basics_py` | `test_radio_teleop`: arm switch, takeover, bounce, stick scaling | 24 |
 | `drone_safety` | `test_arbiter`: which source commands the drone | 9 |
@@ -47,7 +47,7 @@ What each file checks, case by case: the **Tests** table in [seame-docker/README
 
 The other 24 cases are lint and style checks (flake8, pep257, mypy, xmllint, copyright, cppcheck, uncrustify, lint_cmake). Four are skipped on purpose: the copyright check in three Python packages (no license header yet) and cppcheck on `watchdog.cpp` (too slow in cppcheck 2.13).
 
-**Are the tests real?** Each guard was broken on purpose once to see its tests fail (timeout, debounce, altitude hold, priority order, arming checks, `inav` refusing `fc/arm`; on Nov 10, the MSP parser and decoders: wrong CRC, no resync after a damaged frame, signed fields read unsigned; on Nov 13, the link: no reconnect on a silent link, polling a non-INAV FC, one request per cycle). Dates and counts are in the "Checked" lines of [CHANGES.md](../seame-docker/CHANGES.md).
+**Are the tests real?** Each guard was broken on purpose once to see its tests fail (timeout, debounce, altitude hold, priority order, arming checks, `inav` refusing `fc/arm`; on Nov 10, the MSP parser and decoders: wrong CRC, no resync after a damaged frame, signed fields read unsigned; on Nov 13, the link: no reconnect on a silent link, polling a non-INAV FC, one request per cycle; the `inav` topics: yaw, east and body-frame velocity not converted, range trusted without the sensor bit). Dates and counts are in the "Checked" lines of [CHANGES.md](../seame-docker/CHANGES.md).
 
 ## CI
 

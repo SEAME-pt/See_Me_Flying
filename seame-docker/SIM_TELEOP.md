@@ -47,7 +47,7 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
                                    /X3/odom ──► fc_bridge ──► fc/odom, fc/attitude, fc/range
 ```
 
-With `backend:=inav`, Gazebo, `ros_gz_bridge` and the radio nodes are gone, and `fc_bridge` is the MSP stub: it sends nothing yet.
+With `backend:=inav`, Gazebo, `ros_gz_bridge` and the radio nodes are gone, and `fc_bridge` reads the real drone over MSP (esp-link, port 23) without sending it any commands.
 
 Only `safety_manager` publishes on `/fc/setpoint_velocity`, so sources never fight: the radio beats manual beats the mission. Every source still ends in `fc_bridge`, so the timeout, NaN guard and clamp apply to all of them.
 

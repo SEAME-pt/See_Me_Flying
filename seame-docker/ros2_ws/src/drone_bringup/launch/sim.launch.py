@@ -139,7 +139,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('backend', default_value='sim', choices=['sim', 'inav'],
                               description='sim: Gazebo. inav: the real drone over MSP '
-                                          '(stub: nothing sent yet)'),
+                                          '(listen-only: reads state, sends no commands)'),
         DeclareLaunchArgument('source', default_value='mission',
                               choices=['circle', 'mission', 'none'],
                               description='What commands the drone besides the radio: '

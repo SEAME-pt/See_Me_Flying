@@ -1,9 +1,11 @@
 """
-fc_bridge with backend:=inav, the stub for the real drone.
+fc_bridge with backend:=inav, with no flight controller to reach.
 
-Starts fc_bridge alone on the wall clock. ROS must not be able to arm it, and
-none of the sim's topics may appear: nothing reaches Gazebo or its enable topic.
+Starts fc_bridge alone on the wall clock, its MSP link pointed at a closed
+port. ROS must not be able to arm it, and none of the sim's topics may
+appear: nothing reaches Gazebo or its enable topic.
 """
+import socket
 import time
 import unittest
 
@@ -18,11 +20,21 @@ from std_msgs.msg import Bool
 from std_srvs.srv import SetBool
 
 
+def closed_port():
+    # A port nothing listens on, so the link's connects are refused at once.
+    s = socket.socket()
+    s.bind(('127.0.0.1', 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+
 @pytest.mark.launch_test
 def generate_test_description():
     fc_bridge = launch_ros.actions.Node(
         package='drone_fc_bridge', executable='fc_bridge', output='screen',
-        parameters=[{'backend': 'inav', 'armed_at_start': True}])
+        parameters=[{'backend': 'inav', 'armed_at_start': True,
+                     'msp_host': '127.0.0.1', 'msp_port': closed_port()}])
     return launch.LaunchDescription([fc_bridge, launch_testing.actions.ReadyToTest()])
 
 

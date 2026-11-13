@@ -16,8 +16,16 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(drone_interfaces REQUIRED)
 
+# MSP framing, INAV decoders and the TCP link for the inav backend. No ROS in
+# it, so the tests below run it against captured frames and a fake FC.
+find_package(Threads REQUIRED)
+add_library(fc_msp STATIC src/msp.cpp src/inav_decode.cpp src/inav_link.cpp)
+target_include_directories(fc_msp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(fc_msp PUBLIC Threads::Threads)
+
 add_executable(fc_bridge src/fc_bridge.cpp)
 target_link_libraries(fc_bridge PUBLIC
+  fc_msp
   rclcpp::rclcpp
   ${geometry_msgs_TARGETS}
   ${nav_msgs_TARGETS}
@@ -27,14 +35,6 @@ target_link_libraries(fc_bridge PUBLIC
   ${drone_interfaces_TARGETS})
 
 install(TARGETS fc_bridge DESTINATION lib/${PROJECT_NAME})
-
-# MSP framing, INAV decoders and the TCP link for the inav backend. No ROS in
-# it, so the tests below run it against captured frames and a fake FC. Not
-# linked into fc_bridge yet.
-find_package(Threads REQUIRED)
-add_library(fc_msp STATIC src/msp.cpp src/inav_decode.cpp src/inav_link.cpp)
-target_include_directories(fc_msp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(fc_msp PUBLIC Threads::Threads)
 
 if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake REQUIRED)
@@ -46,6 +46,8 @@ if(BUILD_TESTING)
   add_launch_test(test/test_services.py TIMEOUT 120
     ENV ROS_DOMAIN_ID=199 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST)
   add_launch_test(test/test_inav.py TIMEOUT 120
+    ENV ROS_DOMAIN_ID=199 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST)
+  add_launch_test(test/test_inav_state.py TIMEOUT 120
     ENV ROS_DOMAIN_ID=199 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST)
 
   # Captured frames from the real drone live in test/data (see its README).
