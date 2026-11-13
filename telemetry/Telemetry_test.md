@@ -56,4 +56,4 @@ No corrupted frames in either run. Raw samples: `bench.csv` and `cage.csv`.
 This isn't really a debate TCP is the only logical solution, esp-link does work with UDP but the micro controller would need to run esp-link client code which isn't fesable since we need inav
 # Tags
 
-#resources 
+#tests 
