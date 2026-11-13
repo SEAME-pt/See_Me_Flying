@@ -102,6 +102,11 @@ def setup(context):
             package='drone_sim_sensors', executable='flow_model',
             parameters=[params, clock], output='screen',
         ))
+        # Estimator v1: fc/odom from flow, range and attitude (drone_sim_sensors).
+        actions.append(Node(
+            package='drone_sim_sensors', executable='estimator',
+            parameters=[params, clock], output='screen',
+        ))
 
     actions.append(Node(
         package='drone_fc_bridge', executable='fc_bridge', output='screen',
