@@ -73,7 +73,6 @@ class FakeDrone(Node):
         self.truth_pub.publish(odom)
 
 
-
 def main():
     rclpy.init()
     node = FakeDrone()
