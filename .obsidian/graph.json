@@ -55,18 +55,25 @@
         "a": 1,
         "rgb": 5395168
       }
+    },
+    {
+      "query": "tag:#tests  ",
+      "color": {
+        "a": 1,
+        "rgb": 15650047
+      }
     }
   ],
   "collapse-display": false,
   "showArrow": false,
-  "textFadeMultiplier": 0,
-  "nodeSizeMultiplier": 1,
-  "lineSizeMultiplier": 1,
-  "collapse-forces": true,
-  "centerStrength": 0.518713248970312,
-  "repelStrength": 10,
+  "textFadeMultiplier": -1.4,
+  "nodeSizeMultiplier": 1.2244094488189,
+  "lineSizeMultiplier": 1.14874731567645,
+  "collapse-forces": false,
+  "centerStrength": 0.36455670313938,
+  "repelStrength": 12.3116715163272,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 0.6666666666666666,
+  "scale": 0.4444444444444444,
   "close": true
 }

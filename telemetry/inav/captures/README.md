@@ -1,3 +1,6 @@
+---
+title: MSP captures
+---
 # MSP captures (INAV-4.2, #125)
 
 Raw MSPv2 replies from the drone, for testing the ROS-6.2 decoders. They were captured with `msp_inventory.py capture` on 2026-11-09.
@@ -69,3 +72,7 @@ Roll, pitch and yaw are from MSP_ATTITUDE in the capture. Fill in the Configurat
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |
 | MSP round trip over Wi-Fi | Bench | 131.1 ms | 40.1 ms | 794.4 ms | 1594.0 ms | 1.0% | 2026-11-12 | esp-link 3.2.47, AP mode, power save off, 500 samples at 50 ms, 2 s timeout | `telemetry/bench.csv` |
 | MSP round trip over Wi-Fi | Cage | 135.7 ms | 100.3 ms | 760.0 ms | 1072.7 ms | 0.0% | 2026-11-12 | same | `telemetry/cage.csv` |
+
+# Tags
+
+#tests
