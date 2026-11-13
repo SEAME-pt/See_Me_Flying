@@ -180,7 +180,7 @@ def remaps(node):
 def test_default_is_the_sim_with_the_radio_and_the_mission():
     actions = launch()
     assert set(started(actions)) == {
-        'parameter_bridge', 'flow_model', 'fc_bridge', 'safety_manager', 'mission',
+      'estimator', 'parameter_bridge', 'flow_model', 'fc_bridge', 'safety_manager', 'mission',
         'joy_node', 'radio_teleop'}
     assert len(gazebo(actions)) == 1
 
