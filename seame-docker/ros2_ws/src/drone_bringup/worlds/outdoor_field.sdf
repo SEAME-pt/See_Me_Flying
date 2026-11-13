@@ -1,0 +1,644 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <world name="outdoor_field">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- Same system plugins as multicopter_velocity_control.sdf; compare and copy any you're missing -->
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"/>
+
+    <scene>
+      <ambient>0.6 0.6 0.6 1</ambient>
+      <background>0.62 0.76 0.92 1</background>
+      <shadows>true</shadows>
+      <sky></sky>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 50 0 0 0</pose>
+      <diffuse>0.95 0.92 0.85 1</diffuse>
+      <specular>0.3 0.3 0.3 1</specular>
+      <direction>-0.5 0.3 -0.8</direction>
+    </light>
+
+    <include>
+      <uri>model://grass_ground</uri>
+    </include>
+
+    <model name="tree_0">
+      <static>true</static>
+      <pose>15.70 9.37 0 0 0 0.59</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 2.21 0 0 0</pose><geometry><cylinder><radius>0.32</radius><length>4.41</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 6.87 0 0 0</pose><geometry><sphere><radius>3.92</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 2.2067205280286357 0 0 0</pose><geometry><cylinder><radius>0.31615293582476767</radius><length>4.413441056057271</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>-1.89 -0.53 6.90 0 0 0</pose><geometry><sphere><radius>2.88</radius></sphere></geometry><material><ambient>0.17 0.42 0.13 1</ambient><diffuse>0.17 0.42 0.13 1</diffuse></material></visual><visual name="leaves_1"><pose>0.43 1.17 7.76 0 0 0</pose><geometry><sphere><radius>2.58</radius></sphere></geometry><material><ambient>0.17 0.42 0.13 1</ambient><diffuse>0.17 0.42 0.13 1</diffuse></material></visual><visual name="leaves_2"><pose>0.73 0.96 6.46 0 0 0</pose><geometry><sphere><radius>2.44</radius></sphere></geometry><material><ambient>0.17 0.42 0.13 1</ambient><diffuse>0.17 0.42 0.13 1</diffuse></material></visual><visual name="leaves_3"><pose>2.32 -0.99 6.50 0 0 0</pose><geometry><sphere><radius>2.16</radius></sphere></geometry><material><ambient>0.17 0.42 0.13 1</ambient><diffuse>0.17 0.42 0.13 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_1">
+      <static>true</static>
+      <pose>23.69 -19.18 0 0 0 0.19</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.76 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>3.52</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 5.48 0 0 0</pose><geometry><sphere><radius>3.13</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.7612680479954725 0 0 0</pose><geometry><cylinder><radius>0.2765571598218198</radius><length>3.522536095990945</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>1.69 -1.15 5.68 0 0 0</pose><geometry><sphere><radius>2.24</radius></sphere></geometry><material><ambient>0.20 0.40 0.13 1</ambient><diffuse>0.20 0.40 0.13 1</diffuse></material></visual><visual name="leaves_1"><pose>0.95 0.87 5.04 0 0 0</pose><geometry><sphere><radius>1.96</radius></sphere></geometry><material><ambient>0.20 0.40 0.13 1</ambient><diffuse>0.20 0.40 0.13 1</diffuse></material></visual><visual name="leaves_2"><pose>0.62 0.72 5.98 0 0 0</pose><geometry><sphere><radius>2.37</radius></sphere></geometry><material><ambient>0.20 0.40 0.13 1</ambient><diffuse>0.20 0.40 0.13 1</diffuse></material></visual><visual name="leaves_3"><pose>1.01 1.48 4.86 0 0 0</pose><geometry><sphere><radius>2.06</radius></sphere></geometry><material><ambient>0.20 0.40 0.13 1</ambient><diffuse>0.20 0.40 0.13 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_2">
+      <static>true</static>
+      <pose>13.95 -19.26 0 0 0 4.39</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.79 0 0 0</pose><geometry><cylinder><radius>0.22</radius><length>1.58</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 2.10 0 0 0</pose><geometry><cylinder><radius>2.21</radius><length>1.05</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 3.15 0 0 0</pose><geometry><cylinder><radius>1.47</radius><length>1.05</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 4.20 0 0 0</pose><geometry><cylinder><radius>0.74</radius><length>1.05</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 3.83 0 0 0</pose><geometry><cylinder><radius>1.65</radius><length>1.05</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 4.88 0 0 0</pose><geometry><cylinder><radius>1.10</radius><length>1.05</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 5.93 0 0 0</pose><geometry><cylinder><radius>0.55</radius><length>1.05</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 5.57 0 0 0</pose><geometry><cylinder><radius>1.10</radius><length>1.05</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 6.62 0 0 0</pose><geometry><cylinder><radius>0.73</radius><length>1.05</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 7.67 0 0 0</pose><geometry><cylinder><radius>0.37</radius><length>1.05</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.787810354107365 0 0 0</pose><geometry><cylinder><radius>0.21817155311610475</radius><length>1.57562070821473</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 2.10 0 0 0</pose><geometry><cylinder><radius>2.21</radius><length>1.05</length></cylinder></geometry><material><ambient>0.09 0.34 0.13 1</ambient><diffuse>0.09 0.34 0.13 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 3.15 0 0 0</pose><geometry><cylinder><radius>1.47</radius><length>1.05</length></cylinder></geometry><material><ambient>0.09 0.34 0.13 1</ambient><diffuse>0.09 0.34 0.13 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 4.20 0 0 0</pose><geometry><cylinder><radius>0.74</radius><length>1.05</length></cylinder></geometry><material><ambient>0.09 0.34 0.13 1</ambient><diffuse>0.09 0.34 0.13 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 3.83 0 0 0</pose><geometry><cylinder><radius>1.65</radius><length>1.05</length></cylinder></geometry><material><ambient>0.09 0.34 0.13 1</ambient><diffuse>0.09 0.34 0.13 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 4.88 0 0 0</pose><geometry><cylinder><radius>1.10</radius><length>1.05</length></cylinder></geometry><material><ambient>0.09 0.34 0.13 1</ambient><diffuse>0.09 0.34 0.13 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 5.93 0 0 0</pose><geometry><cylinder><radius>0.55</radius><length>1.05</length></cylinder></geometry><material><ambient>0.09 0.34 0.13 1</ambient><diffuse>0.09 0.34 0.13 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 5.57 0 0 0</pose><geometry><cylinder><radius>1.10</radius><length>1.05</length></cylinder></geometry><material><ambient>0.09 0.34 0.13 1</ambient><diffuse>0.09 0.34 0.13 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 6.62 0 0 0</pose><geometry><cylinder><radius>0.73</radius><length>1.05</length></cylinder></geometry><material><ambient>0.09 0.34 0.13 1</ambient><diffuse>0.09 0.34 0.13 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 7.67 0 0 0</pose><geometry><cylinder><radius>0.37</radius><length>1.05</length></cylinder></geometry><material><ambient>0.09 0.34 0.13 1</ambient><diffuse>0.09 0.34 0.13 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_3">
+      <static>true</static>
+      <pose>-22.20 -9.08 0 0 0 1.13</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.87 0 0 0</pose><geometry><cylinder><radius>0.23</radius><length>1.74</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 2.31 0 0 0</pose><geometry><cylinder><radius>2.43</radius><length>1.16</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 3.47 0 0 0</pose><geometry><cylinder><radius>1.62</radius><length>1.16</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 4.63 0 0 0</pose><geometry><cylinder><radius>0.81</radius><length>1.16</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 4.22 0 0 0</pose><geometry><cylinder><radius>1.82</radius><length>1.16</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 5.38 0 0 0</pose><geometry><cylinder><radius>1.21</radius><length>1.16</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 6.54 0 0 0</pose><geometry><cylinder><radius>0.61</radius><length>1.16</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 6.13 0 0 0</pose><geometry><cylinder><radius>1.21</radius><length>1.16</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 7.29 0 0 0</pose><geometry><cylinder><radius>0.81</radius><length>1.16</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 8.45 0 0 0</pose><geometry><cylinder><radius>0.40</radius><length>1.16</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.8677456951414636 0 0 0</pose><geometry><cylinder><radius>0.23016185427121952</radius><length>1.7354913902829272</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 2.31 0 0 0</pose><geometry><cylinder><radius>2.43</radius><length>1.16</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 3.47 0 0 0</pose><geometry><cylinder><radius>1.62</radius><length>1.16</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 4.63 0 0 0</pose><geometry><cylinder><radius>0.81</radius><length>1.16</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 4.22 0 0 0</pose><geometry><cylinder><radius>1.82</radius><length>1.16</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 5.38 0 0 0</pose><geometry><cylinder><radius>1.21</radius><length>1.16</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 6.54 0 0 0</pose><geometry><cylinder><radius>0.61</radius><length>1.16</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 6.13 0 0 0</pose><geometry><cylinder><radius>1.21</radius><length>1.16</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 7.29 0 0 0</pose><geometry><cylinder><radius>0.81</radius><length>1.16</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 8.45 0 0 0</pose><geometry><cylinder><radius>0.40</radius><length>1.16</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_4">
+      <static>true</static>
+      <pose>15.13 -8.18 0 0 0 6.06</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.01 0 0 0</pose><geometry><cylinder><radius>0.25</radius><length>2.02</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 2.69 0 0 0</pose><geometry><cylinder><radius>2.83</radius><length>1.35</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 4.04 0 0 0</pose><geometry><cylinder><radius>1.89</radius><length>1.35</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 5.39 0 0 0</pose><geometry><cylinder><radius>0.94</radius><length>1.35</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 4.92 0 0 0</pose><geometry><cylinder><radius>2.12</radius><length>1.35</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 6.27 0 0 0</pose><geometry><cylinder><radius>1.41</radius><length>1.35</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 7.62 0 0 0</pose><geometry><cylinder><radius>0.71</radius><length>1.35</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 7.14 0 0 0</pose><geometry><cylinder><radius>1.41</radius><length>1.35</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 8.49 0 0 0</pose><geometry><cylinder><radius>0.94</radius><length>1.35</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 9.84 0 0 0</pose><geometry><cylinder><radius>0.47</radius><length>1.35</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.010540674754991 0 0 0</pose><geometry><cylinder><radius>0.2515811012132486</radius><length>2.021081349509982</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 2.69 0 0 0</pose><geometry><cylinder><radius>2.83</radius><length>1.35</length></cylinder></geometry><material><ambient>0.11 0.31 0.17 1</ambient><diffuse>0.11 0.31 0.17 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 4.04 0 0 0</pose><geometry><cylinder><radius>1.89</radius><length>1.35</length></cylinder></geometry><material><ambient>0.11 0.31 0.17 1</ambient><diffuse>0.11 0.31 0.17 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 5.39 0 0 0</pose><geometry><cylinder><radius>0.94</radius><length>1.35</length></cylinder></geometry><material><ambient>0.11 0.31 0.17 1</ambient><diffuse>0.11 0.31 0.17 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 4.92 0 0 0</pose><geometry><cylinder><radius>2.12</radius><length>1.35</length></cylinder></geometry><material><ambient>0.11 0.31 0.17 1</ambient><diffuse>0.11 0.31 0.17 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 6.27 0 0 0</pose><geometry><cylinder><radius>1.41</radius><length>1.35</length></cylinder></geometry><material><ambient>0.11 0.31 0.17 1</ambient><diffuse>0.11 0.31 0.17 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 7.62 0 0 0</pose><geometry><cylinder><radius>0.71</radius><length>1.35</length></cylinder></geometry><material><ambient>0.11 0.31 0.17 1</ambient><diffuse>0.11 0.31 0.17 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 7.14 0 0 0</pose><geometry><cylinder><radius>1.41</radius><length>1.35</length></cylinder></geometry><material><ambient>0.11 0.31 0.17 1</ambient><diffuse>0.11 0.31 0.17 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 8.49 0 0 0</pose><geometry><cylinder><radius>0.94</radius><length>1.35</length></cylinder></geometry><material><ambient>0.11 0.31 0.17 1</ambient><diffuse>0.11 0.31 0.17 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 9.84 0 0 0</pose><geometry><cylinder><radius>0.47</radius><length>1.35</length></cylinder></geometry><material><ambient>0.11 0.31 0.17 1</ambient><diffuse>0.11 0.31 0.17 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_5">
+      <static>true</static>
+      <pose>8.68 -36.63 0 0 0 0.53</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.53 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>1.06</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.42 0 0 0</pose><geometry><cylinder><radius>1.49</radius><length>0.71</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.13 0 0 0</pose><geometry><cylinder><radius>0.99</radius><length>0.71</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 2.84 0 0 0</pose><geometry><cylinder><radius>0.50</radius><length>0.71</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 2.59 0 0 0</pose><geometry><cylinder><radius>1.12</radius><length>0.71</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 3.30 0 0 0</pose><geometry><cylinder><radius>0.75</radius><length>0.71</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 4.01 0 0 0</pose><geometry><cylinder><radius>0.37</radius><length>0.71</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 3.76 0 0 0</pose><geometry><cylinder><radius>0.75</radius><length>0.71</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 4.47 0 0 0</pose><geometry><cylinder><radius>0.50</radius><length>0.71</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 5.18 0 0 0</pose><geometry><cylinder><radius>0.25</radius><length>0.71</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.5324562547225792 0 0 0</pose><geometry><cylinder><radius>0.17986843820838688</radius><length>1.0649125094451584</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.42 0 0 0</pose><geometry><cylinder><radius>1.49</radius><length>0.71</length></cylinder></geometry><material><ambient>0.08 0.27 0.16 1</ambient><diffuse>0.08 0.27 0.16 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.13 0 0 0</pose><geometry><cylinder><radius>0.99</radius><length>0.71</length></cylinder></geometry><material><ambient>0.08 0.27 0.16 1</ambient><diffuse>0.08 0.27 0.16 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 2.84 0 0 0</pose><geometry><cylinder><radius>0.50</radius><length>0.71</length></cylinder></geometry><material><ambient>0.08 0.27 0.16 1</ambient><diffuse>0.08 0.27 0.16 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 2.59 0 0 0</pose><geometry><cylinder><radius>1.12</radius><length>0.71</length></cylinder></geometry><material><ambient>0.08 0.27 0.16 1</ambient><diffuse>0.08 0.27 0.16 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 3.30 0 0 0</pose><geometry><cylinder><radius>0.75</radius><length>0.71</length></cylinder></geometry><material><ambient>0.08 0.27 0.16 1</ambient><diffuse>0.08 0.27 0.16 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 4.01 0 0 0</pose><geometry><cylinder><radius>0.37</radius><length>0.71</length></cylinder></geometry><material><ambient>0.08 0.27 0.16 1</ambient><diffuse>0.08 0.27 0.16 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 3.76 0 0 0</pose><geometry><cylinder><radius>0.75</radius><length>0.71</length></cylinder></geometry><material><ambient>0.08 0.27 0.16 1</ambient><diffuse>0.08 0.27 0.16 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 4.47 0 0 0</pose><geometry><cylinder><radius>0.50</radius><length>0.71</length></cylinder></geometry><material><ambient>0.08 0.27 0.16 1</ambient><diffuse>0.08 0.27 0.16 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 5.18 0 0 0</pose><geometry><cylinder><radius>0.25</radius><length>0.71</length></cylinder></geometry><material><ambient>0.08 0.27 0.16 1</ambient><diffuse>0.08 0.27 0.16 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_6">
+      <static>true</static>
+      <pose>14.26 14.57 0 0 0 6.06</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.79 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>3.58</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 5.57 0 0 0</pose><geometry><sphere><radius>3.18</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.7903434215478489 0 0 0</pose><geometry><cylinder><radius>0.2791416374709199</radius><length>3.5806868430956977</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>-1.78 0.72 5.36 0 0 0</pose><geometry><sphere><radius>2.31</radius></sphere></geometry><material><ambient>0.20 0.39 0.15 1</ambient><diffuse>0.20 0.39 0.15 1</diffuse></material></visual><visual name="leaves_1"><pose>0.67 0.67 5.61 0 0 0</pose><geometry><sphere><radius>2.22</radius></sphere></geometry><material><ambient>0.20 0.39 0.15 1</ambient><diffuse>0.20 0.39 0.15 1</diffuse></material></visual><visual name="leaves_2"><pose>-1.20 -0.02 4.97 0 0 0</pose><geometry><sphere><radius>2.19</radius></sphere></geometry><material><ambient>0.20 0.39 0.15 1</ambient><diffuse>0.20 0.39 0.15 1</diffuse></material></visual><visual name="leaves_3"><pose>0.14 1.09 5.40 0 0 0</pose><geometry><sphere><radius>2.13</radius></sphere></geometry><material><ambient>0.20 0.39 0.15 1</ambient><diffuse>0.20 0.39 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_7">
+      <static>true</static>
+      <pose>28.26 3.50 0 0 0 2.44</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.40 0 0 0</pose><geometry><cylinder><radius>0.24</radius><length>2.80</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 4.36 0 0 0</pose><geometry><sphere><radius>2.49</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.4020638648076187 0 0 0</pose><geometry><cylinder><radius>0.24462789909401056</radius><length>2.8041277296152374</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>-0.47 -0.06 3.86 0 0 0</pose><geometry><sphere><radius>1.59</radius></sphere></geometry><material><ambient>0.17 0.47 0.14 1</ambient><diffuse>0.17 0.47 0.14 1</diffuse></material></visual><visual name="leaves_1"><pose>1.31 0.20 4.67 0 0 0</pose><geometry><sphere><radius>1.71</radius></sphere></geometry><material><ambient>0.17 0.47 0.14 1</ambient><diffuse>0.17 0.47 0.14 1</diffuse></material></visual><visual name="leaves_2"><pose>1.07 0.76 4.75 0 0 0</pose><geometry><sphere><radius>1.96</radius></sphere></geometry><material><ambient>0.17 0.47 0.14 1</ambient><diffuse>0.17 0.47 0.14 1</diffuse></material></visual><visual name="leaves_3"><pose>-0.77 -0.06 4.17 0 0 0</pose><geometry><sphere><radius>1.88</radius></sphere></geometry><material><ambient>0.17 0.47 0.14 1</ambient><diffuse>0.17 0.47 0.14 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_8">
+      <static>true</static>
+      <pose>-2.21 29.92 0 0 0 3.66</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.55 0 0 0</pose><geometry><cylinder><radius>0.26</radius><length>3.11</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 4.84 0 0 0</pose><geometry><sphere><radius>2.76</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.5541459958352468 0 0 0</pose><geometry><cylinder><radius>0.2581463107409108</radius><length>3.1082919916704936</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>-1.42 -1.14 4.85 0 0 0</pose><geometry><sphere><radius>2.01</radius></sphere></geometry><material><ambient>0.15 0.41 0.14 1</ambient><diffuse>0.15 0.41 0.14 1</diffuse></material></visual><visual name="leaves_1"><pose>0.57 -0.58 4.42 0 0 0</pose><geometry><sphere><radius>1.80</radius></sphere></geometry><material><ambient>0.15 0.41 0.14 1</ambient><diffuse>0.15 0.41 0.14 1</diffuse></material></visual><visual name="leaves_2"><pose>-0.88 -1.22 4.53 0 0 0</pose><geometry><sphere><radius>2.16</radius></sphere></geometry><material><ambient>0.15 0.41 0.14 1</ambient><diffuse>0.15 0.41 0.14 1</diffuse></material></visual><visual name="leaves_3"><pose>-0.95 0.13 5.44 0 0 0</pose><geometry><sphere><radius>1.75</radius></sphere></geometry><material><ambient>0.15 0.41 0.14 1</ambient><diffuse>0.15 0.41 0.14 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_9">
+      <static>true</static>
+      <pose>17.23 17.46 0 0 0 6.28</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 2.03 0 0 0</pose><geometry><cylinder><radius>0.30</radius><length>4.05</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 6.31 0 0 0</pose><geometry><sphere><radius>3.60</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 2.02701254539586 0 0 0</pose><geometry><cylinder><radius>0.30017889292407646</radius><length>4.05402509079172</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>0.40 -1.47 6.79 0 0 0</pose><geometry><sphere><radius>2.03</radius></sphere></geometry><material><ambient>0.15 0.42 0.17 1</ambient><diffuse>0.15 0.42 0.17 1</diffuse></material></visual><visual name="leaves_1"><pose>0.17 -2.21 5.52 0 0 0</pose><geometry><sphere><radius>2.83</radius></sphere></geometry><material><ambient>0.15 0.42 0.17 1</ambient><diffuse>0.15 0.42 0.17 1</diffuse></material></visual><visual name="leaves_2"><pose>1.56 -1.19 6.61 0 0 0</pose><geometry><sphere><radius>2.36</radius></sphere></geometry><material><ambient>0.15 0.42 0.17 1</ambient><diffuse>0.15 0.42 0.17 1</diffuse></material></visual><visual name="leaves_3"><pose>-1.06 0.92 5.96 0 0 0</pose><geometry><sphere><radius>2.35</radius></sphere></geometry><material><ambient>0.15 0.42 0.17 1</ambient><diffuse>0.15 0.42 0.17 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_10">
+      <static>true</static>
+      <pose>-25.50 26.52 0 0 0 3.24</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.79 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>3.59</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 5.58 0 0 0</pose><geometry><sphere><radius>3.19</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.7935198766087013 0 0 0</pose><geometry><cylinder><radius>0.27942398903188453</radius><length>3.5870397532174025</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>1.85 -1.99 5.33 0 0 0</pose><geometry><sphere><radius>2.20</radius></sphere></geometry><material><ambient>0.15 0.41 0.17 1</ambient><diffuse>0.15 0.41 0.17 1</diffuse></material></visual><visual name="leaves_1"><pose>0.74 0.24 5.84 0 0 0</pose><geometry><sphere><radius>2.37</radius></sphere></geometry><material><ambient>0.15 0.41 0.17 1</ambient><diffuse>0.15 0.41 0.17 1</diffuse></material></visual><visual name="leaves_2"><pose>0.73 0.19 5.68 0 0 0</pose><geometry><sphere><radius>2.45</radius></sphere></geometry><material><ambient>0.15 0.41 0.17 1</ambient><diffuse>0.15 0.41 0.17 1</diffuse></material></visual><visual name="leaves_3"><pose>-0.70 0.68 5.76 0 0 0</pose><geometry><sphere><radius>2.28</radius></sphere></geometry><material><ambient>0.15 0.41 0.17 1</ambient><diffuse>0.15 0.41 0.17 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_11">
+      <static>true</static>
+      <pose>6.00 -26.13 0 0 0 5.39</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.16 0 0 0</pose><geometry><cylinder><radius>0.22</radius><length>2.32</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 3.61 0 0 0</pose><geometry><sphere><radius>2.06</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.1614616770531287 0 0 0</pose><geometry><cylinder><radius>0.2232410379602781</radius><length>2.3229233541062575</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>0.57 -1.09 3.99 0 0 0</pose><geometry><sphere><radius>1.32</radius></sphere></geometry><material><ambient>0.19 0.44 0.14 1</ambient><diffuse>0.19 0.44 0.14 1</diffuse></material></visual><visual name="leaves_1"><pose>1.19 -0.94 3.22 0 0 0</pose><geometry><sphere><radius>1.59</radius></sphere></geometry><material><ambient>0.19 0.44 0.14 1</ambient><diffuse>0.19 0.44 0.14 1</diffuse></material></visual><visual name="leaves_2"><pose>-0.26 -0.59 3.49 0 0 0</pose><geometry><sphere><radius>1.60</radius></sphere></geometry><material><ambient>0.19 0.44 0.14 1</ambient><diffuse>0.19 0.44 0.14 1</diffuse></material></visual><visual name="leaves_3"><pose>-0.87 -0.03 3.78 0 0 0</pose><geometry><sphere><radius>1.48</radius></sphere></geometry><material><ambient>0.19 0.44 0.14 1</ambient><diffuse>0.19 0.44 0.14 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_12">
+      <static>true</static>
+      <pose>-1.90 -10.25 0 0 0 2.74</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 2.22 0 0 0</pose><geometry><cylinder><radius>0.32</radius><length>4.44</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 6.91 0 0 0</pose><geometry><sphere><radius>3.95</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 2.2197101737030343 0 0 0</pose><geometry><cylinder><radius>0.3173075709958253</radius><length>4.4394203474060685</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>0.21 -1.64 7.13 0 0 0</pose><geometry><sphere><radius>2.38</radius></sphere></geometry><material><ambient>0.18 0.39 0.17 1</ambient><diffuse>0.18 0.39 0.17 1</diffuse></material></visual><visual name="leaves_1"><pose>1.89 -1.80 7.15 0 0 0</pose><geometry><sphere><radius>3.06</radius></sphere></geometry><material><ambient>0.18 0.39 0.17 1</ambient><diffuse>0.18 0.39 0.17 1</diffuse></material></visual><visual name="leaves_2"><pose>-1.48 -0.42 7.33 0 0 0</pose><geometry><sphere><radius>3.05</radius></sphere></geometry><material><ambient>0.18 0.39 0.17 1</ambient><diffuse>0.18 0.39 0.17 1</diffuse></material></visual><visual name="leaves_3"><pose>-0.24 0.68 7.24 0 0 0</pose><geometry><sphere><radius>2.90</radius></sphere></geometry><material><ambient>0.18 0.39 0.17 1</ambient><diffuse>0.18 0.39 0.17 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_13">
+      <static>true</static>
+      <pose>-19.81 26.17 0 0 0 3.21</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.90 0 0 0</pose><geometry><cylinder><radius>0.29</radius><length>3.81</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 5.93 0 0 0</pose><geometry><sphere><radius>3.39</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.9045203219629965 0 0 0</pose><geometry><cylinder><radius>0.2892906952855997</radius><length>3.809040643925993</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>-1.49 -2.06 6.52 0 0 0</pose><geometry><sphere><radius>2.02</radius></sphere></geometry><material><ambient>0.17 0.41 0.18 1</ambient><diffuse>0.17 0.41 0.18 1</diffuse></material></visual><visual name="leaves_1"><pose>-1.12 -0.99 5.41 0 0 0</pose><geometry><sphere><radius>2.70</radius></sphere></geometry><material><ambient>0.17 0.41 0.18 1</ambient><diffuse>0.17 0.41 0.18 1</diffuse></material></visual><visual name="leaves_2"><pose>-0.06 1.36 5.43 0 0 0</pose><geometry><sphere><radius>2.37</radius></sphere></geometry><material><ambient>0.17 0.41 0.18 1</ambient><diffuse>0.17 0.41 0.18 1</diffuse></material></visual><visual name="leaves_3"><pose>-0.15 1.30 6.44 0 0 0</pose><geometry><sphere><radius>2.61</radius></sphere></geometry><material><ambient>0.17 0.41 0.18 1</ambient><diffuse>0.17 0.41 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_14">
+      <static>true</static>
+      <pose>23.25 -14.60 0 0 0 1.20</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.95 0 0 0</pose><geometry><cylinder><radius>0.29</radius><length>3.90</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 6.06 0 0 0</pose><geometry><sphere><radius>3.46</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.9479654842110004 0 0 0</pose><geometry><cylinder><radius>0.2931524874854222</radius><length>3.8959309684220007</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>0.71 -0.75 5.43 0 0 0</pose><geometry><sphere><radius>1.92</radius></sphere></geometry><material><ambient>0.18 0.47 0.17 1</ambient><diffuse>0.18 0.47 0.17 1</diffuse></material></visual><visual name="leaves_1"><pose>1.28 1.99 6.10 0 0 0</pose><geometry><sphere><radius>2.03</radius></sphere></geometry><material><ambient>0.18 0.47 0.17 1</ambient><diffuse>0.18 0.47 0.17 1</diffuse></material></visual><visual name="leaves_2"><pose>0.04 1.43 6.49 0 0 0</pose><geometry><sphere><radius>2.24</radius></sphere></geometry><material><ambient>0.18 0.47 0.17 1</ambient><diffuse>0.18 0.47 0.17 1</diffuse></material></visual><visual name="leaves_3"><pose>-1.24 1.59 6.05 0 0 0</pose><geometry><sphere><radius>1.96</radius></sphere></geometry><material><ambient>0.18 0.47 0.17 1</ambient><diffuse>0.18 0.47 0.17 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_15">
+      <static>true</static>
+      <pose>-20.39 -31.13 0 0 0 3.43</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.98 0 0 0</pose><geometry><cylinder><radius>0.30</radius><length>3.97</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 6.17 0 0 0</pose><geometry><sphere><radius>3.53</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.9844067045769263 0 0 0</pose><geometry><cylinder><radius>0.2963917070735046</radius><length>3.9688134091538525</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>0.84 1.68 5.70 0 0 0</pose><geometry><sphere><radius>1.95</radius></sphere></geometry><material><ambient>0.16 0.38 0.18 1</ambient><diffuse>0.16 0.38 0.18 1</diffuse></material></visual><visual name="leaves_1"><pose>-0.44 -0.75 6.11 0 0 0</pose><geometry><sphere><radius>1.98</radius></sphere></geometry><material><ambient>0.16 0.38 0.18 1</ambient><diffuse>0.16 0.38 0.18 1</diffuse></material></visual><visual name="leaves_2"><pose>1.95 -1.68 6.96 0 0 0</pose><geometry><sphere><radius>2.32</radius></sphere></geometry><material><ambient>0.16 0.38 0.18 1</ambient><diffuse>0.16 0.38 0.18 1</diffuse></material></visual><visual name="leaves_3"><pose>1.93 -0.74 6.57 0 0 0</pose><geometry><sphere><radius>1.98</radius></sphere></geometry><material><ambient>0.16 0.38 0.18 1</ambient><diffuse>0.16 0.38 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_16">
+      <static>true</static>
+      <pose>-14.03 -28.75 0 0 0 2.52</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.98 0 0 0</pose><geometry><cylinder><radius>0.25</radius><length>1.97</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 2.63 0 0 0</pose><geometry><cylinder><radius>2.75</radius><length>1.31</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 3.94 0 0 0</pose><geometry><cylinder><radius>1.83</radius><length>1.31</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 5.25 0 0 0</pose><geometry><cylinder><radius>0.92</radius><length>1.31</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 4.79 0 0 0</pose><geometry><cylinder><radius>2.07</radius><length>1.31</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 6.10 0 0 0</pose><geometry><cylinder><radius>1.38</radius><length>1.31</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 7.41 0 0 0</pose><geometry><cylinder><radius>0.69</radius><length>1.31</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 6.95 0 0 0</pose><geometry><cylinder><radius>1.38</radius><length>1.31</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 8.26 0 0 0</pose><geometry><cylinder><radius>0.92</radius><length>1.31</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 9.57 0 0 0</pose><geometry><cylinder><radius>0.46</radius><length>1.31</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.9838213732878093 0 0 0</pose><geometry><cylinder><radius>0.24757320599317137</radius><length>1.9676427465756186</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 2.63 0 0 0</pose><geometry><cylinder><radius>2.75</radius><length>1.31</length></cylinder></geometry><material><ambient>0.11 0.25 0.16 1</ambient><diffuse>0.11 0.25 0.16 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 3.94 0 0 0</pose><geometry><cylinder><radius>1.83</radius><length>1.31</length></cylinder></geometry><material><ambient>0.11 0.25 0.16 1</ambient><diffuse>0.11 0.25 0.16 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 5.25 0 0 0</pose><geometry><cylinder><radius>0.92</radius><length>1.31</length></cylinder></geometry><material><ambient>0.11 0.25 0.16 1</ambient><diffuse>0.11 0.25 0.16 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 4.79 0 0 0</pose><geometry><cylinder><radius>2.07</radius><length>1.31</length></cylinder></geometry><material><ambient>0.11 0.25 0.16 1</ambient><diffuse>0.11 0.25 0.16 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 6.10 0 0 0</pose><geometry><cylinder><radius>1.38</radius><length>1.31</length></cylinder></geometry><material><ambient>0.11 0.25 0.16 1</ambient><diffuse>0.11 0.25 0.16 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 7.41 0 0 0</pose><geometry><cylinder><radius>0.69</radius><length>1.31</length></cylinder></geometry><material><ambient>0.11 0.25 0.16 1</ambient><diffuse>0.11 0.25 0.16 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 6.95 0 0 0</pose><geometry><cylinder><radius>1.38</radius><length>1.31</length></cylinder></geometry><material><ambient>0.11 0.25 0.16 1</ambient><diffuse>0.11 0.25 0.16 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 8.26 0 0 0</pose><geometry><cylinder><radius>0.92</radius><length>1.31</length></cylinder></geometry><material><ambient>0.11 0.25 0.16 1</ambient><diffuse>0.11 0.25 0.16 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 9.57 0 0 0</pose><geometry><cylinder><radius>0.46</radius><length>1.31</length></cylinder></geometry><material><ambient>0.11 0.25 0.16 1</ambient><diffuse>0.11 0.25 0.16 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_17">
+      <static>true</static>
+      <pose>-16.09 9.35 0 0 0 0.30</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.43 0 0 0</pose><geometry><cylinder><radius>0.25</radius><length>2.85</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 4.43 0 0 0</pose><geometry><sphere><radius>2.53</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.425324342706583 0 0 0</pose><geometry><cylinder><radius>0.24669549712947403</radius><length>2.850648685413166</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>0.29 1.28 4.69 0 0 0</pose><geometry><sphere><radius>1.86</radius></sphere></geometry><material><ambient>0.16 0.40 0.14 1</ambient><diffuse>0.16 0.40 0.14 1</diffuse></material></visual><visual name="leaves_1"><pose>-0.56 -1.19 4.11 0 0 0</pose><geometry><sphere><radius>1.58</radius></sphere></geometry><material><ambient>0.16 0.40 0.14 1</ambient><diffuse>0.16 0.40 0.14 1</diffuse></material></visual><visual name="leaves_2"><pose>0.73 -0.65 4.24 0 0 0</pose><geometry><sphere><radius>1.78</radius></sphere></geometry><material><ambient>0.16 0.40 0.14 1</ambient><diffuse>0.16 0.40 0.14 1</diffuse></material></visual><visual name="leaves_3"><pose>1.45 -1.32 3.89 0 0 0</pose><geometry><sphere><radius>1.90</radius></sphere></geometry><material><ambient>0.16 0.40 0.14 1</ambient><diffuse>0.16 0.40 0.14 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_18">
+      <static>true</static>
+      <pose>1.58 -27.30 0 0 0 4.78</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.70 0 0 0</pose><geometry><cylinder><radius>0.27</radius><length>3.40</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 5.29 0 0 0</pose><geometry><sphere><radius>3.02</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.6987662200095885 0 0 0</pose><geometry><cylinder><radius>0.27100144177863006</radius><length>3.397532440019177</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>-0.11 -0.86 5.42 0 0 0</pose><geometry><sphere><radius>1.98</radius></sphere></geometry><material><ambient>0.15 0.48 0.18 1</ambient><diffuse>0.15 0.48 0.18 1</diffuse></material></visual><visual name="leaves_1"><pose>0.13 1.53 5.29 0 0 0</pose><geometry><sphere><radius>1.82</radius></sphere></geometry><material><ambient>0.15 0.48 0.18 1</ambient><diffuse>0.15 0.48 0.18 1</diffuse></material></visual><visual name="leaves_2"><pose>-1.21 1.45 4.72 0 0 0</pose><geometry><sphere><radius>2.29</radius></sphere></geometry><material><ambient>0.15 0.48 0.18 1</ambient><diffuse>0.15 0.48 0.18 1</diffuse></material></visual><visual name="leaves_3"><pose>0.83 -0.75 4.71 0 0 0</pose><geometry><sphere><radius>1.82</radius></sphere></geometry><material><ambient>0.15 0.48 0.18 1</ambient><diffuse>0.15 0.48 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_19">
+      <static>true</static>
+      <pose>32.29 19.59 0 0 0 5.94</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.51 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>1.02</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.37 0 0 0</pose><geometry><cylinder><radius>1.43</radius><length>0.68</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.05 0 0 0</pose><geometry><cylinder><radius>0.95</radius><length>0.68</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 2.73 0 0 0</pose><geometry><cylinder><radius>0.48</radius><length>0.68</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 2.49 0 0 0</pose><geometry><cylinder><radius>1.07</radius><length>0.68</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 3.17 0 0 0</pose><geometry><cylinder><radius>0.71</radius><length>0.68</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 3.85 0 0 0</pose><geometry><cylinder><radius>0.36</radius><length>0.68</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 3.62 0 0 0</pose><geometry><cylinder><radius>0.72</radius><length>0.68</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 4.30 0 0 0</pose><geometry><cylinder><radius>0.48</radius><length>0.68</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 4.98 0 0 0</pose><geometry><cylinder><radius>0.24</radius><length>0.68</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.5118594701647353 0 0 0</pose><geometry><cylinder><radius>0.17677892052471028</radius><length>1.0237189403294706</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.37 0 0 0</pose><geometry><cylinder><radius>1.43</radius><length>0.68</length></cylinder></geometry><material><ambient>0.12 0.29 0.12 1</ambient><diffuse>0.12 0.29 0.12 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.05 0 0 0</pose><geometry><cylinder><radius>0.95</radius><length>0.68</length></cylinder></geometry><material><ambient>0.12 0.29 0.12 1</ambient><diffuse>0.12 0.29 0.12 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 2.73 0 0 0</pose><geometry><cylinder><radius>0.48</radius><length>0.68</length></cylinder></geometry><material><ambient>0.12 0.29 0.12 1</ambient><diffuse>0.12 0.29 0.12 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 2.49 0 0 0</pose><geometry><cylinder><radius>1.07</radius><length>0.68</length></cylinder></geometry><material><ambient>0.12 0.29 0.12 1</ambient><diffuse>0.12 0.29 0.12 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 3.17 0 0 0</pose><geometry><cylinder><radius>0.71</radius><length>0.68</length></cylinder></geometry><material><ambient>0.12 0.29 0.12 1</ambient><diffuse>0.12 0.29 0.12 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 3.85 0 0 0</pose><geometry><cylinder><radius>0.36</radius><length>0.68</length></cylinder></geometry><material><ambient>0.12 0.29 0.12 1</ambient><diffuse>0.12 0.29 0.12 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 3.62 0 0 0</pose><geometry><cylinder><radius>0.72</radius><length>0.68</length></cylinder></geometry><material><ambient>0.12 0.29 0.12 1</ambient><diffuse>0.12 0.29 0.12 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 4.30 0 0 0</pose><geometry><cylinder><radius>0.48</radius><length>0.68</length></cylinder></geometry><material><ambient>0.12 0.29 0.12 1</ambient><diffuse>0.12 0.29 0.12 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 4.98 0 0 0</pose><geometry><cylinder><radius>0.24</radius><length>0.68</length></cylinder></geometry><material><ambient>0.12 0.29 0.12 1</ambient><diffuse>0.12 0.29 0.12 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_20">
+      <static>true</static>
+      <pose>25.23 -27.84 0 0 0 3.30</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 2.03 0 0 0</pose><geometry><cylinder><radius>0.30</radius><length>4.06</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 6.31 0 0 0</pose><geometry><sphere><radius>3.60</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 2.027501568891935 0 0 0</pose><geometry><cylinder><radius>0.30022236167928307</radius><length>4.05500313778387</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>0.43 1.05 6.54 0 0 0</pose><geometry><sphere><radius>2.05</radius></sphere></geometry><material><ambient>0.22 0.42 0.13 1</ambient><diffuse>0.22 0.42 0.13 1</diffuse></material></visual><visual name="leaves_1"><pose>-0.93 -0.58 5.88 0 0 0</pose><geometry><sphere><radius>2.65</radius></sphere></geometry><material><ambient>0.22 0.42 0.13 1</ambient><diffuse>0.22 0.42 0.13 1</diffuse></material></visual><visual name="leaves_2"><pose>-1.05 1.51 5.67 0 0 0</pose><geometry><sphere><radius>2.32</radius></sphere></geometry><material><ambient>0.22 0.42 0.13 1</ambient><diffuse>0.22 0.42 0.13 1</diffuse></material></visual><visual name="leaves_3"><pose>0.96 -0.46 6.02 0 0 0</pose><geometry><sphere><radius>2.17</radius></sphere></geometry><material><ambient>0.22 0.42 0.13 1</ambient><diffuse>0.22 0.42 0.13 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_21">
+      <static>true</static>
+      <pose>40.75 -6.60 0 0 0 3.09</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.63 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>1.26</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.69 0 0 0</pose><geometry><cylinder><radius>1.77</radius><length>0.84</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.53 0 0 0</pose><geometry><cylinder><radius>1.18</radius><length>0.84</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 3.37 0 0 0</pose><geometry><cylinder><radius>0.59</radius><length>0.84</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 3.07 0 0 0</pose><geometry><cylinder><radius>1.33</radius><length>0.84</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 3.91 0 0 0</pose><geometry><cylinder><radius>0.89</radius><length>0.84</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 4.75 0 0 0</pose><geometry><cylinder><radius>0.44</radius><length>0.84</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 4.46 0 0 0</pose><geometry><cylinder><radius>0.88</radius><length>0.84</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 5.30 0 0 0</pose><geometry><cylinder><radius>0.59</radius><length>0.84</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 6.14 0 0 0</pose><geometry><cylinder><radius>0.29</radius><length>0.84</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.6313657762832023 0 0 0</pose><geometry><cylinder><radius>0.19470486644248033</radius><length>1.2627315525664047</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.69 0 0 0</pose><geometry><cylinder><radius>1.77</radius><length>0.84</length></cylinder></geometry><material><ambient>0.10 0.28 0.15 1</ambient><diffuse>0.10 0.28 0.15 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.53 0 0 0</pose><geometry><cylinder><radius>1.18</radius><length>0.84</length></cylinder></geometry><material><ambient>0.10 0.28 0.15 1</ambient><diffuse>0.10 0.28 0.15 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 3.37 0 0 0</pose><geometry><cylinder><radius>0.59</radius><length>0.84</length></cylinder></geometry><material><ambient>0.10 0.28 0.15 1</ambient><diffuse>0.10 0.28 0.15 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 3.07 0 0 0</pose><geometry><cylinder><radius>1.33</radius><length>0.84</length></cylinder></geometry><material><ambient>0.10 0.28 0.15 1</ambient><diffuse>0.10 0.28 0.15 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 3.91 0 0 0</pose><geometry><cylinder><radius>0.89</radius><length>0.84</length></cylinder></geometry><material><ambient>0.10 0.28 0.15 1</ambient><diffuse>0.10 0.28 0.15 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 4.75 0 0 0</pose><geometry><cylinder><radius>0.44</radius><length>0.84</length></cylinder></geometry><material><ambient>0.10 0.28 0.15 1</ambient><diffuse>0.10 0.28 0.15 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 4.46 0 0 0</pose><geometry><cylinder><radius>0.88</radius><length>0.84</length></cylinder></geometry><material><ambient>0.10 0.28 0.15 1</ambient><diffuse>0.10 0.28 0.15 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 5.30 0 0 0</pose><geometry><cylinder><radius>0.59</radius><length>0.84</length></cylinder></geometry><material><ambient>0.10 0.28 0.15 1</ambient><diffuse>0.10 0.28 0.15 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 6.14 0 0 0</pose><geometry><cylinder><radius>0.29</radius><length>0.84</length></cylinder></geometry><material><ambient>0.10 0.28 0.15 1</ambient><diffuse>0.10 0.28 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_22">
+      <static>true</static>
+      <pose>-16.79 -34.66 0 0 0 0.36</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.45 0 0 0</pose><geometry><cylinder><radius>0.25</radius><length>2.90</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 4.52 0 0 0</pose><geometry><sphere><radius>2.58</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.4519271662751843 0 0 0</pose><geometry><cylinder><radius>0.24906019255779416</radius><length>2.9038543325503685</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>-0.42 -0.02 4.45 0 0 0</pose><geometry><sphere><radius>1.92</radius></sphere></geometry><material><ambient>0.15 0.37 0.13 1</ambient><diffuse>0.15 0.37 0.13 1</diffuse></material></visual><visual name="leaves_1"><pose>-1.47 -1.03 4.98 0 0 0</pose><geometry><sphere><radius>1.55</radius></sphere></geometry><material><ambient>0.15 0.37 0.13 1</ambient><diffuse>0.15 0.37 0.13 1</diffuse></material></visual><visual name="leaves_2"><pose>-0.26 -0.76 4.83 0 0 0</pose><geometry><sphere><radius>1.64</radius></sphere></geometry><material><ambient>0.15 0.37 0.13 1</ambient><diffuse>0.15 0.37 0.13 1</diffuse></material></visual><visual name="leaves_3"><pose>-0.37 0.02 4.38 0 0 0</pose><geometry><sphere><radius>1.87</radius></sphere></geometry><material><ambient>0.15 0.37 0.13 1</ambient><diffuse>0.15 0.37 0.13 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_23">
+      <static>true</static>
+      <pose>-27.57 -13.68 0 0 0 5.97</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.90 0 0 0</pose><geometry><cylinder><radius>0.29</radius><length>3.81</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 5.93 0 0 0</pose><geometry><sphere><radius>3.39</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.904555298413073 0 0 0</pose><geometry><cylinder><radius>0.28929380430338425</radius><length>3.809110596826146</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>1.28 0.76 6.04 0 0 0</pose><geometry><sphere><radius>2.18</radius></sphere></geometry><material><ambient>0.14 0.41 0.12 1</ambient><diffuse>0.14 0.41 0.12 1</diffuse></material></visual><visual name="leaves_1"><pose>1.32 0.48 5.59 0 0 0</pose><geometry><sphere><radius>1.94</radius></sphere></geometry><material><ambient>0.14 0.41 0.12 1</ambient><diffuse>0.14 0.41 0.12 1</diffuse></material></visual><visual name="leaves_2"><pose>-1.95 -1.32 6.41 0 0 0</pose><geometry><sphere><radius>2.53</radius></sphere></geometry><material><ambient>0.14 0.41 0.12 1</ambient><diffuse>0.14 0.41 0.12 1</diffuse></material></visual><visual name="leaves_3"><pose>-1.56 0.01 6.28 0 0 0</pose><geometry><sphere><radius>1.90</radius></sphere></geometry><material><ambient>0.14 0.41 0.12 1</ambient><diffuse>0.14 0.41 0.12 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_24">
+      <static>true</static>
+      <pose>-9.56 -6.01 0 0 0 2.19</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.50 0 0 0</pose><geometry><cylinder><radius>0.25</radius><length>2.99</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 4.65 0 0 0</pose><geometry><sphere><radius>2.66</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.4959812616497679 0 0 0</pose><geometry><cylinder><radius>0.25297611214664606</radius><length>2.9919625232995357</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>-1.50 0.18 5.20 0 0 0</pose><geometry><sphere><radius>2.08</radius></sphere></geometry><material><ambient>0.16 0.36 0.14 1</ambient><diffuse>0.16 0.36 0.14 1</diffuse></material></visual><visual name="leaves_1"><pose>-0.73 0.49 4.15 0 0 0</pose><geometry><sphere><radius>1.93</radius></sphere></geometry><material><ambient>0.16 0.36 0.14 1</ambient><diffuse>0.16 0.36 0.14 1</diffuse></material></visual><visual name="leaves_2"><pose>-0.79 1.25 5.14 0 0 0</pose><geometry><sphere><radius>1.79</radius></sphere></geometry><material><ambient>0.16 0.36 0.14 1</ambient><diffuse>0.16 0.36 0.14 1</diffuse></material></visual><visual name="leaves_3"><pose>-0.41 0.99 5.29 0 0 0</pose><geometry><sphere><radius>1.97</radius></sphere></geometry><material><ambient>0.16 0.36 0.14 1</ambient><diffuse>0.16 0.36 0.14 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_25">
+      <static>true</static>
+      <pose>-19.36 20.76 0 0 0 4.52</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.60 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>1.19</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.59 0 0 0</pose><geometry><cylinder><radius>1.67</radius><length>0.80</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.39 0 0 0</pose><geometry><cylinder><radius>1.11</radius><length>0.80</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 3.19 0 0 0</pose><geometry><cylinder><radius>0.56</radius><length>0.80</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 2.90 0 0 0</pose><geometry><cylinder><radius>1.25</radius><length>0.80</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 3.70 0 0 0</pose><geometry><cylinder><radius>0.83</radius><length>0.80</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 4.50 0 0 0</pose><geometry><cylinder><radius>0.42</radius><length>0.80</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 4.22 0 0 0</pose><geometry><cylinder><radius>0.84</radius><length>0.80</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 5.02 0 0 0</pose><geometry><cylinder><radius>0.56</radius><length>0.80</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 5.82 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>0.80</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.5974622214972595 0 0 0</pose><geometry><cylinder><radius>0.1896193332245889</radius><length>1.194924442994519</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.59 0 0 0</pose><geometry><cylinder><radius>1.67</radius><length>0.80</length></cylinder></geometry><material><ambient>0.07 0.31 0.12 1</ambient><diffuse>0.07 0.31 0.12 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.39 0 0 0</pose><geometry><cylinder><radius>1.11</radius><length>0.80</length></cylinder></geometry><material><ambient>0.07 0.31 0.12 1</ambient><diffuse>0.07 0.31 0.12 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 3.19 0 0 0</pose><geometry><cylinder><radius>0.56</radius><length>0.80</length></cylinder></geometry><material><ambient>0.07 0.31 0.12 1</ambient><diffuse>0.07 0.31 0.12 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 2.90 0 0 0</pose><geometry><cylinder><radius>1.25</radius><length>0.80</length></cylinder></geometry><material><ambient>0.07 0.31 0.12 1</ambient><diffuse>0.07 0.31 0.12 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 3.70 0 0 0</pose><geometry><cylinder><radius>0.83</radius><length>0.80</length></cylinder></geometry><material><ambient>0.07 0.31 0.12 1</ambient><diffuse>0.07 0.31 0.12 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 4.50 0 0 0</pose><geometry><cylinder><radius>0.42</radius><length>0.80</length></cylinder></geometry><material><ambient>0.07 0.31 0.12 1</ambient><diffuse>0.07 0.31 0.12 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 4.22 0 0 0</pose><geometry><cylinder><radius>0.84</radius><length>0.80</length></cylinder></geometry><material><ambient>0.07 0.31 0.12 1</ambient><diffuse>0.07 0.31 0.12 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 5.02 0 0 0</pose><geometry><cylinder><radius>0.56</radius><length>0.80</length></cylinder></geometry><material><ambient>0.07 0.31 0.12 1</ambient><diffuse>0.07 0.31 0.12 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 5.82 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>0.80</length></cylinder></geometry><material><ambient>0.07 0.31 0.12 1</ambient><diffuse>0.07 0.31 0.12 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_26">
+      <static>true</static>
+      <pose>22.04 -8.58 0 0 0 4.43</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.73 0 0 0</pose><geometry><cylinder><radius>0.21</radius><length>1.47</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.95 0 0 0</pose><geometry><cylinder><radius>2.05</radius><length>0.98</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.93 0 0 0</pose><geometry><cylinder><radius>1.37</radius><length>0.98</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 3.91 0 0 0</pose><geometry><cylinder><radius>0.68</radius><length>0.98</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 3.57 0 0 0</pose><geometry><cylinder><radius>1.54</radius><length>0.98</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 4.55 0 0 0</pose><geometry><cylinder><radius>1.03</radius><length>0.98</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 5.53 0 0 0</pose><geometry><cylinder><radius>0.51</radius><length>0.98</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 5.18 0 0 0</pose><geometry><cylinder><radius>1.03</radius><length>0.98</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 6.16 0 0 0</pose><geometry><cylinder><radius>0.69</radius><length>0.98</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 7.14 0 0 0</pose><geometry><cylinder><radius>0.34</radius><length>0.98</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.7336920981888867 0 0 0</pose><geometry><cylinder><radius>0.210053814728333</radius><length>1.4673841963777734</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.95 0 0 0</pose><geometry><cylinder><radius>2.05</radius><length>0.98</length></cylinder></geometry><material><ambient>0.12 0.26 0.13 1</ambient><diffuse>0.12 0.26 0.13 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.93 0 0 0</pose><geometry><cylinder><radius>1.37</radius><length>0.98</length></cylinder></geometry><material><ambient>0.12 0.26 0.13 1</ambient><diffuse>0.12 0.26 0.13 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 3.91 0 0 0</pose><geometry><cylinder><radius>0.68</radius><length>0.98</length></cylinder></geometry><material><ambient>0.12 0.26 0.13 1</ambient><diffuse>0.12 0.26 0.13 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 3.57 0 0 0</pose><geometry><cylinder><radius>1.54</radius><length>0.98</length></cylinder></geometry><material><ambient>0.12 0.26 0.13 1</ambient><diffuse>0.12 0.26 0.13 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 4.55 0 0 0</pose><geometry><cylinder><radius>1.03</radius><length>0.98</length></cylinder></geometry><material><ambient>0.12 0.26 0.13 1</ambient><diffuse>0.12 0.26 0.13 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 5.53 0 0 0</pose><geometry><cylinder><radius>0.51</radius><length>0.98</length></cylinder></geometry><material><ambient>0.12 0.26 0.13 1</ambient><diffuse>0.12 0.26 0.13 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 5.18 0 0 0</pose><geometry><cylinder><radius>1.03</radius><length>0.98</length></cylinder></geometry><material><ambient>0.12 0.26 0.13 1</ambient><diffuse>0.12 0.26 0.13 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 6.16 0 0 0</pose><geometry><cylinder><radius>0.69</radius><length>0.98</length></cylinder></geometry><material><ambient>0.12 0.26 0.13 1</ambient><diffuse>0.12 0.26 0.13 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 7.14 0 0 0</pose><geometry><cylinder><radius>0.34</radius><length>0.98</length></cylinder></geometry><material><ambient>0.12 0.26 0.13 1</ambient><diffuse>0.12 0.26 0.13 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_27">
+      <static>true</static>
+      <pose>-4.36 -42.57 0 0 0 2.52</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.09 0 0 0</pose><geometry><cylinder><radius>0.26</radius><length>2.18</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 2.90 0 0 0</pose><geometry><cylinder><radius>3.05</radius><length>1.45</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 4.35 0 0 0</pose><geometry><cylinder><radius>2.03</radius><length>1.45</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 5.80 0 0 0</pose><geometry><cylinder><radius>1.02</radius><length>1.45</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 5.30 0 0 0</pose><geometry><cylinder><radius>2.29</radius><length>1.45</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 6.75 0 0 0</pose><geometry><cylinder><radius>1.53</radius><length>1.45</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 8.20 0 0 0</pose><geometry><cylinder><radius>0.76</radius><length>1.45</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 7.69 0 0 0</pose><geometry><cylinder><radius>1.52</radius><length>1.45</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 9.14 0 0 0</pose><geometry><cylinder><radius>1.01</radius><length>1.45</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 10.59 0 0 0</pose><geometry><cylinder><radius>0.51</radius><length>1.45</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.0882007447827824 0 0 0</pose><geometry><cylinder><radius>0.2632301117174174</radius><length>2.176401489565565</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 2.90 0 0 0</pose><geometry><cylinder><radius>3.05</radius><length>1.45</length></cylinder></geometry><material><ambient>0.12 0.30 0.13 1</ambient><diffuse>0.12 0.30 0.13 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 4.35 0 0 0</pose><geometry><cylinder><radius>2.03</radius><length>1.45</length></cylinder></geometry><material><ambient>0.12 0.30 0.13 1</ambient><diffuse>0.12 0.30 0.13 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 5.80 0 0 0</pose><geometry><cylinder><radius>1.02</radius><length>1.45</length></cylinder></geometry><material><ambient>0.12 0.30 0.13 1</ambient><diffuse>0.12 0.30 0.13 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 5.30 0 0 0</pose><geometry><cylinder><radius>2.29</radius><length>1.45</length></cylinder></geometry><material><ambient>0.12 0.30 0.13 1</ambient><diffuse>0.12 0.30 0.13 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 6.75 0 0 0</pose><geometry><cylinder><radius>1.53</radius><length>1.45</length></cylinder></geometry><material><ambient>0.12 0.30 0.13 1</ambient><diffuse>0.12 0.30 0.13 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 8.20 0 0 0</pose><geometry><cylinder><radius>0.76</radius><length>1.45</length></cylinder></geometry><material><ambient>0.12 0.30 0.13 1</ambient><diffuse>0.12 0.30 0.13 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 7.69 0 0 0</pose><geometry><cylinder><radius>1.52</radius><length>1.45</length></cylinder></geometry><material><ambient>0.12 0.30 0.13 1</ambient><diffuse>0.12 0.30 0.13 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 9.14 0 0 0</pose><geometry><cylinder><radius>1.01</radius><length>1.45</length></cylinder></geometry><material><ambient>0.12 0.30 0.13 1</ambient><diffuse>0.12 0.30 0.13 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 10.59 0 0 0</pose><geometry><cylinder><radius>0.51</radius><length>1.45</length></cylinder></geometry><material><ambient>0.12 0.30 0.13 1</ambient><diffuse>0.12 0.30 0.13 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_28">
+      <static>true</static>
+      <pose>17.09 22.30 0 0 0 3.33</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.59 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>1.18</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.57 0 0 0</pose><geometry><cylinder><radius>1.65</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.35 0 0 0</pose><geometry><cylinder><radius>1.10</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 3.13 0 0 0</pose><geometry><cylinder><radius>0.55</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 2.87 0 0 0</pose><geometry><cylinder><radius>1.24</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 3.65 0 0 0</pose><geometry><cylinder><radius>0.83</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 4.43 0 0 0</pose><geometry><cylinder><radius>0.41</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 4.16 0 0 0</pose><geometry><cylinder><radius>0.82</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 4.94 0 0 0</pose><geometry><cylinder><radius>0.55</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 5.72 0 0 0</pose><geometry><cylinder><radius>0.27</radius><length>0.78</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.5883294012483413 0 0 0</pose><geometry><cylinder><radius>0.1882494101872512</radius><length>1.1766588024966826</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.57 0 0 0</pose><geometry><cylinder><radius>1.65</radius><length>0.78</length></cylinder></geometry><material><ambient>0.09 0.33 0.13 1</ambient><diffuse>0.09 0.33 0.13 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.35 0 0 0</pose><geometry><cylinder><radius>1.10</radius><length>0.78</length></cylinder></geometry><material><ambient>0.09 0.33 0.13 1</ambient><diffuse>0.09 0.33 0.13 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 3.13 0 0 0</pose><geometry><cylinder><radius>0.55</radius><length>0.78</length></cylinder></geometry><material><ambient>0.09 0.33 0.13 1</ambient><diffuse>0.09 0.33 0.13 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 2.87 0 0 0</pose><geometry><cylinder><radius>1.24</radius><length>0.78</length></cylinder></geometry><material><ambient>0.09 0.33 0.13 1</ambient><diffuse>0.09 0.33 0.13 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 3.65 0 0 0</pose><geometry><cylinder><radius>0.83</radius><length>0.78</length></cylinder></geometry><material><ambient>0.09 0.33 0.13 1</ambient><diffuse>0.09 0.33 0.13 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 4.43 0 0 0</pose><geometry><cylinder><radius>0.41</radius><length>0.78</length></cylinder></geometry><material><ambient>0.09 0.33 0.13 1</ambient><diffuse>0.09 0.33 0.13 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 4.16 0 0 0</pose><geometry><cylinder><radius>0.82</radius><length>0.78</length></cylinder></geometry><material><ambient>0.09 0.33 0.13 1</ambient><diffuse>0.09 0.33 0.13 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 4.94 0 0 0</pose><geometry><cylinder><radius>0.55</radius><length>0.78</length></cylinder></geometry><material><ambient>0.09 0.33 0.13 1</ambient><diffuse>0.09 0.33 0.13 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 5.72 0 0 0</pose><geometry><cylinder><radius>0.27</radius><length>0.78</length></cylinder></geometry><material><ambient>0.09 0.33 0.13 1</ambient><diffuse>0.09 0.33 0.13 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_29">
+      <static>true</static>
+      <pose>13.40 29.08 0 0 0 6.27</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.66 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>1.31</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.75 0 0 0</pose><geometry><cylinder><radius>1.84</radius><length>0.88</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.63 0 0 0</pose><geometry><cylinder><radius>1.23</radius><length>0.88</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 3.51 0 0 0</pose><geometry><cylinder><radius>0.61</radius><length>0.88</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 3.19 0 0 0</pose><geometry><cylinder><radius>1.38</radius><length>0.88</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 4.07 0 0 0</pose><geometry><cylinder><radius>0.92</radius><length>0.88</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 4.95 0 0 0</pose><geometry><cylinder><radius>0.46</radius><length>0.88</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 4.64 0 0 0</pose><geometry><cylinder><radius>0.92</radius><length>0.88</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 5.52 0 0 0</pose><geometry><cylinder><radius>0.61</radius><length>0.88</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 6.40 0 0 0</pose><geometry><cylinder><radius>0.31</radius><length>0.88</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.6572156559886255 0 0 0</pose><geometry><cylinder><radius>0.19858234839829383</radius><length>1.314431311977251</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.75 0 0 0</pose><geometry><cylinder><radius>1.84</radius><length>0.88</length></cylinder></geometry><material><ambient>0.08 0.26 0.14 1</ambient><diffuse>0.08 0.26 0.14 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.63 0 0 0</pose><geometry><cylinder><radius>1.23</radius><length>0.88</length></cylinder></geometry><material><ambient>0.08 0.26 0.14 1</ambient><diffuse>0.08 0.26 0.14 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 3.51 0 0 0</pose><geometry><cylinder><radius>0.61</radius><length>0.88</length></cylinder></geometry><material><ambient>0.08 0.26 0.14 1</ambient><diffuse>0.08 0.26 0.14 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 3.19 0 0 0</pose><geometry><cylinder><radius>1.38</radius><length>0.88</length></cylinder></geometry><material><ambient>0.08 0.26 0.14 1</ambient><diffuse>0.08 0.26 0.14 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 4.07 0 0 0</pose><geometry><cylinder><radius>0.92</radius><length>0.88</length></cylinder></geometry><material><ambient>0.08 0.26 0.14 1</ambient><diffuse>0.08 0.26 0.14 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 4.95 0 0 0</pose><geometry><cylinder><radius>0.46</radius><length>0.88</length></cylinder></geometry><material><ambient>0.08 0.26 0.14 1</ambient><diffuse>0.08 0.26 0.14 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 4.64 0 0 0</pose><geometry><cylinder><radius>0.92</radius><length>0.88</length></cylinder></geometry><material><ambient>0.08 0.26 0.14 1</ambient><diffuse>0.08 0.26 0.14 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 5.52 0 0 0</pose><geometry><cylinder><radius>0.61</radius><length>0.88</length></cylinder></geometry><material><ambient>0.08 0.26 0.14 1</ambient><diffuse>0.08 0.26 0.14 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 6.40 0 0 0</pose><geometry><cylinder><radius>0.31</radius><length>0.88</length></cylinder></geometry><material><ambient>0.08 0.26 0.14 1</ambient><diffuse>0.08 0.26 0.14 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_30">
+      <static>true</static>
+      <pose>37.61 0.94 0 0 0 6.07</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.55 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>1.09</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.45 0 0 0</pose><geometry><cylinder><radius>1.53</radius><length>0.73</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.18 0 0 0</pose><geometry><cylinder><radius>1.02</radius><length>0.73</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 2.91 0 0 0</pose><geometry><cylinder><radius>0.51</radius><length>0.73</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 2.65 0 0 0</pose><geometry><cylinder><radius>1.14</radius><length>0.73</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 3.38 0 0 0</pose><geometry><cylinder><radius>0.76</radius><length>0.73</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 4.11 0 0 0</pose><geometry><cylinder><radius>0.38</radius><length>0.73</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 3.85 0 0 0</pose><geometry><cylinder><radius>0.76</radius><length>0.73</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 4.58 0 0 0</pose><geometry><cylinder><radius>0.51</radius><length>0.73</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 5.31 0 0 0</pose><geometry><cylinder><radius>0.25</radius><length>0.73</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.545109662184293 0 0 0</pose><geometry><cylinder><radius>0.18176644932764396</radius><length>1.090219324368586</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.45 0 0 0</pose><geometry><cylinder><radius>1.53</radius><length>0.73</length></cylinder></geometry><material><ambient>0.10 0.34 0.16 1</ambient><diffuse>0.10 0.34 0.16 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.18 0 0 0</pose><geometry><cylinder><radius>1.02</radius><length>0.73</length></cylinder></geometry><material><ambient>0.10 0.34 0.16 1</ambient><diffuse>0.10 0.34 0.16 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 2.91 0 0 0</pose><geometry><cylinder><radius>0.51</radius><length>0.73</length></cylinder></geometry><material><ambient>0.10 0.34 0.16 1</ambient><diffuse>0.10 0.34 0.16 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 2.65 0 0 0</pose><geometry><cylinder><radius>1.14</radius><length>0.73</length></cylinder></geometry><material><ambient>0.10 0.34 0.16 1</ambient><diffuse>0.10 0.34 0.16 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 3.38 0 0 0</pose><geometry><cylinder><radius>0.76</radius><length>0.73</length></cylinder></geometry><material><ambient>0.10 0.34 0.16 1</ambient><diffuse>0.10 0.34 0.16 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 4.11 0 0 0</pose><geometry><cylinder><radius>0.38</radius><length>0.73</length></cylinder></geometry><material><ambient>0.10 0.34 0.16 1</ambient><diffuse>0.10 0.34 0.16 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 3.85 0 0 0</pose><geometry><cylinder><radius>0.76</radius><length>0.73</length></cylinder></geometry><material><ambient>0.10 0.34 0.16 1</ambient><diffuse>0.10 0.34 0.16 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 4.58 0 0 0</pose><geometry><cylinder><radius>0.51</radius><length>0.73</length></cylinder></geometry><material><ambient>0.10 0.34 0.16 1</ambient><diffuse>0.10 0.34 0.16 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 5.31 0 0 0</pose><geometry><cylinder><radius>0.25</radius><length>0.73</length></cylinder></geometry><material><ambient>0.10 0.34 0.16 1</ambient><diffuse>0.10 0.34 0.16 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_31">
+      <static>true</static>
+      <pose>-7.60 -9.64 0 0 0 1.93</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.14 0 0 0</pose><geometry><cylinder><radius>0.22</radius><length>2.28</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 3.54 0 0 0</pose><geometry><sphere><radius>2.03</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.139406899354937 0 0 0</pose><geometry><cylinder><radius>0.2212806132759944</radius><length>2.278813798709874</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>1.20 -0.06 3.90 0 0 0</pose><geometry><sphere><radius>1.44</radius></sphere></geometry><material><ambient>0.20 0.42 0.17 1</ambient><diffuse>0.20 0.42 0.17 1</diffuse></material></visual><visual name="leaves_1"><pose>0.22 0.02 3.47 0 0 0</pose><geometry><sphere><radius>1.53</radius></sphere></geometry><material><ambient>0.20 0.42 0.17 1</ambient><diffuse>0.20 0.42 0.17 1</diffuse></material></visual><visual name="leaves_2"><pose>-0.77 -0.15 3.69 0 0 0</pose><geometry><sphere><radius>1.44</radius></sphere></geometry><material><ambient>0.20 0.42 0.17 1</ambient><diffuse>0.20 0.42 0.17 1</diffuse></material></visual><visual name="leaves_3"><pose>-0.72 -1.00 3.85 0 0 0</pose><geometry><sphere><radius>1.27</radius></sphere></geometry><material><ambient>0.20 0.42 0.17 1</ambient><diffuse>0.20 0.42 0.17 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_32">
+      <static>true</static>
+      <pose>-8.41 -30.01 0 0 0 2.97</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.20 0 0 0</pose><geometry><cylinder><radius>0.23</radius><length>2.41</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 3.74 0 0 0</pose><geometry><sphere><radius>2.14</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.2032052889760332 0 0 0</pose><geometry><cylinder><radius>0.22695158124231404</radius><length>2.4064105779520664</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>1.23 0.56 3.78 0 0 0</pose><geometry><sphere><radius>1.26</radius></sphere></geometry><material><ambient>0.19 0.37 0.16 1</ambient><diffuse>0.19 0.37 0.16 1</diffuse></material></visual><visual name="leaves_1"><pose>-0.72 -0.00 3.30 0 0 0</pose><geometry><sphere><radius>1.53</radius></sphere></geometry><material><ambient>0.19 0.37 0.16 1</ambient><diffuse>0.19 0.37 0.16 1</diffuse></material></visual><visual name="leaves_2"><pose>-0.57 -0.90 3.65 0 0 0</pose><geometry><sphere><radius>1.33</radius></sphere></geometry><material><ambient>0.19 0.37 0.16 1</ambient><diffuse>0.19 0.37 0.16 1</diffuse></material></visual><visual name="leaves_3"><pose>-1.27 -0.45 4.27 0 0 0</pose><geometry><sphere><radius>1.21</radius></sphere></geometry><material><ambient>0.19 0.37 0.16 1</ambient><diffuse>0.19 0.37 0.16 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_33">
+      <static>true</static>
+      <pose>-3.59 -24.71 0 0 0 2.62</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.62 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>1.24</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.65 0 0 0</pose><geometry><cylinder><radius>1.73</radius><length>0.83</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.48 0 0 0</pose><geometry><cylinder><radius>1.15</radius><length>0.83</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 3.31 0 0 0</pose><geometry><cylinder><radius>0.58</radius><length>0.83</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 3.01 0 0 0</pose><geometry><cylinder><radius>1.30</radius><length>0.83</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 3.84 0 0 0</pose><geometry><cylinder><radius>0.87</radius><length>0.83</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 4.67 0 0 0</pose><geometry><cylinder><radius>0.43</radius><length>0.83</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 4.37 0 0 0</pose><geometry><cylinder><radius>0.87</radius><length>0.83</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 5.20 0 0 0</pose><geometry><cylinder><radius>0.58</radius><length>0.83</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 6.03 0 0 0</pose><geometry><cylinder><radius>0.29</radius><length>0.83</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.6196307695858541 0 0 0</pose><geometry><cylinder><radius>0.1929446154378781</radius><length>1.2392615391717081</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.65 0 0 0</pose><geometry><cylinder><radius>1.73</radius><length>0.83</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.48 0 0 0</pose><geometry><cylinder><radius>1.15</radius><length>0.83</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 3.31 0 0 0</pose><geometry><cylinder><radius>0.58</radius><length>0.83</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 3.01 0 0 0</pose><geometry><cylinder><radius>1.30</radius><length>0.83</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 3.84 0 0 0</pose><geometry><cylinder><radius>0.87</radius><length>0.83</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 4.67 0 0 0</pose><geometry><cylinder><radius>0.43</radius><length>0.83</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 4.37 0 0 0</pose><geometry><cylinder><radius>0.87</radius><length>0.83</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 5.20 0 0 0</pose><geometry><cylinder><radius>0.58</radius><length>0.83</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 6.03 0 0 0</pose><geometry><cylinder><radius>0.29</radius><length>0.83</length></cylinder></geometry><material><ambient>0.11 0.33 0.14 1</ambient><diffuse>0.11 0.33 0.14 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_34">
+      <static>true</static>
+      <pose>-15.28 3.21 0 0 0 2.95</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.85 0 0 0</pose><geometry><cylinder><radius>0.23</radius><length>1.70</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 2.27 0 0 0</pose><geometry><cylinder><radius>2.38</radius><length>1.13</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 3.40 0 0 0</pose><geometry><cylinder><radius>1.59</radius><length>1.13</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 4.53 0 0 0</pose><geometry><cylinder><radius>0.79</radius><length>1.13</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 4.14 0 0 0</pose><geometry><cylinder><radius>1.79</radius><length>1.13</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 5.27 0 0 0</pose><geometry><cylinder><radius>1.19</radius><length>1.13</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 6.40 0 0 0</pose><geometry><cylinder><radius>0.60</radius><length>1.13</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 6.02 0 0 0</pose><geometry><cylinder><radius>1.19</radius><length>1.13</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 7.15 0 0 0</pose><geometry><cylinder><radius>0.79</radius><length>1.13</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 8.28 0 0 0</pose><geometry><cylinder><radius>0.40</radius><length>1.13</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.8507368698805332 0 0 0</pose><geometry><cylinder><radius>0.22761053048207996</radius><length>1.7014737397610664</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 2.27 0 0 0</pose><geometry><cylinder><radius>2.38</radius><length>1.13</length></cylinder></geometry><material><ambient>0.08 0.30 0.12 1</ambient><diffuse>0.08 0.30 0.12 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 3.40 0 0 0</pose><geometry><cylinder><radius>1.59</radius><length>1.13</length></cylinder></geometry><material><ambient>0.08 0.30 0.12 1</ambient><diffuse>0.08 0.30 0.12 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 4.53 0 0 0</pose><geometry><cylinder><radius>0.79</radius><length>1.13</length></cylinder></geometry><material><ambient>0.08 0.30 0.12 1</ambient><diffuse>0.08 0.30 0.12 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 4.14 0 0 0</pose><geometry><cylinder><radius>1.79</radius><length>1.13</length></cylinder></geometry><material><ambient>0.08 0.30 0.12 1</ambient><diffuse>0.08 0.30 0.12 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 5.27 0 0 0</pose><geometry><cylinder><radius>1.19</radius><length>1.13</length></cylinder></geometry><material><ambient>0.08 0.30 0.12 1</ambient><diffuse>0.08 0.30 0.12 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 6.40 0 0 0</pose><geometry><cylinder><radius>0.60</radius><length>1.13</length></cylinder></geometry><material><ambient>0.08 0.30 0.12 1</ambient><diffuse>0.08 0.30 0.12 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 6.02 0 0 0</pose><geometry><cylinder><radius>1.19</radius><length>1.13</length></cylinder></geometry><material><ambient>0.08 0.30 0.12 1</ambient><diffuse>0.08 0.30 0.12 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 7.15 0 0 0</pose><geometry><cylinder><radius>0.79</radius><length>1.13</length></cylinder></geometry><material><ambient>0.08 0.30 0.12 1</ambient><diffuse>0.08 0.30 0.12 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 8.28 0 0 0</pose><geometry><cylinder><radius>0.40</radius><length>1.13</length></cylinder></geometry><material><ambient>0.08 0.30 0.12 1</ambient><diffuse>0.08 0.30 0.12 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_35">
+      <static>true</static>
+      <pose>24.76 0.23 0 0 0 0.78</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.70 0 0 0</pose><geometry><cylinder><radius>0.27</radius><length>3.41</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 5.30 0 0 0</pose><geometry><sphere><radius>3.03</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.7031580724934676 0 0 0</pose><geometry><cylinder><radius>0.271391828666086</radius><length>3.4063161449869352</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>0.63 -0.75 5.62 0 0 0</pose><geometry><sphere><radius>1.98</radius></sphere></geometry><material><ambient>0.18 0.40 0.12 1</ambient><diffuse>0.18 0.40 0.12 1</diffuse></material></visual><visual name="leaves_1"><pose>-1.84 -1.08 4.97 0 0 0</pose><geometry><sphere><radius>2.26</radius></sphere></geometry><material><ambient>0.18 0.40 0.12 1</ambient><diffuse>0.18 0.40 0.12 1</diffuse></material></visual><visual name="leaves_2"><pose>-0.05 0.26 4.65 0 0 0</pose><geometry><sphere><radius>2.11</radius></sphere></geometry><material><ambient>0.18 0.40 0.12 1</ambient><diffuse>0.18 0.40 0.12 1</diffuse></material></visual><visual name="leaves_3"><pose>-1.28 0.93 5.58 0 0 0</pose><geometry><sphere><radius>1.88</radius></sphere></geometry><material><ambient>0.18 0.40 0.12 1</ambient><diffuse>0.18 0.40 0.12 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_36">
+      <static>true</static>
+      <pose>-13.75 38.27 0 0 0 2.34</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.58 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>1.16</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.55 0 0 0</pose><geometry><cylinder><radius>1.63</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.33 0 0 0</pose><geometry><cylinder><radius>1.09</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 3.11 0 0 0</pose><geometry><cylinder><radius>0.54</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 2.82 0 0 0</pose><geometry><cylinder><radius>1.22</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 3.60 0 0 0</pose><geometry><cylinder><radius>0.81</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 4.38 0 0 0</pose><geometry><cylinder><radius>0.41</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 4.10 0 0 0</pose><geometry><cylinder><radius>0.81</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 4.88 0 0 0</pose><geometry><cylinder><radius>0.54</radius><length>0.78</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 5.66 0 0 0</pose><geometry><cylinder><radius>0.27</radius><length>0.78</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.5813756561418016 0 0 0</pose><geometry><cylinder><radius>0.18720634842127026</radius><length>1.1627513122836033</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.55 0 0 0</pose><geometry><cylinder><radius>1.63</radius><length>0.78</length></cylinder></geometry><material><ambient>0.11 0.34 0.14 1</ambient><diffuse>0.11 0.34 0.14 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.33 0 0 0</pose><geometry><cylinder><radius>1.09</radius><length>0.78</length></cylinder></geometry><material><ambient>0.11 0.34 0.14 1</ambient><diffuse>0.11 0.34 0.14 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 3.11 0 0 0</pose><geometry><cylinder><radius>0.54</radius><length>0.78</length></cylinder></geometry><material><ambient>0.11 0.34 0.14 1</ambient><diffuse>0.11 0.34 0.14 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 2.82 0 0 0</pose><geometry><cylinder><radius>1.22</radius><length>0.78</length></cylinder></geometry><material><ambient>0.11 0.34 0.14 1</ambient><diffuse>0.11 0.34 0.14 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 3.60 0 0 0</pose><geometry><cylinder><radius>0.81</radius><length>0.78</length></cylinder></geometry><material><ambient>0.11 0.34 0.14 1</ambient><diffuse>0.11 0.34 0.14 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 4.38 0 0 0</pose><geometry><cylinder><radius>0.41</radius><length>0.78</length></cylinder></geometry><material><ambient>0.11 0.34 0.14 1</ambient><diffuse>0.11 0.34 0.14 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 4.10 0 0 0</pose><geometry><cylinder><radius>0.81</radius><length>0.78</length></cylinder></geometry><material><ambient>0.11 0.34 0.14 1</ambient><diffuse>0.11 0.34 0.14 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 4.88 0 0 0</pose><geometry><cylinder><radius>0.54</radius><length>0.78</length></cylinder></geometry><material><ambient>0.11 0.34 0.14 1</ambient><diffuse>0.11 0.34 0.14 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 5.66 0 0 0</pose><geometry><cylinder><radius>0.27</radius><length>0.78</length></cylinder></geometry><material><ambient>0.11 0.34 0.14 1</ambient><diffuse>0.11 0.34 0.14 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_37">
+      <static>true</static>
+      <pose>-5.96 12.18 0 0 0 5.69</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.33 0 0 0</pose><geometry><cylinder><radius>0.24</radius><length>2.65</length></cylinder></geometry></collision>
+        <collision name="canopy"><pose>0 0 4.13 0 0 0</pose><geometry><sphere><radius>2.36</radius></sphere></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.3265447768524623 0 0 0</pose><geometry><cylinder><radius>0.23791509127577443</radius><length>2.6530895537049246</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="leaves_0"><pose>-1.32 -1.03 4.05 0 0 0</pose><geometry><sphere><radius>1.49</radius></sphere></geometry><material><ambient>0.15 0.48 0.17 1</ambient><diffuse>0.15 0.48 0.17 1</diffuse></material></visual><visual name="leaves_1"><pose>-0.94 -0.67 4.57 0 0 0</pose><geometry><sphere><radius>1.42</radius></sphere></geometry><material><ambient>0.15 0.48 0.17 1</ambient><diffuse>0.15 0.48 0.17 1</diffuse></material></visual><visual name="leaves_2"><pose>1.25 -0.15 4.41 0 0 0</pose><geometry><sphere><radius>1.32</radius></sphere></geometry><material><ambient>0.15 0.48 0.17 1</ambient><diffuse>0.15 0.48 0.17 1</diffuse></material></visual><visual name="leaves_3"><pose>1.31 -0.94 3.84 0 0 0</pose><geometry><sphere><radius>1.60</radius></sphere></geometry><material><ambient>0.15 0.48 0.17 1</ambient><diffuse>0.15 0.48 0.17 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_38">
+      <static>true</static>
+      <pose>-27.73 -1.43 0 0 0 0.56</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 0.70 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>1.40</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 1.86 0 0 0</pose><geometry><cylinder><radius>1.96</radius><length>0.93</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 2.79 0 0 0</pose><geometry><cylinder><radius>1.31</radius><length>0.93</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 3.72 0 0 0</pose><geometry><cylinder><radius>0.65</radius><length>0.93</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 3.40 0 0 0</pose><geometry><cylinder><radius>1.47</radius><length>0.93</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 4.33 0 0 0</pose><geometry><cylinder><radius>0.98</radius><length>0.93</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 5.26 0 0 0</pose><geometry><cylinder><radius>0.49</radius><length>0.93</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 4.94 0 0 0</pose><geometry><cylinder><radius>0.98</radius><length>0.93</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 5.87 0 0 0</pose><geometry><cylinder><radius>0.65</radius><length>0.93</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 6.80 0 0 0</pose><geometry><cylinder><radius>0.33</radius><length>0.93</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 0.698615783522871 0 0 0</pose><geometry><cylinder><radius>0.20479236752843066</radius><length>1.397231567045742</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 1.86 0 0 0</pose><geometry><cylinder><radius>1.96</radius><length>0.93</length></cylinder></geometry><material><ambient>0.10 0.33 0.16 1</ambient><diffuse>0.10 0.33 0.16 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 2.79 0 0 0</pose><geometry><cylinder><radius>1.31</radius><length>0.93</length></cylinder></geometry><material><ambient>0.10 0.33 0.16 1</ambient><diffuse>0.10 0.33 0.16 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 3.72 0 0 0</pose><geometry><cylinder><radius>0.65</radius><length>0.93</length></cylinder></geometry><material><ambient>0.10 0.33 0.16 1</ambient><diffuse>0.10 0.33 0.16 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 3.40 0 0 0</pose><geometry><cylinder><radius>1.47</radius><length>0.93</length></cylinder></geometry><material><ambient>0.10 0.33 0.16 1</ambient><diffuse>0.10 0.33 0.16 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 4.33 0 0 0</pose><geometry><cylinder><radius>0.98</radius><length>0.93</length></cylinder></geometry><material><ambient>0.10 0.33 0.16 1</ambient><diffuse>0.10 0.33 0.16 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 5.26 0 0 0</pose><geometry><cylinder><radius>0.49</radius><length>0.93</length></cylinder></geometry><material><ambient>0.10 0.33 0.16 1</ambient><diffuse>0.10 0.33 0.16 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 4.94 0 0 0</pose><geometry><cylinder><radius>0.98</radius><length>0.93</length></cylinder></geometry><material><ambient>0.10 0.33 0.16 1</ambient><diffuse>0.10 0.33 0.16 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 5.87 0 0 0</pose><geometry><cylinder><radius>0.65</radius><length>0.93</length></cylinder></geometry><material><ambient>0.10 0.33 0.16 1</ambient><diffuse>0.10 0.33 0.16 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 6.80 0 0 0</pose><geometry><cylinder><radius>0.33</radius><length>0.93</length></cylinder></geometry><material><ambient>0.10 0.33 0.16 1</ambient><diffuse>0.10 0.33 0.16 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tree_39">
+      <static>true</static>
+      <pose>-38.08 22.61 0 0 0 0.73</pose>
+      <link name="link">
+        <collision name="trunk"><pose>0 0 1.08 0 0 0</pose><geometry><cylinder><radius>0.26</radius><length>2.16</length></cylinder></geometry></collision>
+        <collision name="c_0_0"><pose>0 0 2.88 0 0 0</pose><geometry><cylinder><radius>3.02</radius><length>1.44</length></cylinder></geometry></collision><collision name="c_0_1"><pose>0 0 4.32 0 0 0</pose><geometry><cylinder><radius>2.01</radius><length>1.44</length></cylinder></geometry></collision><collision name="c_0_2"><pose>0 0 5.76 0 0 0</pose><geometry><cylinder><radius>1.01</radius><length>1.44</length></cylinder></geometry></collision><collision name="c_1_0"><pose>0 0 5.26 0 0 0</pose><geometry><cylinder><radius>2.27</radius><length>1.44</length></cylinder></geometry></collision><collision name="c_1_1"><pose>0 0 6.70 0 0 0</pose><geometry><cylinder><radius>1.51</radius><length>1.44</length></cylinder></geometry></collision><collision name="c_1_2"><pose>0 0 8.14 0 0 0</pose><geometry><cylinder><radius>0.76</radius><length>1.44</length></cylinder></geometry></collision><collision name="c_2_0"><pose>0 0 7.63 0 0 0</pose><geometry><cylinder><radius>1.51</radius><length>1.44</length></cylinder></geometry></collision><collision name="c_2_1"><pose>0 0 9.07 0 0 0</pose><geometry><cylinder><radius>1.01</radius><length>1.44</length></cylinder></geometry></collision><collision name="c_2_2"><pose>0 0 10.51 0 0 0</pose><geometry><cylinder><radius>0.50</radius><length>1.44</length></cylinder></geometry></collision>
+        <visual name="trunk"><pose>0 0 1.0801831436999447 0 0 0</pose><geometry><cylinder><radius>0.26202747155499173</radius><length>2.1603662873998895</length></cylinder></geometry><material><ambient>0.36 0.25 0.15 1</ambient><diffuse>0.36 0.25 0.15 1</diffuse></material></visual>
+        <visual name="needles_0_0"><pose>0 0 2.88 0 0 0</pose><geometry><cylinder><radius>3.02</radius><length>1.44</length></cylinder></geometry><material><ambient>0.12 0.34 0.15 1</ambient><diffuse>0.12 0.34 0.15 1</diffuse></material></visual><visual name="needles_0_1"><pose>0 0 4.32 0 0 0</pose><geometry><cylinder><radius>2.01</radius><length>1.44</length></cylinder></geometry><material><ambient>0.12 0.34 0.15 1</ambient><diffuse>0.12 0.34 0.15 1</diffuse></material></visual><visual name="needles_0_2"><pose>0 0 5.76 0 0 0</pose><geometry><cylinder><radius>1.01</radius><length>1.44</length></cylinder></geometry><material><ambient>0.12 0.34 0.15 1</ambient><diffuse>0.12 0.34 0.15 1</diffuse></material></visual><visual name="needles_1_0"><pose>0 0 5.26 0 0 0</pose><geometry><cylinder><radius>2.27</radius><length>1.44</length></cylinder></geometry><material><ambient>0.12 0.34 0.15 1</ambient><diffuse>0.12 0.34 0.15 1</diffuse></material></visual><visual name="needles_1_1"><pose>0 0 6.70 0 0 0</pose><geometry><cylinder><radius>1.51</radius><length>1.44</length></cylinder></geometry><material><ambient>0.12 0.34 0.15 1</ambient><diffuse>0.12 0.34 0.15 1</diffuse></material></visual><visual name="needles_1_2"><pose>0 0 8.14 0 0 0</pose><geometry><cylinder><radius>0.76</radius><length>1.44</length></cylinder></geometry><material><ambient>0.12 0.34 0.15 1</ambient><diffuse>0.12 0.34 0.15 1</diffuse></material></visual><visual name="needles_2_0"><pose>0 0 7.63 0 0 0</pose><geometry><cylinder><radius>1.51</radius><length>1.44</length></cylinder></geometry><material><ambient>0.12 0.34 0.15 1</ambient><diffuse>0.12 0.34 0.15 1</diffuse></material></visual><visual name="needles_2_1"><pose>0 0 9.07 0 0 0</pose><geometry><cylinder><radius>1.01</radius><length>1.44</length></cylinder></geometry><material><ambient>0.12 0.34 0.15 1</ambient><diffuse>0.12 0.34 0.15 1</diffuse></material></visual><visual name="needles_2_2"><pose>0 0 10.51 0 0 0</pose><geometry><cylinder><radius>0.50</radius><length>1.44</length></cylinder></geometry><material><ambient>0.12 0.34 0.15 1</ambient><diffuse>0.12 0.34 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="rock_0"><static>true</static><pose>20.66 -4.70 0.12 0.05 0.07 0.10</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.41 0.33 0.25</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.41 0.33 0.25</size></box></geometry><material><ambient>0.41 0.44 0.44 1</ambient><diffuse>0.41 0.44 0.44 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_1"><static>true</static><pose>-25.72 0.69 0.12 0.30 0.25 0.22</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.41 0.33 0.25</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.41 0.33 0.25</size></box></geometry><material><ambient>0.53 0.47 0.42 1</ambient><diffuse>0.53 0.47 0.42 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_2"><static>true</static><pose>22.26 15.61 0.09 0.12 0.13 0.42</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.28 0.23 0.17</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.28 0.23 0.17</size></box></geometry><material><ambient>0.46 0.46 0.42 1</ambient><diffuse>0.46 0.46 0.42 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_3"><static>true</static><pose>-15.63 -25.50 0.08 0.15 0.43 0.80</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.25 0.20 0.15</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.25 0.20 0.15</size></box></geometry><material><ambient>0.44 0.41 0.42 1</ambient><diffuse>0.44 0.41 0.42 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_4"><static>true</static><pose>-16.57 -21.19 0.17 0.00 0.16 2.22</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.58 0.46 0.35</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.58 0.46 0.35</size></box></geometry><material><ambient>0.51 0.49 0.42 1</ambient><diffuse>0.51 0.49 0.42 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_5"><static>true</static><pose>-15.23 23.12 0.07 0.04 0.18 2.30</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.25 0.20 0.15</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.25 0.20 0.15</size></box></geometry><material><ambient>0.50 0.44 0.45 1</ambient><diffuse>0.50 0.44 0.45 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_6"><static>true</static><pose>-16.09 12.94 0.10 0.38 0.15 2.01</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.33 0.27 0.20</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.33 0.27 0.20</size></box></geometry><material><ambient>0.41 0.43 0.44 1</ambient><diffuse>0.41 0.43 0.44 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_7"><static>true</static><pose>8.92 -31.45 0.07 0.39 0.32 2.62</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.22 0.18 0.13</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.22 0.18 0.13</size></box></geometry><material><ambient>0.42 0.50 0.40 1</ambient><diffuse>0.42 0.50 0.40 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_8"><static>true</static><pose>33.17 17.75 0.17 0.43 0.21 2.22</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.55 0.44 0.33</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.55 0.44 0.33</size></box></geometry><material><ambient>0.44 0.47 0.38 1</ambient><diffuse>0.44 0.47 0.38 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_9"><static>true</static><pose>1.38 -4.76 0.17 0.13 0.32 0.57</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.55 0.44 0.33</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.55 0.44 0.33</size></box></geometry><material><ambient>0.42 0.42 0.41 1</ambient><diffuse>0.42 0.42 0.41 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_10"><static>true</static><pose>-22.50 -21.93 0.18 0.33 0.46 1.76</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.59 0.47 0.35</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.59 0.47 0.35</size></box></geometry><material><ambient>0.46 0.43 0.42 1</ambient><diffuse>0.46 0.43 0.42 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_11"><static>true</static><pose>-13.63 5.55 0.15 0.08 0.25 1.14</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.49 0.39 0.29</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.49 0.39 0.29</size></box></geometry><material><ambient>0.50 0.41 0.40 1</ambient><diffuse>0.50 0.41 0.40 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_12"><static>true</static><pose>12.51 19.39 0.14 0.03 0.35 1.69</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.46 0.37 0.28</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.46 0.37 0.28</size></box></geometry><material><ambient>0.45 0.48 0.39 1</ambient><diffuse>0.45 0.48 0.39 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_13"><static>true</static><pose>0.42 -37.65 0.12 0.25 0.50 1.04</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.40 0.32 0.24</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.40 0.32 0.24</size></box></geometry><material><ambient>0.52 0.46 0.42 1</ambient><diffuse>0.52 0.46 0.42 1</diffuse></material></visual>
+      </link></model>
+    <model name="rock_14"><static>true</static><pose>-18.76 9.61 0.14 0.19 0.22 1.70</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.46 0.36 0.27</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.46 0.36 0.27</size></box></geometry><material><ambient>0.41 0.47 0.38 1</ambient><diffuse>0.41 0.47 0.38 1</diffuse></material></visual>
+      </link></model>
+	<include>
+      <uri>
+        https://fuel.gazebosim.org/1.0/OpenRobotics/models/X3 UAV/4
+      </uri>
+	  <pose>0 0 0.1 0 0 0</pose>
+      <plugin
+        filename="gz-sim-multicopter-motor-model-system"
+        name="gz::sim::systems::MulticopterMotorModel">
+        <robotNamespace>X3</robotNamespace>
+        <jointName>X3/rotor_0_joint</jointName>
+        <linkName>X3/rotor_0</linkName>
+        <turningDirection>ccw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>800.0</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <actuator_number>0</actuator_number>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+        <motorType>velocity</motorType>
+      </plugin>
+      <plugin
+        filename="gz-sim-multicopter-motor-model-system"
+        name="gz::sim::systems::MulticopterMotorModel">
+        <robotNamespace>X3</robotNamespace>
+        <jointName>X3/rotor_1_joint</jointName>
+        <linkName>X3/rotor_1</linkName>
+        <turningDirection>ccw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>800.0</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <actuator_number>1</actuator_number>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/1</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+        <motorType>velocity</motorType>
+      </plugin>
+      <plugin
+        filename="gz-sim-multicopter-motor-model-system"
+        name="gz::sim::systems::MulticopterMotorModel">
+        <robotNamespace>X3</robotNamespace>
+        <jointName>X3/rotor_2_joint</jointName>
+        <linkName>X3/rotor_2</linkName>
+        <turningDirection>cw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>800.0</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <actuator_number>2</actuator_number>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/2</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+        <motorType>velocity</motorType>
+      </plugin>
+      <plugin
+        filename="gz-sim-multicopter-motor-model-system"
+        name="gz::sim::systems::MulticopterMotorModel">
+        <robotNamespace>X3</robotNamespace>
+        <jointName>X3/rotor_3_joint</jointName>
+        <linkName>X3/rotor_3</linkName>
+        <turningDirection>cw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>800.0</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <actuator_number>3</actuator_number>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/3</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+        <motorType>velocity</motorType>
+      </plugin>
+      <plugin
+        filename="gz-sim-multicopter-control-system"
+        name="gz::sim::systems::MulticopterVelocityControl">
+        <robotNamespace>X3</robotNamespace>
+        <commandSubTopic>gazebo/command/twist</commandSubTopic>
+        <enableSubTopic>enable</enableSubTopic>
+        <comLinkName>X3/base_link</comLinkName>
+        <velocityGain>2.7 2.7 2.7</velocityGain>
+        <attitudeGain>2 3 0.15</attitudeGain>
+        <angularRateGain>0.4 0.52 0.18</angularRateGain>
+        <maximumLinearAcceleration>2 2 2</maximumLinearAcceleration>
+
+        <rotorConfiguration>
+          <rotor>
+            <jointName>X3/rotor_0_joint</jointName>
+            <forceConstant>8.54858e-06</forceConstant>
+            <momentConstant>0.016</momentConstant>
+            <direction>1</direction>
+          </rotor>
+          <rotor>
+            <jointName>X3/rotor_1_joint</jointName>
+            <forceConstant>8.54858e-06</forceConstant>
+            <momentConstant>0.016</momentConstant>
+            <direction>1</direction>
+          </rotor>
+          <rotor>
+            <jointName>X3/rotor_2_joint</jointName>
+            <forceConstant>8.54858e-06</forceConstant>
+            <momentConstant>0.016</momentConstant>
+            <direction>-1</direction>
+          </rotor>
+          <rotor>
+            <jointName>X3/rotor_3_joint</jointName>
+            <forceConstant>8.54858e-06</forceConstant>
+            <momentConstant>0.016</momentConstant>
+            <direction>-1</direction>
+          </rotor>
+        </rotorConfiguration>
+      </plugin>
+      <plugin
+        filename="gz-sim-odometry-publisher-system"
+        name="gz::sim::systems::OdometryPublisher">
+        <dimensions>3</dimensions>
+      </plugin>
+    </include>
+  </world>
+</sdf>
