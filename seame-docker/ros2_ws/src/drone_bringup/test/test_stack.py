@@ -65,6 +65,12 @@ def generate_test_description():
             package='drone_mission', executable='mission', output='screen',
             remappings=[('setpoint_velocity', '/cmd/mission')],
             parameters=[PARAMS, clock, {'radio_arms': True}]),
+        launch_ros.actions.Node(
+            package='drone_sim_sensors', executable='flow_model', output='screen',
+            parameters=[PARAMS, clock]),
+        launch_ros.actions.Node(
+            package='drone_sim_sensors', executable='estimator', output='screen',
+            parameters=[PARAMS, clock]),
     ]
     return launch.LaunchDescription(
         [fake_drone] + nodes + [launch_testing.actions.ReadyToTest()])
