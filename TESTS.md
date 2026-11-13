@@ -1,11 +1,3 @@
-# Tests
-
-Every automated test in this project: where it lives, what it checks, who runs it and when, what kind of bug it catches, and how to run it yourself.
-
-The plan for tests that don't exist yet is in [docs/CI_Tests.md](docs/CI_Tests.md). This file describes what exists on branch `ci/test_implementation`, with `main` merged in on 2026-11-12 (commit `581471b`). Section 1 says which tests are already on `main` and which are only on this branch. Section 2 says how CI runs them and how it was doing on Nov 12.
-
-[docs/TESTS.md](docs/TESTS.md), on `main`, is the short index: one line per test, with the last result of the checks done by hand (sim, Wi-Fi link, drone hardware). This file is the detailed one: every automated test, what it catches and why. Section 13 lists the checks done by hand.
-
 ## Contents
 
 1. [At a glance](#1-at-a-glance)
