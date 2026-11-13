@@ -1,0 +1,18 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-13T12:16:30+00:00",
+  "host": "seame-10",
+  "commit": "f51dc22a9fe2248bbf9804fcbd6068a2bfe8b7e9",
+  "commit_short": "f51dc22",
+  "commit_subject": "Merge branch 'main' into ci/main-copy-to-insert-tests-first",
+  "branch": "ci/main-copy-to-insert-tests-first",
+  "uncommitted_code": [],
+  "uncommitted_other": [
+    "seame-docker/logs/tests/history.csv",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/console.log.gz",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/meta.json",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/report.md",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/results.json"
+  ]
+}

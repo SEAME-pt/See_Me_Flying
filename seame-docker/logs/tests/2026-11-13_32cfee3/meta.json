@@ -1,0 +1,26 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-13T14:59:27+00:00",
+  "host": "seame-10",
+  "commit": "32cfee3d1ef1d91306864cdb16fa9c14dbb9b445",
+  "commit_short": "32cfee3",
+  "commit_subject": "Merge a9425e44860ffc3aad1423ac86d04889ea23c7b4 into e36681e6e9d6c0df06521a3626022977d7db0f45",
+  "branch": "HEAD",
+  "uncommitted_code": [],
+  "uncommitted_other": [
+    "seame-docker/logs/tests/history.csv",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/console.log.gz",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/meta.json",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/report.md",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/results.json",
+    "seame-docker/logs/tests/2026-11-13_f51dc22-dirty/console.log.gz",
+    "seame-docker/logs/tests/2026-11-13_f51dc22-dirty/meta.json",
+    "seame-docker/logs/tests/2026-11-13_f51dc22-dirty/report.md",
+    "seame-docker/logs/tests/2026-11-13_f51dc22-dirty/results.json",
+    "seame-docker/logs/tests/2026-11-13_f51dc22/console.log.gz",
+    "seame-docker/logs/tests/2026-11-13_f51dc22/meta.json",
+    "seame-docker/logs/tests/2026-11-13_f51dc22/report.md",
+    "seame-docker/logs/tests/2026-11-13_f51dc22/results.json"
+  ]
+}

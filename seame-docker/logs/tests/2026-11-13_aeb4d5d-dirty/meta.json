@@ -1,0 +1,34 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-13T15:14:23+00:00",
+  "host": "seame-10",
+  "commit": "aeb4d5d0a91d2bd91090eb36045fe0939444e0e5",
+  "commit_short": "aeb4d5d",
+  "commit_subject": "Merge 7325660cbe3725fbac493b33a38ecb30ca05c93d into e36681e6e9d6c0df06521a3626022977d7db0f45",
+  "branch": "HEAD",
+  "uncommitted_code": [
+    "seame-docker/ros2_ws/src/drone_bringup/test/fake_drone.py",
+    "seame-docker/ros2_ws/src/drone_bringup/test/test_launch_files.py",
+    "seame-docker/ros2_ws/src/drone_bringup/test/test_stack.py"
+  ],
+  "uncommitted_other": [
+    "seame-docker/logs/tests/history.csv",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/console.log.gz",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/meta.json",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/report.md",
+    "seame-docker/logs/tests/2026-11-12_d7245d1/results.json",
+    "seame-docker/logs/tests/2026-11-13_32cfee3/console.log.gz",
+    "seame-docker/logs/tests/2026-11-13_32cfee3/meta.json",
+    "seame-docker/logs/tests/2026-11-13_32cfee3/report.md",
+    "seame-docker/logs/tests/2026-11-13_32cfee3/results.json",
+    "seame-docker/logs/tests/2026-11-13_f51dc22-dirty/console.log.gz",
+    "seame-docker/logs/tests/2026-11-13_f51dc22-dirty/meta.json",
+    "seame-docker/logs/tests/2026-11-13_f51dc22-dirty/report.md",
+    "seame-docker/logs/tests/2026-11-13_f51dc22-dirty/results.json",
+    "seame-docker/logs/tests/2026-11-13_f51dc22/console.log.gz",
+    "seame-docker/logs/tests/2026-11-13_f51dc22/meta.json",
+    "seame-docker/logs/tests/2026-11-13_f51dc22/report.md",
+    "seame-docker/logs/tests/2026-11-13_f51dc22/results.json"
+  ]
+}

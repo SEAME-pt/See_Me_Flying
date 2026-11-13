@@ -1,0 +1,12 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-12T22:33:13+00:00",
+  "host": "seame-10",
+  "commit": "d7245d1b9a1240405a243c5c7e7454604eded3a2",
+  "commit_short": "d7245d1",
+  "commit_subject": "Update README.md",
+  "branch": "ci/main-copy-to-insert-tests-first",
+  "uncommitted_code": [],
+  "uncommitted_other": []
+}

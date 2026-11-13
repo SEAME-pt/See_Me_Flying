@@ -1,0 +1,2247 @@
+{
+  "verdict": "FAILED",
+  "build_exit": "0",
+  "test_exit": "0",
+  "counts": {
+    "passed": 242,
+    "skipped": 5,
+    "failure": 1,
+    "error": 0,
+    "cases": 248,
+    "ctest_entries": 18
+  },
+  "cases": [
+    {
+      "package": "drone_basics_cpp",
+      "group": "cppcheck",
+      "name": "src/watchdog.cpp",
+      "time": 0.0,
+      "status": "skipped",
+      "message": "Test Skipped due to cppcheck 2.13.0 performance issues",
+      "lint": true
+    },
+    {
+      "package": "drone_basics_cpp",
+      "group": "lint_cmake",
+      "name": "CMakeLists.txt",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_basics_cpp",
+      "group": "uncrustify",
+      "name": "src/watchdog.cpp",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_basics_cpp",
+      "group": "xmllint",
+      "name": "package.xml",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_copyright",
+      "name": "test_copyright",
+      "time": 0.0,
+      "status": "skipped",
+      "message": "No copyright header has been placed in the generated source file.",
+      "lint": true
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_flake8",
+      "name": "test_flake8",
+      "time": 0.153,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_mypy",
+      "name": "test_mypy",
+      "time": 2.913,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_pep257",
+      "name": "test_pep257",
+      "time": 0.032,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_switch_off_publishes_nothing",
+      "time": 0.069,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_engage_after_hold",
+      "time": 0.033,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_no_engage_before_hold",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_bounce_while_arming_does_not_engage",
+      "time": 0.005,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_engages_once_bounce_settles",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_off_is_immediate",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_bounce_while_disarming_does_not_reengage",
+      "time": 0.007,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_engage_refused_with_throttle_off_centre",
+      "time": 0.005,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_throttle_moves_freely_once_engaged",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_sticks_scaled_to_limits",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_deadband_gives_zero",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_reengage_needs_throttle_centred_again",
+      "time": 0.007,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_switch_at_threshold_is_off",
+      "time": 0.005,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_missing_arm_axis_is_off",
+      "time": 0.005,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_arm_switch_arms_the_fc_once",
+      "time": 0.007,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_arm_switch_off_disarms_even_in_flight",
+      "time": 0.007,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_arm_switch_on_at_start_must_be_cycled",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_arming_refused_with_throttle_off_centre",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_arm_alone_does_not_take_over",
+      "time": 0.005,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_takeover_alone_does_nothing",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_takeover_with_arm_on_engages_after_hold",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_takeover_off_releases_at_once",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_arm_off_releases_even_with_takeover_on",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_radio_teleop",
+      "name": "test_missing_takeover_axis_is_off",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_basics_py",
+      "group": "test_xmllint",
+      "name": "test_xmllint",
+      "time": 0.204,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "flake8",
+      "name": "flake8",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "lint_cmake",
+      "name": "CMakeLists.txt",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "pep257",
+      "name": "./launch/basics.launch.py",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "pep257",
+      "name": "./launch/sim.launch.py",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "pep257",
+      "name": "./test/fake_drone.py",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "pep257",
+      "name": "./test/test_config.py",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "pep257",
+      "name": "./test/test_launch_files.py",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "pep257",
+      "name": "./test/test_sim_flight.py",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "pep257",
+      "name": "./test/test_stack.py",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "pep257",
+      "name": "./test/test_worlds.py",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_mission_climb_speed_equals_fc_limit",
+      "time": 0.004,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_safety_timeout_equals_fc_timeout",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_command_within_fc_limit[mission-speed-max_speed_xy]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_command_within_fc_limit[mission-land_speed-max_speed_z]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_command_within_fc_limit[mission-yaw_rate-max_yaw_rate]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_command_within_fc_limit[setpoint_pub-speed-max_speed_xy]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_command_within_fc_limit[setpoint_pub-climb_speed-max_speed_z]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_command_within_fc_limit[radio_teleop-max_xy-max_speed_xy]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_command_within_fc_limit[radio_teleop-max_z-max_speed_z]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_command_within_fc_limit[radio_teleop-max_yaw-max_yaw_rate]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_heights_inside_rangefinder",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_demo_height_inside_rangefinder",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_flow_works_once_airborne",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_radio_has_top_priority",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_times_and_rates_positive",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_decimals_are_floats",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_config",
+      "name": "test_every_section_is_a_launched_node",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_default_is_the_sim_with_the_radio_and_the_mission",
+      "time": 0.014,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_inav_backend_starts_no_gazebo_and_no_radio_nodes",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_with_the_radio_only_the_radio_arms",
+      "time": 0.005,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_without_the_radio_the_mission_arms",
+      "time": 0.003,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_demo_flight_only_with_demo",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_circle_demo_starts_setpoint_pub_after_the_rest",
+      "time": 0.003,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_nothing_flies_without_a_source[source:=circle demo:=false]",
+      "time": 0.003,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_nothing_flies_without_a_source[source:=none demo:=false]",
+      "time": 0.003,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_nothing_flies_without_a_source[source:=none demo:=true]",
+      "time": 0.003,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_gazebo_gets_the_world_and_headless_adds_server_only",
+      "time": 0.006,
+      "status": "failure",
+      "message": "AssertionError: assert '-r some_world.sdf' == '-s -r some_world.sdf'",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_each_source_publishes_on_its_own_topic",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_sim_time_only_in_the_sim",
+      "time": 0.091,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_every_node_reads_sim_yaml",
+      "time": 0.091,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_our_programs_are_installed",
+      "time": 0.091,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_other_programs_are_installed",
+      "time": 0.098,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_parameter_files_are_installed",
+      "time": 0.091,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_every_package_it_starts_is_a_dependency",
+      "time": 0.091,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_every_package_it_starts_is_checked_first",
+      "time": 0.091,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_a_missing_package_stops_the_launch[drone_mission]",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_a_missing_package_stops_the_launch[drone_fc_bridge]",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_a_missing_package_stops_the_launch[ros_gz_bridge]",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_a_missing_package_stops_the_launch[joy]",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_the_real_drone_needs_none_of_the_sim_packages",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_launch_files",
+      "name": "test_refuses_to_start_next_to_a_running_sim",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_stack",
+      "name": "test_disarm_mid_flight",
+      "time": 8.723,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_stack",
+      "name": "test_disarm_while_the_radio_flies",
+      "time": 7.6,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_stack",
+      "name": "test_full_flight",
+      "time": 26.361,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_stack",
+      "name": "test_radio_takes_over_and_gives_back",
+      "time": 18.401,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_stack",
+      "name": "test_takeoff_refused_until_armed",
+      "time": 1.245,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_bridge_talks_to_one_drone",
+      "time": 0.003,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_world_loads_physics[outdoor_field.sdf]",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_world_loads_physics[room_world.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_world_loads_physics[multicopter_velocity_control.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_takes_our_commands[outdoor_field.sdf]",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_takes_our_commands[room_world.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_takes_our_commands[multicopter_velocity_control.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_publishes_the_odometry_we_read[outdoor_field.sdf]",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_publishes_the_odometry_we_read[room_world.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_publishes_the_odometry_we_read[multicopter_velocity_control.sdf]",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_starts_on_the_ground[outdoor_field.sdf]",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_starts_on_the_ground[room_world.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_starts_on_the_ground[multicopter_velocity_control.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_fuel_model_is_pinned[outdoor_field.sdf]",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_fuel_model_is_pinned[room_world.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_drone_fuel_model_is_pinned[multicopter_velocity_control.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_models_it_uses_exist[outdoor_field.sdf]",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_models_it_uses_exist[room_world.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_models_it_uses_exist[multicopter_velocity_control.sdf]",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_every_model_has_its_files",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "test_worlds",
+      "name": "test_worlds_and_models_are_installed",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_bringup",
+      "group": "xmllint",
+      "name": "package.xml",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "ApiVersion",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "FcVariant",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "FcVersion",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "RangefinderFromCaptures",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "RangefinderStates",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "Attitude",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "AttitudeLimits",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "Status",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "StatusInEveryCapture",
+      "time": 0.004,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "StatusHandBuilt",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "OpticalFlow",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "OpticalFlowHandBuilt",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "Analog",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "AnalogHandBuilt",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "LocalPose",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav_decode",
+      "name": "LocalPoseHandBuilt",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "StandardCheckValue",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "MatchesCapturedFrames",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "SameBytesAsPython",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "OnlyReadCommands",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "PayloadAndItsLimit",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "EveryGoodFrameParses",
+      "time": 0.006,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "DamagedFramesAreNotReturned",
+      "time": 0.003,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "WholeFileAsOneStream",
+      "time": 0.016,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "RecoversFrameEmbeddedInDamagedOne",
+      "time": 0.005,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "SkipsGarbageBetweenFrames",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "FrameSplitAtEveryPoint",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "IgnoresRequestFrames",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "ErrorFrame",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "RejectsBadCrc",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "OversizedSizeDoesNotStall",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "LargestPayloadIsAccepted",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "BufferStaysBoundedOnGarbage",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "ResetDropsHalfFrame",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "SkipPendingReleasesTheRepliesBehindIt",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "DrainsABigBacklogInLinearTime",
+      "time": 0.06,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_msp",
+      "name": "FeedAfterPartialDrainKeepsOrder",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_failsafes",
+      "name": "test_fresh_setpoint_is_forwarded",
+      "time": 1.82,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_failsafes",
+      "name": "test_horizontal_clamp_keeps_direction",
+      "time": 1.81,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_failsafes",
+      "name": "test_inf_is_rejected",
+      "time": 1.811,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_failsafes",
+      "name": "test_nan_is_rejected_and_times_out",
+      "time": 2.321,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_failsafes",
+      "name": "test_roll_and_pitch_rates_are_zeroed",
+      "time": 1.811,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_failsafes",
+      "name": "test_sim_enable_is_published",
+      "time": 2.308,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_failsafes",
+      "name": "test_timeout_sends_zero",
+      "time": 2.822,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_failsafes",
+      "name": "test_vertical_and_yaw_clamp",
+      "time": 2.828,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_failsafes",
+      "name": "test_zero_without_setpoints",
+      "time": 1.821,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav",
+      "name": "test_arm_is_refused",
+      "time": 0.003,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav",
+      "name": "test_nothing_reaches_the_sim",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_inav",
+      "name": "test_status_says_inav_and_disarmed",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_services",
+      "name": "test_disarm_and_rearm",
+      "time": 3.022,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_services",
+      "name": "test_hold_sends_zero_despite_setpoints",
+      "time": 1.519,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_services",
+      "name": "test_starts_armed",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_services",
+      "name": "test_status_reports_setpoint_age",
+      "time": 1.459,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_state",
+      "name": "test_body_velocity_rotated_by_heading",
+      "time": 1.526,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_state",
+      "name": "test_height_and_orientation_from_sim",
+      "time": 0.415,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_state",
+      "name": "test_position_is_integrated_not_copied",
+      "time": 1.526,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_state",
+      "name": "test_range_level",
+      "time": 0.415,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_state",
+      "name": "test_range_out_of_range_is_inf",
+      "time": 1.244,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_state",
+      "name": "test_range_reads_longer_when_tilted",
+      "time": 0.415,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_fc_bridge",
+      "group": "test_state",
+      "name": "test_velocity_passes_through",
+      "time": 0.61,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_copyright",
+      "name": "test_copyright",
+      "time": 0.0,
+      "status": "skipped",
+      "message": "No copyright header has been placed in the generated source file.",
+      "lint": true
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_flake8",
+      "name": "test_flake8",
+      "time": 0.16,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_starts_grounded_and_silent",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_takeoff_hold_land",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_takeoff_to_a_given_height",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_takeoff_refused_without_range",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_takeoff_refused_above_range_max",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_takeoff_refused_in_the_air",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_takeoff_timeout_lands",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_cancel_takeoff_holds_where_it_is",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_goto_forward",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_goto_is_relative_to_heading",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_goto_square_comes_back",
+      "time": 0.002,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_goto_refused_on_the_ground_and_during_takeoff",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_goto_refused_without_odometry",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_goto_aborts_when_odometry_stops",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_goto_timeout",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_cancel_goto_holds",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_land_preempts_goto",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_land_cannot_be_cancelled",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_land_refused_on_the_ground",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_hold_corrects_sag",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_tilt_correction",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_minus_inf_is_the_ground",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_range_lost_hovers_then_resumes_hold",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_range_lost_aborts_goto",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_range_lost_too_long_lands_blind",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_land_goal_during_autonomous_landing",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_goto_feedback",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_takeoff_refused_until_range_is_steady",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_range_gap_restarts_the_steady_time",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_range_lost_on_the_ground_during_takeoff_stays_grounded",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_range_lost_mid_takeoff_holds_the_height_reached",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_override_aborts_the_goal_and_goes_quiet",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_goals_refused_while_overridden",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_control_back_in_the_air_holds_where_it_is",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_control_back_on_the_ground_stays_grounded",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_override_during_land_aborts_it",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_repeated_control_messages_change_nothing",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_takeoff_refused_until_armed",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_takeoff_refused_before_any_status",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_without_radio_arming_takeoff_needs_no_arm",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_stale_disarmed_status_does_not_abort_takeoff",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_disarm_in_the_air_aborts_and_goes_quiet",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_disarm_while_overridden_is_not_forgotten",
+      "time": 0.001,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_logic",
+      "name": "test_disarm_on_the_ground_changes_nothing",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_mypy",
+      "name": "test_mypy",
+      "time": 3.07,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_pep257",
+      "name": "test_pep257",
+      "time": 0.061,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_mission",
+      "group": "test_xmllint",
+      "name": "test_xmllint",
+      "time": 0.312,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_arbiter",
+      "name": "test_nothing_active_at_start",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_arbiter",
+      "name": "test_single_source_is_forwarded",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_arbiter",
+      "name": "test_radio_takes_over_from_mission",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_arbiter",
+      "name": "test_manual_beats_mission_but_not_radio",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_arbiter",
+      "name": "test_control_returns_when_the_radio_goes_quiet",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_arbiter",
+      "name": "test_everything_quiet_is_none",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_arbiter",
+      "name": "test_unknown_source_is_never_forwarded",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_arbiter",
+      "name": "test_update_reports_changes_once",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_arbiter",
+      "name": "test_time_going_backwards_is_not_fresh",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_copyright",
+      "name": "test_copyright",
+      "time": 0.0,
+      "status": "skipped",
+      "message": "No copyright header has been placed in the generated source file.",
+      "lint": true
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_flake8",
+      "name": "test_flake8",
+      "time": 0.096,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_mypy",
+      "name": "test_mypy",
+      "time": 2.97,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_pep257",
+      "name": "test_pep257",
+      "time": 0.018,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_safety",
+      "group": "test_xmllint",
+      "name": "test_xmllint",
+      "time": 0.334,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_copyright",
+      "name": "test_copyright",
+      "time": 0.0,
+      "status": "skipped",
+      "message": "No copyright header has been placed in the generated source file.",
+      "lint": true
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flake8",
+      "name": "test_flake8",
+      "time": 0.111,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_hover_gives_no_flow",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_forward_gives_negative_flow_y",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_left_gives_positive_flow_x",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_rotation_in_place_equals_body_rate",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_tilt_lengthens_the_distance",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_unusable_geometry_gives_none",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_whole_degrees_truncate_toward_zero",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_measure_passes_ideal_flow_when_clean",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_measure_too_low_has_no_quality",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_measure_too_fast_has_no_quality",
+      "time": 0.0,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_flow_model",
+      "name": "test_noise_has_the_requested_spread",
+      "time": 0.003,
+      "status": "passed",
+      "message": "",
+      "lint": false
+    },
+    {
+      "package": "drone_sim_sensors",
+      "group": "test_pep257",
+      "name": "test_pep257",
+      "time": 0.015,
+      "status": "passed",
+      "message": "",
+      "lint": true
+    }
+  ]
+}
