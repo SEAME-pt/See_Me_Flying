@@ -1,4 +1,4 @@
-name: LOREM IPSUM
+name: Issue Template
 description: File an issue to be tackled
 title: "[TYPE OF ISSUE]: "
 body:
@@ -9,7 +9,6 @@ body:
   - type: textarea
     id: Describe-the-Issue
     attributes:
-      label: What happened?
       value: "LOREM IPSUM"
     validations:
       required: true
