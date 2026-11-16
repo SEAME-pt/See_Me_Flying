@@ -40,7 +40,7 @@ Commit the run folder together with the code it tested, or right after, so the h
 
 ## Measurements
 
-Anything measured over time: Wi-Fi round-trip time and drops (STK-5), command rates (ROS-7.1), and later anything else worth tracking.
+Anything measured over time: Wi-Fi round-trip time and drops (STK-5), command rates (ROS-7.1), the `inav` backend on the real drone (`inav_link`: topic rates, reconnect time, plus the bench notes and a bag), and later anything else worth tracking.
 
 **Wi-Fi round trip (`wifi_rtt`)**, with the laptop on the drone's network:
 

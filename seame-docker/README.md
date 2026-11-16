@@ -142,7 +142,7 @@ The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) 
 3. **Fresh:** clamps it and publishes it to Gazebo.
 4. **Stale or none yet:** publishes zero velocity. Gazebo's controller keeps following the last command it received, so this explicit zero is what makes the drone stop and hover. That is the failsafe.
 5. **Logs** only on changes: `Setpoints received, following them` and `Setpoint timeout: holding (zero velocity)`. It starts stale, so it publishes zeros and logs nothing until the first setpoint.
-6. **Keeps the sim drone enabled** (sim only) by publishing the armed state on the enable topic once a second and on every change. Disarmed, the X3's motors stop. `armed_at_start` is set by the launch: false with the radio (it arms), true with `radio:=false`. With `inav`, `armed` is what INAV reports, and `link_ok` and `state_age_s` in `fc/status` say whether the FC is answering.
+6. **Keeps the sim drone enabled** (sim only) by publishing the armed state on the enable topic once a second and on every change. Disarmed, the X3's motors stop. `armed_at_start` is set by the launch: false with the radio (it arms), true with `radio:=false`. With `inav`, `armed` is what INAV reports, and `link_ok` and `state_age_s` in `fc/status` say whether the FC is answering. On the real drone (Nov 16): attitude, odometry and flow at 10 Hz, attitude signs as in ROS, and the link back by itself after a power cut ([bench notes](logs/measurements/inav_link/2026-11-16_dbf5804/notes.md)).
 7. **Reports state** for every Gazebo odometry message on `/X3/odom` (50 Hz), shaped like what INAV will report with the ThoneFlow-3901 optical flow sensor and a rangefinder, not like the perfect pose Gazebo knows:
    - `fc/odom`: velocity in the body frame with noise and a slowly wandering bias, like optical flow. **Horizontal position is integrated from that velocity** and starts at 0, 0, so it drifts (about 0.5 m per minute with the defaults) and never matches Gazebo's x, y. Height and orientation come from the sim. Frames `odom` → `base_link`.
    - `fc/attitude`: the orientation alone.
@@ -233,7 +233,7 @@ Both live in `drone_bringup/launch/` and are installed by the `install(DIRECTORY
 
 | Argument | Values | Default |
 | --- | --- | --- |
-| `backend` | `sim`: Gazebo. `inav`: the real drone over MSP (stub: nothing is sent yet). No Gazebo, bridge, radio nodes or sim time with `inav` | `sim` |
+| `backend` | `sim`: Gazebo. `inav`: the real drone over MSP (reads state only; setpoints go nowhere). No Gazebo, bridge, radio nodes or sim time with `inav` | `sim` |
 | `source` | `mission` (action servers), `circle` (`setpoint_pub`, only with `demo:=true`), `none` (anything else is rejected, including the old `joy`) | `mission` |
 | `radio` | `true`, `false`. Sim only. `false`: no Pocket (someone else has it): no radio nodes, `fc_bridge` starts armed and `mission` arms on Takeoff and disarms after Land | `true` |
 | `demo` | `true`, `false`: fly a scripted demo, the square (`demo_flight`, with `source:=mission`) or the circle (`setpoint_pub`, with `source:=circle`). Without it nothing flies until a goal is sent or the radio takes over | `false` |

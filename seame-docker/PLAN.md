@@ -120,6 +120,8 @@ Without writing the `inav` backend yet.
   - **`backend:=inav`** in `sim.launch.py`: no Gazebo, no bridge, no radio nodes, no sim time. The launch is now one `OpaqueFunction`, so each argument is a plain Python choice.
   - Not done here: measuring the real sensors (needs the hardware) and the MSP code itself.
 
+- **Follow-up (Nov 13–16, ROS-6, #135):** the `inav` backend reads the real drone. Its own MSP v2 code (`src/msp.*`, read-only allow-list), INAV decoders (`src/inav_decode.*`) and a TCP link through esp-link on port 23 (`src/inav_link.*`) that sends each cycle's five requests at once and reconnects when the link goes silent. `fc/status` gained `link_ok` and `state_age_s`; `fc/battery` and `fc/optical_flow` are published with `inav`. On the bench (Nov 16): 10 Hz, attitude signs as in ROS, back 4.5 s after a power cut, and a bag of the six topics in `logs/measurements/inav_link/`. Still open from this step: the real sensors' noise and drift (needs the MTF-02P and flights), and commands to INAV (INAV-6).
+
 ## 8. Later or watch
 
 - **Later:** aligning tf frame names (`base_link` vs `x3/base_footprint`) when tf comes in.

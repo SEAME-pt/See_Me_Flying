@@ -17,6 +17,7 @@ Every test and check the team runs, how to run it, and where its last result is.
 | Link | Wi-Fi round trip (`wifi_rtt`) | `logs/measurements/measure_wifi_rtt.py` | not run on the drone yet |
 | Link | MSP messages answer (`inav_telemetry.py`) | [telemetry/README.md](../telemetry/README.md) | Nov 8, all answer, ~3% no reply |
 | Link | MSP rate and loss per message (INAV-4, #126) | `msp_inventory.py rate`, see [captures/README.md](../telemetry/inav/captures/README.md) | Nov 9, 10–14 ms median, stalls of hundreds of ms |
+| Link | `inav` backend on the real drone: rates, signs, link loss, a bag | [below](#link-to-the-drone-real-hardware) | Nov 16, 10 Hz, signs right, back 4.5 s after a power cut |
 | Drone | Arming and radio-loss failsafe | [ELRS_Guide.md](./ELRS_Guide.md) | passed; on hold (motor wire) |
 | Drone | Battery voltage reading (`vbat_scale`) | [Li-Po_Battery_Tests.md](./Li-Po_Battery_Tests.md) | Oct 28, set to 1103 |
 
@@ -97,6 +98,14 @@ It runs [telemetry/latency_test.py](../telemetry/latency_test.py) and records lo
 
 **MSP rate and loss per message** (INAV-4, #126): coming; its results will go in `logs/measurements/msp_rates/`.
 
+**The `inav` backend on the real drone** (ROS-6, #135), recorded in `logs/measurements/inav_link/`. In the container, on the drone's network, with the Configurator closed:
+
+```bash
+ros2 run drone_fc_bridge fc_bridge --ros-args -p backend:=inav
+```
+
+Then, in other shells: `ros2 topic hz` on each `fc/*` topic; tilt and turn the drone and watch `fc/attitude`; pull the battery for a few seconds and time the reconnect; `ros2 bag record` the six `fc/*` topics. Last run Nov 16 ([notes and bag](../seame-docker/logs/measurements/inav_link/2026-11-16_dbf5804/notes.md)): attitude, odometry and flow at 10 Hz, battery 2 Hz; turn left, nose down and right side down all match ROS's signs; a single missed reply every minute or two heals by itself, and after a power cut the link was back in 4.5 s on its own; the 43 s bag plays back. Not checked yet: battery voltage against a meter.
+
 ## Drone hardware
 
 | Check | Where | Last result |
@@ -110,7 +119,7 @@ It runs [telemetry/latency_test.py](../telemetry/latency_test.py) and records lo
 
 - `wifi_rtt` on the real drone (INAV-4 is running it).
 - Command rate and jitter in the sim (ROS-7.1, #77).
-- The `inav` backend reading the real drone: tests come with the backend.
+- The `inav` backend's `armed` and `fc/range` on the real drone (no arming with the ESP connected; no rangefinder yet).
 - The MTF-02P (not fitted yet).
 
 # Tags
