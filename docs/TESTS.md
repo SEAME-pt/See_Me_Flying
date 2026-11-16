@@ -11,7 +11,7 @@ Every test and check the team runs, how to run it, and where its last result is.
 
 | Area | Test | How | Last result |
 | --- | --- | --- | --- |
-| ROS | Unit, launch and lint tests (236 cases) | `./scripts/run_tests.sh` | [logs/tests/history.csv](../seame-docker/logs/tests/history.csv) |
+| ROS | Unit, launch and lint tests (276 cases) | `./scripts/run_tests.sh` | [logs/tests/history.csv](../seame-docker/logs/tests/history.csv) |
 | Telemetry | MSP framing, decoders, the drone recordings (140 cases) | `python3 -m pytest telemetry -v` (repo root) | GitHub → Actions, job `telemetry-python` |
 | CI | Build + test, telemetry lint and tests, Docker image | automatic on push and PR | GitHub → Actions |
 | Sim | Gazebo flight, automatic: takeoff, hover, square, speed limit, mission killed, land | `./scripts/sim_flight_test.sh` (in `seame-docker/`) | `ros2_ws/log/sim_flight/<date>/`; on GitHub the `sim-flight` artifact of `nightly.yml` (not run there yet) |
@@ -42,11 +42,11 @@ cd ~/ros2_ws && colcon build && colcon test --packages-select drone_fc_bridge dr
 | Package | Behaviour tests | Cases |
 | --- | --- | --- |
 | `drone_fc_bridge` | `test_failsafes` (timeout, NaN/inf, clamps), `test_state` (odometry, range), `test_services` (arm, hold, status), `test_inav` (the `inav` backend refuses to arm, publishes nothing to Gazebo), `test_msp` and `test_inav_decode` (MSP framing and INAV decoders, against frames captured from the real drone), `test_inav_link` (the TCP link against a fake FC: pipelined polling, lost replies, a silent link, reconnects), `test_inav_state` (the `inav` backend's topics and frame conversions against a fake INAV) | 77 |
-| `drone_bringup` | `test_config` (the limits in `sim.yaml` agree), `test_launch_files` (what `sim.launch.py` starts, for all 48 argument combinations), `test_worlds` (the drone is in each Gazebo world and wired to the bridge), `test_stack` (mission, safety_manager and fc_bridge together, with a fake drone) | 55 |
+| `drone_bringup` | `test_config` (the limits in `sim.yaml` agree), `test_launch_files` (what `sim.launch.py` starts, for all 48 argument combinations), `test_worlds` (the drone is in each Gazebo world and wired to the bridge), `test_stack` (mission, safety_manager and fc_bridge together, with a fake drone) | 67 |
 | `drone_mission` | `test_logic`: whole flights against a toy drone (takeoff, goto, land, range lost, overrides, arming) | 44 |
 | `drone_basics_py` | `test_radio_teleop`: arm switch, takeover, bounce, stick scaling | 24 |
 | `drone_safety` | `test_arbiter`: which source commands the drone | 9 |
-| `drone_sim_sensors` | `test_flow_model`: the simulated optical flow | 11 |
+| `drone_sim_sensors` | `test_flow_model` (the simulated optical flow), `test_estimator` (fc/odom from flow, range and attitude) | 22 |
 
 What each file checks, case by case: the **Tests** table in [seame-docker/README.md](../seame-docker/README.md#tests).
 
