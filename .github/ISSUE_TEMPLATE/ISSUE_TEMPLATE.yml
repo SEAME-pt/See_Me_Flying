@@ -1,16 +1,31 @@
-name: LOREM IPSUM
+name: Issue Template
 description: File an issue to be tackled
 title: "[TYPE OF ISSUE]: "
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Replace `[TYPE OF ISSUE]` in the title with the type, e.g. `[BUG]`, `[FEATURE]`, `[TASK]`.
   - type: textarea
-    id: Describe-the-Issue
+    id: describe-the-issue
     attributes:
       label: What happened?
-      value: "LOREM IPSUM"
+      description: Give enough context for someone else to pick this up.
+      placeholder: Describe the issue...
     validations:
       required: true
-
+  - type: textarea
+    id: finnised-state
+    attributes:
+      label: What is needed to be considered finnished?
+      placeholder: Describe
+    validations:
+      required: false
+  - type: checkboxes
+    id: documentation
+    attributes:
+      label: Documentation
+      description: Does it need to update or create new documentation
+      options:
+        - label: This issue needs documentation
+          required: false
