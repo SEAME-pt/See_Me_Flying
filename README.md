@@ -1,6 +1,7 @@
 ---
 title: Project Overview
 ---
+![Project graph](./docs/extras/folders-graph.svg)
 # See Me Flying — Autonomous Indoor Drone
 
 SEA:ME 2.0 drone track · Team 4 · last updated Oct 27, 2026

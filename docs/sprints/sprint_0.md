@@ -90,5 +90,3 @@ Sprint 0 established the initial hardware plan, shared software environment, com
 # Tags
 
 #sprints
-#hardware 
-#firmware 

@@ -76,7 +76,9 @@ Flies on request: three action servers, `mission/takeoff`, `mission/goto` and `m
 
 **Range lost** (no message for `range_timeout_s`, or `+inf`) while flying: the goal is aborted (`rangefinder lost`) and it hovers in **range_lost**. If the range comes back within `lost_hold_s` it never climbs on its own: on the ground it goes back to **grounded**; after an interrupted Takeoff it holds the height it reached; otherwise it holds as before. If the range doesn't come back, it lands blind (touchdown from odometry). A `Land` goal sent then attaches to that landing.
 
-**Ctrl-C:** the node runs a multi-threaded executor (actions block while they run). It keeps rclpy's signal handling, which wakes it even with no `/clock` and no messages, and catches the error that handling causes in that executor; running goals stop waiting, so it exits within a second or two. It may print one `The following exception was never retrieved: ...` line on the way out: rclpy's action server reporting on its own parts after they are destroyed. Harmless.
+**One thread:** the node runs a single-threaded executor. A running goal's `execute()` is a coroutine that waits for the next tick instead of sleeping, so it never holds up the 20 Hz commands. With the multi-threaded executor it used before, they stalled for up to 0.8 s at a time (bug 3 in [TESTS.md](../TESTS.md#10-bugs-the-tests-have-found)). Every callback shares that one thread, so never block in one (`time.sleep`, `future.result()`): use `await` or `call_async`. Never hold `self.lock` across an `await`.
+
+**Ctrl-C:** it keeps rclpy's signal handling, which wakes it even with no `/clock` and no messages. It exits in about 0.2 s, idle or during a goal, with or without sim time (checked Nov 12). The old executor sometimes printed a `The following exception was never retrieved: ...` line on the way out; this one didn't in that check.
 
 | Item | Value |
 | --- | --- |
@@ -117,7 +119,7 @@ Decides which command source reaches the drone. Since Oct 30 it is the **only pu
 
 **Taking over:** `radio_teleop` only publishes while its arm and takeover switches are both on, so **flipping takeover on (with arm on) takes control** from the mission, and either switch off gives it back. Taking over also arms `fc_bridge`, so it works after a Land. The active source is published on `safety/active_source` (`std_msgs/String`, latched) and logged on every change: `Active source: radio`, `No source publishing: fc_bridge times out and sends zero`.
 
-**`mission` listens to it:** when another source becomes active it aborts its goal (`overridden by radio`) and goes quiet in state **overridden**, refusing new goals. When control comes back (active is `mission` or `none`) it never resumes on its own: on the ground it goes to **grounded**, in the air it holds the height it is at. Then it takes new goals.
+**`mission` listens to it:** when another source becomes active it aborts its goal (`overridden by radio`) and goes quiet in state **overridden**, refusing new goals. When control comes back (active is `mission` or `none`) it never resumes on its own: on the ground it goes to **grounded**, in the air it holds the height it is at. If the drone was disarmed meanwhile (the kill switch under the radio), it goes to **grounded** whatever the height: holding a falling drone would make it climb once re-armed. Then it takes new goals.
 
 **Low battery:** a placeholder. It subscribes to `fc/battery` (`sensor_msgs/BatteryState`; nothing publishes it yet) and warns once below `battery_low`. Returning or landing comes later.
 

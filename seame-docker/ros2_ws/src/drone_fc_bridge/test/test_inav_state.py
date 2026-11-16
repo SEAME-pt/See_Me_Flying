@@ -98,7 +98,9 @@ FAKE = FakeInav()
 def generate_test_description():
     fc_bridge = launch_ros.actions.Node(
         package='drone_fc_bridge', executable='fc_bridge', output='screen',
-        parameters=[{'backend': 'inav', 'msp_host': '127.0.0.1', 'msp_port': FAKE.port}])
+        # publish_odom false as in sim.yaml: it is for the sim's estimator, and inav ignores it.
+        parameters=[{'backend': 'inav', 'msp_host': '127.0.0.1', 'msp_port': FAKE.port,
+                     'publish_odom': False}])
     return launch.LaunchDescription([fc_bridge, launch_testing.actions.ReadyToTest()])
 
 

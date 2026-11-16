@@ -3,8 +3,13 @@ import subprocess
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import (DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction,
-                            TimerAction)
+from launch.actions import (
+    AppendEnvironmentVariable,
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+    TimerAction
+)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -68,10 +73,24 @@ def setup(context):
 
     actions = []
     if sim:
+        share = get_package_share_directory('drone_bringup')
+        # model://grass_ground, model://textured_floor, ... live in our package
+        actions.append(AppendEnvironmentVariable(
+            'GZ_SIM_RESOURCE_PATH', os.path.join(share, 'models')))
+        # A bare name that exists in our worlds/ wins; otherwise pass it through
+        # (full paths and Gazebo's own worlds, like multicopter_velocity_control.sdf)
+        world = arg('world')
+        ours = os.path.join(share, 'worlds', world)
+        if os.path.isfile(ours):
+            world = ours
+        # headless:=true: server only (-s), no window, for CI and the nightly flight tests
+        gz_args = '-r ' + world
+        if arg('headless') == 'true':
+            gz_args = '-s ' + gz_args
         actions.append(IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(
                 get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')),
-            launch_arguments={'gz_args': '-r ' + arg('world')}.items(),
+            launch_arguments={'gz_args': gz_args}.items(),
         ))
         actions.append(Node(
             package='ros_gz_bridge', executable='parameter_bridge',
@@ -81,6 +100,11 @@ def setup(context):
         # Synthetic optical flow from ground truth; tuned in sim.yaml (flow_model).
         actions.append(Node(
             package='drone_sim_sensors', executable='flow_model',
+            parameters=[params, clock], output='screen',
+        ))
+        # Estimator v1: fc/odom from flow, range and attitude (drone_sim_sensors).
+        actions.append(Node(
+            package='drone_sim_sensors', executable='estimator',
             parameters=[params, clock], output='screen',
         ))
 
@@ -153,6 +177,9 @@ def generate_launch_description():
                                           'or the circle (source:=circle)'),
         DeclareLaunchArgument('world', default_value='multicopter_velocity_control.sdf',
                               description='Sim only: SDF world file name or full path'),
+        DeclareLaunchArgument('headless', default_value='false', choices=['true', 'false'],
+                              description='Sim only. true: Gazebo without its window '
+                                          '(server only), for CI and the nightly tests'),
         # Everything else is decided once the arguments are known, and checked
         # before any process starts.
         OpaqueFunction(function=setup),

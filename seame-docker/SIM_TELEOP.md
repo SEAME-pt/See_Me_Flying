@@ -329,4 +329,4 @@ Flip SA on and off slowly about 20 times, then Ctrl-C. A clean switch prints one
 | Radio-as-joystick is sim only and needs RF off | A transmitting radio could command a bench drone | Always the `INAV-SIM` model |
 # Tags
 
-#resources 
+#tests
