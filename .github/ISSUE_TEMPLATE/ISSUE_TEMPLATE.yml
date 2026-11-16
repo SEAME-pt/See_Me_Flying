@@ -15,9 +15,9 @@ body:
     validations:
       required: true
   - type: textarea
-    id: finnised-state
+    id: finished-state
     attributes:
-      label: What is needed to be considered finnished?
+      label: What is needed to be considered finished?
       placeholder: Describe
     validations:
       required: false
