@@ -1,0 +1,16 @@
+name: LOREM IPSUM
+description: File an issue to be tackled
+title: "[TYPE OF ISSUE]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: Describe-the-Issue
+    attributes:
+      label: What happened?
+      value: "LOREM IPSUM"
+    validations:
+      required: true
+
