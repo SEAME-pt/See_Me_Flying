@@ -75,4 +75,4 @@ Roll, pitch and yaw are from MSP_ATTITUDE in the capture. Fill in the Configurat
 
 # Tags
 
-#tests
+#resources
