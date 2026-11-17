@@ -1,0 +1,12 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-13T16:15:44+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "208eb09664d7ab80f10432f3344e749b9c275bc2",
+  "commit_short": "208eb09",
+  "commit_subject": "ROS-6 step C: the inav backend publishes the real drone's state (#135)",
+  "branch": "staging",
+  "uncommitted_code": [],
+  "uncommitted_other": []
+}

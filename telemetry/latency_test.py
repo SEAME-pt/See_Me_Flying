@@ -198,8 +198,9 @@ def main():
           f"({lost / max(sent, 1) * 100:.1f}%), {stale} late, {link.bad_crc} corrupted")
     if rtts:
         s = sorted(rtts)
-        print(f"round trip ms: min {s[0]:.1f}  median {statistics.median(s):.1f}  "
-              f"p90 {pct(s, 0.9):.1f}  p99 {pct(s, 0.99):.1f}  max {s[-1]:.1f}  "
+        print(f"round trip ms: min {s[0]:.1f}  mean {statistics.mean(s):.1f}  "
+              f"median {statistics.median(s):.1f}  p90 {pct(s, 0.9):.1f}  "
+              f"p95 {pct(s, 0.95):.1f}  p99 {pct(s, 0.99):.1f}  max {s[-1]:.1f}  "
               f"jitter {statistics.pstdev(s):.1f}")
         if pct(s, 0.9) > 400:
             print("-> many replies take longer than the telemetry script's 0.4 s timeout")

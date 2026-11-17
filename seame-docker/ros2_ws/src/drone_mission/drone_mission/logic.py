@@ -148,6 +148,13 @@ class Mission:
             return
         # Back in control: never resume a goal or climb on its own. The other
         # source may have moved or landed the drone, so start from where it is.
+        if self.armed is False:
+            # Disarmed while overridden (the kill switch under the radio): on_armed
+            # ignores that outside AIRBORNE, so the flight ends here. Never HOLD a
+            # falling drone, or it climbs alone once re-armed. None (no fc/status
+            # yet) is unknown, not disarmed.
+            self.go(t, GROUNDED)
+            return
         h = self.height(t)
         if h is None:
             self.lost_from = HOLD
