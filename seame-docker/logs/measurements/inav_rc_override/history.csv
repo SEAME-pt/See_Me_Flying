@@ -1,2 +1,3 @@
 run,date,commit,dirty,axes_ok,timeout_ok,revert_to_radio_max_s,takeover_s,override_survives_radio_off,armed
 2026-11-17_70e3202,2026-11-17T14:15:28+00:00,70e3202,False,4,True,2.1,0.95/2.0,True,False
+2026-11-17_c3c73c0,2026-11-17T15:32:22+00:00,c3c73c0,False,"roll,pitch(mostly); yaw pair 2+3 to check",,,,disarmed (armed: failsafe DROP),True
