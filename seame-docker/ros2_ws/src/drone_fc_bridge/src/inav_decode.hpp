@@ -96,6 +96,18 @@ struct RcChannels
   uint16_t throttle() const {return us[THROTTLE];}
 };
 
+// MSP_BOXNAMES (116): the names of the modes this build has, in the order of
+// the bits in Status::box_mode_flags. Fixed while the FC runs; 31 on ours.
+struct BoxNames
+{
+  std::vector<std::string> names;
+
+  // The bit of that mode in box_mode_flags, or nullopt if the build lacks it.
+  std::optional<std::size_t> index_of(const std::string & name) const;
+};
+
+constexpr const char * BOX_MSP_RC_OVERRIDE = "MSP RC OVERRIDE";
+
 struct Attitude   // MSP_ATTITUDE (108)
 {
   double roll{0.0};    // rad, 0.1 deg steps
@@ -112,7 +124,7 @@ struct Status   // MSP2_INAV_STATUS (0x2000)
   uint8_t pid_profile{0};       // profiles count from 0 here; the configurator shows +1
   uint8_t battery_profile{0};
   uint32_t arming_flags{0};     // ARMING_* bits
-  uint64_t box_mode_flags{0};   // bit n: the n-th name in MSP_BOXNAMES is active
+  uint64_t box_mode_flags{0};   // bit n: the n-th name in MSP_BOXNAMES (decode_box_names) is active
   uint8_t mixer_profile{0};
 
   bool armed() const {return arming_flags & ARMING_ARMED;}
@@ -120,6 +132,7 @@ struct Status   // MSP2_INAV_STATUS (0x2000)
   bool rangefinder_present() const {return sensors & SENSOR_RANGEFINDER;}
   bool opflow_present() const {return sensors & SENSOR_OPFLOW;}
   bool hardware_ok() const {return !(sensors & SENSOR_HARDWARE_FAILURE);}
+  bool box_active(std::size_t index) const {return index < 64 && ((box_mode_flags >> index) & 1u);}
 };
 
 // MSP2_INAV_OPTICAL_FLOW (0x2001). On this firmware negative rates do not
@@ -164,6 +177,7 @@ std::optional<FcVariant> decode_fc_variant(const Payload & p);
 std::optional<FcVersion> decode_fc_version(const Payload & p);
 std::optional<Rangefinder> decode_rangefinder(const Payload & p);
 std::optional<RcChannels> decode_rc(const Payload & p);
+BoxNames decode_box_names(const Payload & p);   // any payload is a list, maybe empty
 std::optional<Attitude> decode_attitude(const Payload & p);
 std::optional<Status> decode_status(const Payload & p);
 std::optional<OpticalFlow> decode_optical_flow(const Payload & p);

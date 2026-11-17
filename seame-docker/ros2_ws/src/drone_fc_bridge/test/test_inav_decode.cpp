@@ -181,6 +181,47 @@ TEST(Decode, RcHandBuilt)
   expect_needs(inav::decode_rc, 8);
 }
 
+TEST(Decode, BoxNamesFromCapture)
+{
+  // The first intact reply in flat_still (line 107; some others are damaged).
+  inav::BoxNames boxes;
+  for (const auto & l : load_capture("flat_still")) {
+    msp::Parser parser;
+    parser.feed(l.frame.data(), l.frame.size());
+    const auto frame = parser.next();
+    if (l.ok && frame && frame->cmd == msp::MSP_BOXNAMES) {
+      boxes = inav::decode_box_names(frame->payload);
+      break;
+    }
+  }
+  ASSERT_EQ(boxes.names.size(), 31u);
+  EXPECT_EQ(boxes.names.front(), "ARM");
+  EXPECT_EQ(boxes.names.back(), "GIMBAL CENTER");
+  EXPECT_EQ(boxes.index_of(inav::BOX_MSP_RC_OVERRIDE), 24u);
+  // The one bit set in every captured status (0x20000) is bit 17: FAILSAFE,
+  // as expected with the radio link not yet up at the start of the captures.
+  EXPECT_EQ(boxes.names[17], "FAILSAFE");
+  EXPECT_FALSE(boxes.index_of("POSHOLD"));   // no position source on this build's config
+}
+
+TEST(Decode, BoxNamesHandBuilt)
+{
+  const std::string text = "ARM;ANGLE;MSP RC OVERRIDE;CUT SH";
+  const auto boxes = inav::decode_box_names(Bytes(text.begin(), text.end()));
+  ASSERT_EQ(boxes.names.size(), 3u);   // the name cut short isn't kept
+  EXPECT_EQ(boxes.index_of("ANGLE"), 1u);
+  EXPECT_EQ(boxes.index_of(inav::BOX_MSP_RC_OVERRIDE), 2u);
+  EXPECT_FALSE(boxes.index_of("CUT SH"));
+  EXPECT_TRUE(inav::decode_box_names({}).names.empty());
+
+  inav::Status s;
+  s.box_mode_flags = 1ull << 2 | 1ull << 63;
+  EXPECT_TRUE(s.box_active(2));
+  EXPECT_TRUE(s.box_active(63));
+  EXPECT_FALSE(s.box_active(1));
+  EXPECT_FALSE(s.box_active(64));   // past the bitmask: never active
+}
+
 TEST(Decode, Attitude)
 {
   struct Golden {const char * hex; double roll_deg, pitch_deg, yaw_deg;};

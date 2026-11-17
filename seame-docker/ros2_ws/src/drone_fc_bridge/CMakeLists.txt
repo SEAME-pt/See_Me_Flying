@@ -51,6 +51,8 @@ if(BUILD_TESTING)
     ENV ROS_DOMAIN_ID=199 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST)
   add_launch_test(test/test_inav_state.py TIMEOUT 120
     ENV ROS_DOMAIN_ID=199 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST)
+  add_launch_test(test/test_inav_rc.py TIMEOUT 120
+    ENV ROS_DOMAIN_ID=199 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST)
 
   # Captured frames from the real drone live in test/data (see its README).
   find_package(ament_cmake_gtest REQUIRED)

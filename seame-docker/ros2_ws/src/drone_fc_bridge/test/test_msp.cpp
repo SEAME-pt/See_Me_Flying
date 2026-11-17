@@ -17,7 +17,6 @@ namespace
 // A good reply: MSP_ATTITUDE from flat_still.jsonl line 142.
 const char ATTITUDE_HEX[] = "24583e006c000600f7ffc0ff300089";
 const uint16_t MSP_ALTITUDE = 109;          // not ours: stale replies in the captures
-const uint16_t MSP_BOXNAMES = 116;
 const uint16_t MSP2_INAV_GET_LINK_STATS = 0x2103;
 
 void feed(msp::Parser & parser, const Bytes & bytes)
@@ -113,7 +112,7 @@ TEST(BuildRequest, SameBytesAsPython)
 
 TEST(BuildRequest, OnlyReadCommands)
 {
-  const std::vector<uint16_t> allowed = {1, 2, 3, 58, 105, 108, 0x2000, 0x2001, 0x2002, 0x2220};
+  const std::vector<uint16_t> allowed = {1, 2, 3, 58, 105, 108, 116, 0x2000, 0x2001, 0x2002, 0x2220};
   for (uint16_t cmd : allowed) {
     EXPECT_TRUE(msp::is_read_command(cmd)) << cmd;
     EXPECT_NO_THROW(msp::build_request(cmd)) << cmd;
@@ -127,7 +126,7 @@ TEST(BuildRequest, OnlyReadCommands)
 
   EXPECT_THROW(msp::build_request(msp::MSP_SET_RAW_RC), std::invalid_argument);
   // Other writes, and reads that are simply not on the list.
-  for (uint16_t cmd : {0, 68 /* reboot */, 109, 116, 201, 205, 250 /* eeprom write */,
+  for (uint16_t cmd : {0, 68 /* reboot */, 109, 119, 201, 205, 250 /* eeprom write */,
       0x2003, 0x2103, 0x1F01 /* MSP2 sensor rangefinder */, 0xFFFF})
   {
     EXPECT_FALSE(msp::is_read_command(cmd)) << cmd;
@@ -309,7 +308,7 @@ TEST(Captures, RecoversFrameEmbeddedInDamagedOne)
       }
       ++damaged;
       SCOPED_TRACE(std::string(file) + " line " + std::to_string(l.line));
-      ASSERT_EQ(l.cmd, MSP_BOXNAMES);
+      ASSERT_EQ(l.cmd, msp::MSP_BOXNAMES);
       // What happened on the wire: the reply was cut after 80 bytes, then came
       // a stale reply (in three of the four) and a fresh MSP_BOXNAMES, which
       // the capture cut off at the 368 bytes the first header claimed.
@@ -338,7 +337,7 @@ TEST(Captures, RecoversFrameEmbeddedInDamagedOne)
       feed(parser, Bytes(good.begin() + rest, good.end()));
       frames = drain(parser);
       ASSERT_EQ(frames.size(), 1u);
-      EXPECT_EQ(frames[0].cmd, MSP_BOXNAMES);
+      EXPECT_EQ(frames[0].cmd, msp::MSP_BOXNAMES);
       EXPECT_EQ(frames[0].payload, payload_of(good));
       EXPECT_EQ(parser.buffered(), 0u);
 
@@ -348,7 +347,7 @@ TEST(Captures, RecoversFrameEmbeddedInDamagedOne)
       feed(other, l.frame + good + from_hex(ATTITUDE_HEX));
       frames = drain(other);
       ASSERT_EQ(frames.size(), has_embedded ? 3u : 2u);
-      EXPECT_EQ(frames[frames.size() - 2].cmd, MSP_BOXNAMES);
+      EXPECT_EQ(frames[frames.size() - 2].cmd, msp::MSP_BOXNAMES);
       EXPECT_EQ(frames[frames.size() - 2].payload, payload_of(good));
       EXPECT_EQ(frames.back().cmd, msp::MSP_ATTITUDE);
       EXPECT_EQ(other.bad_crc_count(), 2u);
@@ -463,7 +462,7 @@ TEST(Parser, LargestPayloadIsAccepted)
   for (std::size_t i = 0; i < payload.size(); ++i) {
     payload[i] = static_cast<uint8_t>(i * 7);
   }
-  const auto frames = parse(make_frame('>', MSP_BOXNAMES, payload));
+  const auto frames = parse(make_frame('>', msp::MSP_BOXNAMES, payload));
   ASSERT_EQ(frames.size(), 1u);
   EXPECT_EQ(frames[0].payload, payload);
 }

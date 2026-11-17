@@ -14,7 +14,7 @@ import threading
 import time
 import unittest
 
-from drone_interfaces.msg import FcStatus, OpticalFlow
+from drone_interfaces.msg import FcStatus, OpticalFlow, RcChannels
 from geometry_msgs.msg import QuaternionStamped
 import launch
 import launch_ros.actions
@@ -24,7 +24,7 @@ import pytest
 import rclpy
 from sensor_msgs.msg import BatteryState, Range
 
-READS = {1, 2, 3, 58, 108, 0x2000, 0x2001, 0x2002, 0x2220}
+READS = {1, 2, 3, 58, 105, 108, 116, 0x2000, 0x2001, 0x2002, 0x2220}
 SENSORS = 0x01 | 0x02 | 0x10 | 0x20        # acc, baro, rangefinder, optical flow
 
 
@@ -69,6 +69,8 @@ class FakeInav:
             return struct.pack('<Bhhhh', 100, 30, 12, 5, 0)
         if cmd == 58:
             return struct.pack('<i', 120)
+        if cmd == 105:      # roll, pitch, yaw, throttle, AUX1: INAV's order
+            return struct.pack('<5H', 1510, 1520, 1530, 885, 1675)
         if cmd == 0x2002:   # flags (4 cells, ok), V, A, W, mAh, mWh, remaining, %, rssi
             return struct.pack('<BHhiiiIBH', 4 << 4, 1620, 250, 4050, 100, 1600, 0, 80, 0)
         return b''
@@ -130,7 +132,8 @@ class TestInavState(unittest.TestCase):
         cls.seen = {}
         for topic, kind in [('/fc/status', FcStatus), ('/fc/attitude', QuaternionStamped),
                             ('/fc/odom', Odometry), ('/fc/range', Range),
-                            ('/fc/optical_flow', OpticalFlow), ('/fc/battery', BatteryState)]:
+                            ('/fc/optical_flow', OpticalFlow), ('/fc/battery', BatteryState),
+                            ('/fc/rc', RcChannels)]:
             cls.node.create_subscription(
                 kind, topic, lambda m, t=topic: cls.seen.setdefault(t, []).append(m), 10)
         cls.spin(3.0)
@@ -207,6 +210,15 @@ class TestInavState(unittest.TestCase):
     def test_h_only_reads_were_asked(self):
         self.assertTrue(FAKE.seen, 'the fake got no requests')
         self.assertLessEqual(FAKE.seen, READS)
+
+    def test_i_rc_read_back_and_no_sticks_sent(self):
+        rc = self.last('/fc/rc')
+        self.assertEqual((rc.roll, rc.pitch, rc.yaw, rc.throttle), (1510, 1520, 1530, 885))
+        self.assertEqual(list(rc.channels), [1510, 1520, 1530, 885, 1675])
+        st = self.last('/fc/status')
+        self.assertFalse(st.rc_sent, 'rc_override is false by default')
+        self.assertFalse(st.rc_override_active, 'no mode list from this fake')
+        self.assertNotIn(200, FAKE.seen)
 
     def test_y_no_rangefinder_bit_means_no_range(self):
         # 120 cm keeps coming, but without the sensor bit it isn't trusted.

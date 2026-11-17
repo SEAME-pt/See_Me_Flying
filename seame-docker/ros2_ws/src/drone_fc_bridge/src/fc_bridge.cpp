@@ -2,10 +2,15 @@
 //   sim:  fc/setpoint_velocity (TwistStamped) -> clamp + timeout -> Gazebo Twist
 //         Gazebo odometry -> fc/odom, fc/attitude, fc/range
 //   inav: reads INAV over MSP through esp-link (inav_link.*) -> fc/odom,
-//         fc/attitude, fc/range, fc/optical_flow, fc/battery, and armed and
-//         link state in fc/status. Listen-only: setpoints go nowhere, and
-//         fc/arm is refused, since on the real drone only the radio arms.
-//         Nothing of the sim (Gazebo topics, enable) exists here.
+//         fc/attitude, fc/range, fc/optical_flow, fc/battery, fc/rc, and
+//         armed and link state in fc/status. fc/arm is refused: on the real
+//         drone only the radio arms. Nothing of the sim (Gazebo topics,
+//         enable) exists here.
+//         Setpoints: with rc_override false (the default) they go nowhere.
+//         With it true, fc/setpoint_velocity -> clamp + timeout -> sticks
+//         (inav_sticks.*) -> MSP_SET_RAW_RC; stale or holding sends centred
+//         sticks. INAV uses them only while the radio's MSP RC OVERRIDE
+//         switch is on, and goes back to the radio about 1 s after they stop.
 //   Both: fc/arm, fc/hold (std_srvs/SetBool) and fc/status (drone_interfaces/FcStatus)
 //
 // Publishes every tick, not only on new setpoints: Gazebo's velocity
@@ -34,7 +39,9 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "drone_interfaces/msg/rc_channels.hpp"
 #include "inav_link.hpp"
+#include "inav_sticks.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
 #include "sensor_msgs/msg/range.hpp"
@@ -44,6 +51,7 @@
 using namespace std::chrono_literals;
 using drone_interfaces::msg::FcStatus;
 using drone_interfaces::msg::OpticalFlow;
+using drone_interfaces::msg::RcChannels;
 using geometry_msgs::msg::Quaternion;
 using geometry_msgs::msg::QuaternionStamped;
 using geometry_msgs::msg::Twist;
@@ -181,10 +189,19 @@ public:
       link.host = declare_parameter<std::string>("msp_host", link.host);
       link.port = static_cast<uint16_t>(declare_parameter<int>("msp_port", link.port));
       link.reply_timeout_s = declare_parameter<double>("msp_timeout_s", link.reply_timeout_s);
+      rc_override_ = declare_parameter<bool>("rc_override", false);
       flow_pub_ = create_publisher<OpticalFlow>("fc/optical_flow", 10);
       battery_pub_ = create_publisher<BatteryState>("fc/battery", 10);
-      RCLCPP_INFO(get_logger(), "Backend inav: reading INAV over MSP at %s:%u. Listen-only: "
-        "setpoints go nowhere", link.host.c_str(), static_cast<unsigned>(link.port));
+      rc_pub_ = create_publisher<RcChannels>("fc/rc", 10);
+      if (rc_override_) {
+        RCLCPP_WARN(get_logger(), "Backend inav: reading INAV over MSP at %s:%u, and sending "
+          "setpoints as sticks (rc_override). INAV uses them while the radio's MSP RC "
+          "OVERRIDE switch is on", link.host.c_str(), static_cast<unsigned>(link.port));
+      } else {
+        RCLCPP_INFO(get_logger(), "Backend inav: reading INAV over MSP at %s:%u. Listen-only: "
+          "setpoints go nowhere (rc_override false)", link.host.c_str(),
+          static_cast<unsigned>(link.port));
+      }
       link_ = std::make_unique<inav::InavLink>(
         link, [this](inav::InavLink::Level level, const std::string & text) {
           if (level == inav::InavLink::Level::INFO) {
@@ -250,6 +267,8 @@ private:
       st.link_ok = s.link_ok;
       st.state_age_s = s.last_reply == inav::Clock::time_point{} ? -1.0f :
         static_cast<float>(seconds_since(s.last_reply));
+      st.rc_override_active = s.rc_override_active().value_or(false);
+      st.rc_sent = s.sending_sticks;
     }
     status_pub_->publish(st);
   }
@@ -274,6 +293,30 @@ private:
 
     if (cmd_pub_) {
       cmd_pub_->publish(fresh && !holding_ ? clamp(last_sp_) : Twist());
+    }
+    if (link_ && rc_override_) {
+      link_->set_sticks(sticks(fresh && !holding_ ? clamp(last_sp_) : Twist()));
+    }
+  }
+
+  // The clamped setpoint as sticks: the max_speed_* limits are full stick.
+  msp::Sticks sticks(const Twist & t)
+  {
+    inav::VelocitySetpoint sp;
+    sp.x = t.linear.x;
+    sp.y = t.linear.y;
+    sp.z = t.linear.z;
+    sp.yaw_rate = t.angular.z;
+    inav::StickConfig cfg;
+    cfg.full_xy = param("max_speed_xy");
+    cfg.full_z = param("max_speed_z");
+    cfg.full_yaw = param("max_yaw_rate");
+    try {
+      return inav::sticks_from_setpoint(sp, cfg);
+    } catch (const std::invalid_argument &) {
+      RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 1000,
+        "max_speed_xy, max_speed_z and max_yaw_rate must be positive: sending centred sticks");
+      return msp::Sticks{};
     }
   }
 
@@ -398,6 +441,31 @@ private:
     if (link_ok_ != s.link_ok) {
       link_ok_ = s.link_ok;
       status_changed = true;
+    }
+    const bool override_active = s.rc_override_active().value_or(false);
+    if (rc_override_active_ != override_active) {
+      rc_override_active_ = override_active;
+      RCLCPP_WARN(get_logger(), override_active ?
+        "INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks" :
+        "INAV reports MSP RC OVERRIDE off: the radio flies");
+      status_changed = true;
+    }
+    if (rc_sent_ != s.sending_sticks) {
+      rc_sent_ = s.sending_sticks;
+      status_changed = true;
+    }
+
+    if (s.rc.count != seen_rc_ && s.rc.value) {
+      seen_rc_ = s.rc.count;
+      const auto & r = *s.rc.value;
+      RcChannels rc;
+      rc.header.stamp = arrival(s.rc.stamp);
+      rc.roll = r.roll();
+      rc.pitch = r.pitch();
+      rc.yaw = r.yaw();
+      rc.throttle = r.throttle();
+      rc.channels = r.us;
+      rc_pub_->publish(rc);
     }
 
     if (s.pose.count != seen_pose_ && s.pose.value) {
@@ -526,6 +594,7 @@ private:
   rclcpp::Publisher<FcStatus>::SharedPtr status_pub_;
   rclcpp::Publisher<OpticalFlow>::SharedPtr flow_pub_;
   rclcpp::Publisher<BatteryState>::SharedPtr battery_pub_;
+  rclcpp::Publisher<RcChannels>::SharedPtr rc_pub_;
   rclcpp::Service<SetBool>::SharedPtr arm_srv_;
   rclcpp::Service<SetBool>::SharedPtr hold_srv_;
   rclcpp::Subscription<TwistStamped>::SharedPtr sub_;
@@ -534,7 +603,11 @@ private:
   rclcpp::TimerBase::SharedPtr inav_timer_;
   std::unique_ptr<inav::InavLink> link_;   // inav only
   bool link_ok_{false};
+  bool rc_override_{false};          // parameter: send setpoints as sticks
+  bool rc_override_active_{false};   // INAV's mode, as last reported
+  bool rc_sent_{false};
   uint64_t seen_status_{0}, seen_pose_{0}, seen_flow_{0}, seen_range_{0}, seen_analog_{0};
+  uint64_t seen_rc_{0};
 
   std::string backend_;
   Twist last_sp_;

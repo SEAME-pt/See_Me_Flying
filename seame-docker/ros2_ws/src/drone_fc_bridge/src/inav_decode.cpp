@@ -102,6 +102,33 @@ std::optional<RcChannels> decode_rc(const Payload & p)
   return rc;
 }
 
+std::optional<std::size_t> BoxNames::index_of(const std::string & name) const
+{
+  for (std::size_t i = 0; i < names.size(); ++i) {
+    if (names[i] == name) {
+      return i;
+    }
+  }
+  return std::nullopt;
+}
+
+BoxNames decode_box_names(const Payload & p)
+{
+  // "ARM;PREARM;...;": every name ends with ';'. Text after the last ';' is
+  // a name cut short, and isn't kept.
+  BoxNames b;
+  std::string name;
+  for (uint8_t c : p) {
+    if (c == ';') {
+      b.names.push_back(name);
+      name.clear();
+    } else {
+      name.push_back(static_cast<char>(c));
+    }
+  }
+  return b;
+}
+
 std::optional<Attitude> decode_attitude(const Payload & p)
 {
   if (p.size() < 6) {

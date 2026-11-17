@@ -22,6 +22,7 @@ constexpr uint16_t MSP_FC_VARIANT = 2;
 constexpr uint16_t MSP_FC_VERSION = 3;
 constexpr uint16_t MSP_SONAR_ALTITUDE = 58;
 constexpr uint16_t MSP_RC = 105;
+constexpr uint16_t MSP_BOXNAMES = 116;
 constexpr uint16_t MSP_ATTITUDE = 108;
 constexpr uint16_t MSP2_INAV_STATUS = 0x2000;
 constexpr uint16_t MSP2_INAV_OPTICAL_FLOW = 0x2001;

@@ -1,13 +1,20 @@
-// The TCP link to INAV through esp-link, for the inav backend. Read-only:
-// every request goes through msp::build_request, which only builds reads.
-// No ROS here: the node reads state() on its own timer.
+// The TCP link to INAV through esp-link, for the inav backend. It reads, and
+// writes one thing only: the four flight sticks (MSP_SET_RAW_RC), while the
+// node sets them with set_sticks(). Every other request goes through
+// msp::build_request, which only builds reads. What INAV does with the sticks
+// is its business: it uses them only while the radio's MSP RC OVERRIDE switch
+// is on. No ROS here: the node reads state() on its own timer.
 //
 // On its own thread: connect, check the FC is INAV, then poll in cycles. A
 // cycle sends all its requests at once and matches the replies by command.
 // INAV answers queued requests in order, one per 10 ms serial task run, so
 // this is far faster over Wi-Fi than one request at a time (about 3 cycles/s
 // at best). Its UART receive buffer is 256 bytes with no overflow guard, so a
-// cycle stays small (5 requests, 45 bytes).
+// cycle stays small: at most the stick frame and 7 requests, 80 bytes.
+//
+// Sticks go first in the cycle, at the cycle rate (10 Hz; INAV wants 5 Hz or
+// more). Sticks the node hasn't refreshed within sticks_max_age_s are not
+// sent: a stalled node stops the frames, and INAV goes back to the radio.
 //
 // esp-link can go silent with the TCP connection still open (the gap10 rate
 // run, Nov 9), so several cycles in a row without a single reply count as a
@@ -45,6 +52,8 @@ struct LinkConfig
   int dead_after_cycles{4};           // cycles in a row with no reply at all
   double reconnect_pause_s{1.0};
   int battery_every{5};               // MSP2_INAV_ANALOG every n-th cycle
+  int box_names_every{10};            // MSP_BOXNAMES every n-th cycle, until one arrives
+  double sticks_max_age_s{0.3};
 };
 
 template<typename T>
@@ -68,6 +77,16 @@ struct LinkState
   Latest<OpticalFlow> flow;
   Latest<Rangefinder> range;
   Latest<Analog> analog;
+  Latest<RcChannels> rc;
+  std::optional<BoxNames> boxes;   // once per connection; the order of Status::box_mode_flags
+
+  bool sending_sticks{false};      // the last cycle sent sticks
+  std::optional<msp::Sticks> last_sticks;   // the last ones sent
+  uint64_t sticks_sent{0};
+
+  // INAV's MSP RC OVERRIDE mode, from the last status: nullopt until both the
+  // mode list and a status arrived, or if the build lacks the mode.
+  std::optional<bool> rc_override_active() const;
 
   uint64_t requests{0};
   uint64_t replies{0};
@@ -93,6 +112,9 @@ public:
   void start();
   void stop();
   LinkState state() const;
+  // The sticks to send from now on; nullopt stops sending. Call it at least
+  // every sticks_max_age_s to keep the frames going.
+  void set_sticks(std::optional<msp::Sticks> sticks);
 
 private:
   enum class Cycle {REPLIED, SILENT, CLOSED};
@@ -119,6 +141,8 @@ private:
   std::atomic<bool> stopping_{false};
   mutable std::mutex mutex_;
   LinkState state_;
+  std::optional<msp::Sticks> sticks_;   // guarded by mutex_
+  Clock::time_point sticks_stamp_{};
 };
 }  // namespace inav
 

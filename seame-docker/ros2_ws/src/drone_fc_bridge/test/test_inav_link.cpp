@@ -1,6 +1,7 @@
 // The TCP link against a fake FC on localhost that answers with frames
 // captured from the real drone, and can drop replies, send rubbish, go silent
-// with the connection open (what killed the gap10 rate run), or hang up.
+// with the connection open (what killed the gap10 rate run), or hang up. It
+// records the sticks it is sent (MSP_SET_RAW_RC) and acks them as INAV does.
 
 #include <gtest/gtest.h>
 
@@ -52,12 +53,18 @@ public:
   explicit FakeFc(FakeOptions options)
   : options_(std::move(options))
   {
-    // The first good reply to each command in flat_still.jsonl.
+    // The first good reply to each command in flat_still.jsonl. Parsed, not
+    // copied: a damaged MSP_BOXNAMES line can hold an older complete reply.
     for (const auto & l : load_capture("flat_still")) {
-      if (l.ok && !replies_.count(static_cast<uint16_t>(l.cmd))) {
-        replies_[static_cast<uint16_t>(l.cmd)] = l.frame;
+      msp::Parser parser;
+      parser.feed(l.frame.data(), l.frame.size());
+      const auto frame = parser.next();
+      const auto cmd = static_cast<uint16_t>(l.cmd);
+      if (l.ok && frame && frame->cmd == cmd && !frame->is_error && !replies_.count(cmd)) {
+        replies_[cmd] = make_reply(cmd, frame->payload);
       }
     }
+    replies_[msp::MSP_SET_RAW_RC] = make_reply(msp::MSP_SET_RAW_RC, {});   // INAV's ack
     if (options_.variant != "INAV") {
       replies_[msp::MSP_FC_VARIANT] =
         make_reply(msp::MSP_FC_VARIANT, Bytes(options_.variant.begin(), options_.variant.end()));
@@ -90,6 +97,17 @@ public:
     std::lock_guard<std::mutex> lock(mutex_);
     return seen_;
   }
+  int count(uint16_t cmd) const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return counts_.count(cmd) ? counts_.at(cmd) : 0;
+  }
+  // The payload of every MSP_SET_RAW_RC received, in order.
+  std::vector<Bytes> sticks() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return sticks_;
+  }
 
 private:
   bool wait_readable(int fd)
@@ -111,7 +129,7 @@ private:
     }
   }
 
-  // Requests are "$X<", flag, cmd, size 0, crc: 9 bytes each.
+  // Requests are "$X<", flag, cmd, size, payload, crc: 9 bytes plus the payload.
   void talk(int fd, bool first)
   {
     Bytes in;
@@ -130,12 +148,22 @@ private:
       while (in.size() >= 9) {
         EXPECT_EQ(Bytes(in.begin(), in.begin() + 3), (Bytes{'$', 'X', '<'}));
         const auto cmd = static_cast<uint16_t>(in[4] | (in[5] << 8));
-        EXPECT_EQ(in[8], msp::crc8_dvb_s2(in.data() + 3, 5));
-        in.erase(in.begin(), in.begin() + 9);
+        const std::size_t size = in[6] | (in[7] << 8);
+        if (in.size() < 9 + size) {
+          break;
+        }
+        EXPECT_EQ(in[8 + size], msp::crc8_dvb_s2(in.data() + 3, 5 + size));
         {
           std::lock_guard<std::mutex> lock(mutex_);
           seen_.insert(cmd);
+          ++counts_[cmd];
+          if (cmd == msp::MSP_SET_RAW_RC) {
+            sticks_.emplace_back(in.begin() + 8, in.begin() + 8 + size);
+          } else {
+            EXPECT_EQ(size, 0u) << "a read with a payload: " << cmd;
+          }
         }
+        in.erase(in.begin(), in.begin() + 9 + size);
         waiting.push_back(cmd);
       }
       if (static_cast<int>(waiting.size()) < options_.batch) {
@@ -173,6 +201,8 @@ private:
   std::atomic<int> connections_{0};
   mutable std::mutex mutex_;
   std::set<uint16_t> seen_;
+  std::map<uint16_t, int> counts_;
+  std::vector<Bytes> sticks_;
 };
 
 inav::LinkConfig config_for(const FakeFc & fc)
@@ -216,11 +246,29 @@ bool wait_for(
   return false;
 }
 
-void expect_only_reads(const FakeFc & fc)
+// Reads, and the sticks only if the test set them.
+void expect_only_reads(const FakeFc & fc, bool sticks_allowed = false)
 {
   for (uint16_t cmd : fc.seen()) {
-    EXPECT_TRUE(msp::is_read_command(cmd)) << cmd;
+    EXPECT_TRUE(msp::is_read_command(cmd) || (sticks_allowed && cmd == msp::MSP_SET_RAW_RC)) << cmd;
   }
+}
+
+// The payload build_set_raw_rc puts in the frame.
+Bytes stick_payload(const msp::Sticks & s)
+{
+  const auto frame = msp::build_set_raw_rc(s);
+  return Bytes(frame.begin() + 8, frame.end() - 1);
+}
+
+msp::Sticks some_sticks()
+{
+  msp::Sticks s;
+  s.roll = 1400;
+  s.pitch = 1600;
+  s.yaw = 1550;
+  s.throttle = 1450;
+  return s;
 }
 }  // namespace
 
@@ -249,11 +297,146 @@ TEST(InavLink, PollsAndDecodes)
   EXPECT_EQ(s.missed, 0u);
   // Battery only every 5th cycle.
   EXPECT_LT(s.analog.count * 3, s.status.count + 3);
+  ASSERT_TRUE(s.rc.value);
+  EXPECT_EQ(s.rc.value->throttle(), 885);
+  ASSERT_TRUE(s.boxes);
+  EXPECT_EQ(s.boxes->names.size(), 31u);
+  EXPECT_EQ(s.rc_override_active(), false);   // the captures' status: only FAILSAFE on
+  EXPECT_FALSE(s.sending_sticks);
+  EXPECT_EQ(s.sticks_sent, 0u);
   link.stop();
   expect_only_reads(fc);
+  EXPECT_TRUE(fc.sticks().empty());
   EXPECT_EQ(fc.seen(), (std::set<uint16_t>{msp::MSP_FC_VARIANT, msp::MSP_FC_VERSION,
-      msp::MSP_SONAR_ALTITUDE, msp::MSP2_INAV_STATUS, msp::MSP2_INAV_OPTICAL_FLOW,
-      msp::MSP2_INAV_ANALOG, msp::MSP2_INAV_FULL_LOCAL_POSE}));
+      msp::MSP_SONAR_ALTITUDE, msp::MSP_RC, msp::MSP_BOXNAMES, msp::MSP2_INAV_STATUS,
+      msp::MSP2_INAV_OPTICAL_FLOW, msp::MSP2_INAV_ANALOG, msp::MSP2_INAV_FULL_LOCAL_POSE}));
+}
+
+TEST(InavLink, AsksForTheModeListUntilItHasOne)
+{
+  FakeFc fc({});
+  Logs logs;
+  inav::InavLink link(config_for(fc), logs.logger());
+  link.start();
+  ASSERT_TRUE(wait_for(link, [](const auto & s) {return s.status.count >= 30;}));
+  link.stop();
+  // Cycle 0 asks and gets it; the list doesn't change while the FC runs.
+  EXPECT_EQ(fc.count(msp::MSP_BOXNAMES), 1);
+  EXPECT_GE(fc.count(msp::MSP_RC), 30);   // MSP_RC every cycle
+  EXPECT_TRUE(link.state().boxes == std::nullopt);   // forgotten with the connection
+}
+
+TEST(InavLink, SendsTheSticksEveryCycleWhileTheyAreFresh)
+{
+  FakeFc fc({});
+  Logs logs;
+  inav::InavLink link(config_for(fc), logs.logger());   // a cycle every 20 ms
+  link.start();
+  ASSERT_TRUE(wait_for(link, [](const auto & s) {return s.link_ok;}));
+  const auto sticks = some_sticks();
+  const int cycles_before = fc.count(msp::MSP2_INAV_STATUS);
+  const auto until = std::chrono::steady_clock::now() + 1s;
+  while (std::chrono::steady_clock::now() < until) {
+    link.set_sticks(sticks);   // like the node's 20 Hz tick, but faster
+    std::this_thread::sleep_for(10ms);
+  }
+  const auto s = link.state();
+  link.stop();
+  const int cycles = fc.count(msp::MSP2_INAV_STATUS) - cycles_before;
+  EXPECT_TRUE(s.sending_sticks);
+  ASSERT_TRUE(s.last_sticks);
+  EXPECT_EQ(s.last_sticks->pitch, 1600);
+  EXPECT_EQ(s.missed, 0u);          // every frame acked
+  EXPECT_EQ(s.error_frames, 0u);
+  const auto got = fc.sticks();
+  // One stick frame per cycle (a status request each); the first cycle can
+  // start just before the first set_sticks, the last after the loop ends.
+  EXPECT_GT(cycles, 10);
+  EXPECT_NEAR(static_cast<int>(got.size()), cycles, 1);
+  EXPECT_EQ(got.size(), s.sticks_sent);
+  for (const auto & p : got) {
+    EXPECT_EQ(p, stick_payload(sticks));
+  }
+  expect_only_reads(fc, true);
+}
+
+TEST(InavLink, StopsSendingWhenTheSticksGoStale)
+{
+  // A node that stalls stops refreshing them: no more frames, so INAV goes
+  // back to the radio.
+  FakeFc fc({});
+  Logs logs;
+  auto c = config_for(fc);
+  c.sticks_max_age_s = 0.1;
+  inav::InavLink link(c, logs.logger());
+  link.start();
+  ASSERT_TRUE(wait_for(link, [](const auto & s) {return s.link_ok;}));
+  link.set_sticks(some_sticks());
+  ASSERT_TRUE(wait_for(link, [](const auto & s) {return s.sticks_sent >= 1;}));
+  EXPECT_TRUE(wait_for(link, [](const auto & s) {return !s.sending_sticks;}, 500ms));
+  const auto sent = fc.sticks().size();
+  EXPECT_LE(sent, 7u);   // 0.1 s of 20 ms cycles, and a cycle in flight
+  std::this_thread::sleep_for(300ms);
+  EXPECT_EQ(fc.sticks().size(), sent);
+  link.stop();
+}
+
+TEST(InavLink, StopsSendingAtOnceOnNullopt)
+{
+  FakeFc fc({});
+  Logs logs;
+  auto c = config_for(fc);
+  c.sticks_max_age_s = 10.0;
+  inav::InavLink link(c, logs.logger());
+  link.start();
+  link.set_sticks(some_sticks());
+  ASSERT_TRUE(wait_for(link, [](const auto & s) {return s.sticks_sent >= 3;}));
+  link.set_sticks(std::nullopt);
+  ASSERT_TRUE(wait_for(link, [](const auto & s) {return !s.sending_sticks;}, 500ms));
+  const auto sent = fc.sticks().size();
+  std::this_thread::sleep_for(200ms);
+  EXPECT_EQ(fc.sticks().size(), sent);
+  link.stop();
+}
+
+TEST(InavLink, NoSticksWhileTheLinkIsDown)
+{
+  // The bridge hangs up: nothing is sent until the link is back, and the
+  // mode list is asked for again on the new connection.
+  FakeOptions o;
+  o.close_after = 12;
+  FakeFc fc(o);
+  Logs logs;
+  auto c = config_for(fc);
+  c.sticks_max_age_s = 10.0;
+  c.reconnect_pause_s = 0.3;
+  inav::InavLink link(c, logs.logger());
+  link.start();
+  link.set_sticks(some_sticks());
+  ASSERT_TRUE(wait_for(link, [](const auto & s) {return !s.connected && s.connects == 1;}));
+  EXPECT_FALSE(link.state().sending_sticks);
+  EXPECT_FALSE(link.state().boxes);
+  const auto sent = fc.sticks().size();
+  std::this_thread::sleep_for(150ms);   // within the reconnect pause
+  EXPECT_EQ(fc.sticks().size(), sent);
+  ASSERT_TRUE(wait_for(link, [](const auto & s) {
+      return s.connects == 2 && s.sending_sticks && s.boxes;
+    }));
+  link.stop();
+}
+
+TEST(InavLink, ModeOnFromTheStatusBit)
+{
+  inav::LinkState s;
+  EXPECT_FALSE(s.rc_override_active());   // nothing known yet
+  s.boxes = inav::BoxNames{{"ARM", "ANGLE", "MSP RC OVERRIDE"}};
+  EXPECT_FALSE(s.rc_override_active());   // no status yet
+  s.status.value = inav::Status{};
+  EXPECT_EQ(s.rc_override_active(), false);
+  s.status.value->box_mode_flags = 1u << 2;
+  EXPECT_EQ(s.rc_override_active(), true);
+  s.boxes = inav::BoxNames{{"ARM", "ANGLE"}};   // a build without the mode
+  EXPECT_FALSE(s.rc_override_active());
 }
 
 TEST(InavLink, SendsTheCycleAtOnce)
