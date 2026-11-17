@@ -90,7 +90,7 @@ in_dev_bg "exec python3 $TMP/sing.py $SING_ARGS >> $TMP/sing.log 2>&1"
 sleep 3   # sing.py is publishing idle before the bridge starts
 start_bridge true
 sleep 4
-look "connected (expect armed False, throttle 1000)"
+wait_link "connected (expect armed False, throttle 1000)"
 
 echo
 read -r -p "👉 Look at all four motors. Type 'props off' if there is no propeller on any: " reply

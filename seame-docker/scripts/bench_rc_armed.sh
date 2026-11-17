@@ -48,7 +48,7 @@ in_dev "echo '$IDLE' > $TMP/setpoint"   # before the feed starts: never a zero s
 start_feed
 start_bridge true
 sleep 4
-look "connected (expect armed False, rc_sent True)"
+wait_link "connected (expect armed False, rc_sent True)"
 
 echo
 read -r -p "👉 Look at all four motors. Type 'props off' if there is no propeller on any: " reply

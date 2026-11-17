@@ -120,6 +120,25 @@ look() {   # $1: label
     echo "$(date +%s.%N) LOOK $1: $out" >> "$EVENTS"
 }
 
+# The first readout, but waiting (about 20 s) for the FC to answer through
+# esp-link; stops the run if it never does.
+wait_link() {   # $1: label
+    local out
+    for _ in 1 2 3 4 5 6; do
+        out=$(in_dev "python3 $TMP/look.py armed-ok" 2>&1) || true
+        if [[ "$out" == *"link_ok True"* ]]; then
+            look "$1"
+            return 0
+        fi
+        echo "   ⏳ waiting for the FC to answer through esp-link..."
+    done
+    echo "$(date +%s.%N) LOOK $1: $out" >> "$EVENTS"
+    echo "🛑 The ESP answers but INAV doesn't (or the laptop isn't on the drone's Wi-Fi):"
+    echo "   power-cycle the drone (battery out, in, keep it still) and run again."
+    bench_stop
+    exit 1
+}
+
 # Leftovers of an earlier run that was cut short.
 in_dev "pkill -f '[t]opic pub -r 20 /fc/setpoint_velocity'; pkill -INT -f '[f]eed.py'; \
 pkill -INT -f '[s]ing.py'; \

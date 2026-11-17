@@ -36,7 +36,7 @@ ask "Join the laptop to the drone's Wi-Fi (192.168.4.1)"
 start_bag
 start_bridge true
 sleep 4
-look "connected"
+wait_link "connected"
 
 # 1. Override off: the radio flies.
 mark "step 1: SA off, radio sticks"
