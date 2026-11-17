@@ -10,10 +10,12 @@ SA on. Run by sing.sh, which handles the bridge, the radio steps and the mic.
     sing.py play SONG ... --dry-run    (no ROS needed)
 
 Two ways to turn notes into throttle. Without a map (the default): motor
-speed is taken as proportional to the DShot command, which with INAV's
-defaults (throttle_idle 8 %, a linear throttle curve) is about
-2 x (stick - 976). The lowest note gets the stick value --base and every
-other note the same ratio above it as its frequency. Only right if the
+speed is taken as proportional to the DShot command, which reaches zero at
+stick --zero. The lowest note gets the stick value --base and every other
+note the same ratio above --zero as its frequency. Intervals too wide: raise
+--zero; too narrow: lower it. On our drone the motors' DShot 0 is at about
+stick 1079 (Nov 17, zero PIDs), but by ear 976 sounds better: the wider
+intervals it gives make up for the motors not speeding up in proportion. Only right if the
 motors get the throttle alone: a control profile with roll, pitch and yaw
 PIDs at zero. With --map: the measured pitch of each throttle step from
 'calibrate' (needs a mic that hears the motors).
@@ -36,7 +38,7 @@ import rtttl  # noqa: E402
 MAX_SPEED_Z = 0.3       # fc_bridge's max_speed_z: full throttle stick
 IDLE = 1000             # throttle stick
 MAX_THROTTLE = 1450     # never above, whatever the map says
-DSHOT_ZERO = 976        # stick value where the DShot command would reach 0
+ZERO = 976              # stick for "no speed" in relative tuning: best by ear (1079 measured)
 CALIBRATION = [1050, 1100, 1150, 1200, 1250, 1300, 1350, 1400]
 CALIBRATION_STEP_S = 2.0
 RATE_HZ = 50.0
@@ -73,8 +75,10 @@ def song_plan(args):
         notes = rtttl.parse(f.read())
     if args.part == 'first':
         notes = rtttl.first_phrase(notes)
+    for n in notes:
+        n.seconds *= args.stretch
     if not args.map:
-        return relative_plan(notes, args.base)
+        return relative_plan(notes, args.base, args.zero)
     points = pitch_map(args.map)
     midis = [n.midi + args.nudge for n in notes if n.midi is not None]
     shifts = [args.octave] if args.octave is not None else range(2, -5, -1)
@@ -99,20 +103,20 @@ def song_plan(args):
     return plan
 
 
-def relative_plan(notes, base):
-    """Throttle in proportion to frequency, the lowest note at base."""
+def relative_plan(notes, base, zero):
+    """Throttle above zero in proportion to frequency, the lowest note at base."""
     low = min(n.midi for n in notes if n.midi is not None)
     plan = []
     for n in notes:
         if n.midi is None:
             plan.append(('pause', IDLE, n.seconds))
             continue
-        throttle = round(DSHOT_ZERO + (base - DSHOT_ZERO) * 2 ** ((n.midi - low) / 12))
+        throttle = round(zero + (base - zero) * 2 ** ((n.midi - low) / 12))
         if throttle > MAX_THROTTLE:
             sys.exit(f'{rtttl.name(n.midi)} would need throttle {throttle}, above '
                      f'{MAX_THROTTLE}: use a lower --base')
         plan.append((rtttl.name(n.midi), throttle, n.seconds))
-    print(f'Relative tuning, lowest note ({rtttl.name(low)}) at throttle {base}, '
+    print(f'Relative tuning, lowest note ({rtttl.name(low)}) at throttle {base}, zero {zero}, '
           f'{len(plan)} notes, {sum(s for _, _, s in plan):.1f} s')
     for label, throttle, seconds in plan:
         print(f'   {label:>5}  throttle {throttle}  {seconds:.2f} s')
@@ -176,7 +180,11 @@ def main():
     p.add_argument('--map', help='pitch.json from a calibration (default: relative tuning)')
     p.add_argument('--base', type=int, default=1150,
                    help='relative tuning: throttle stick of the lowest note')
+    p.add_argument('--zero', type=int, default=ZERO,
+                   help='relative tuning: stick where motor speed would be 0 (spacing)')
     p.add_argument('--part', choices=['first', 'all'], default='first')
+    p.add_argument('--stretch', type=float, default=1.2,
+                   help='every note this many times longer (1 = the ringtone\'s tempo)')
     p.add_argument('--octave', type=int, help='octave shift (default: highest that fits)')
     p.add_argument('--nudge', type=int, default=0, help='shift by semitones')
     p.add_argument('--dry-run', action='store_true', help='print the notes, publish nothing')

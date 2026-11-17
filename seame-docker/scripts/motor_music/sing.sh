@@ -10,9 +10,11 @@
 # Usage, on the host in seame-docker/, dev container running:
 #   INSTALL=/tmp/inav6_bench/install scripts/motor_music/sing.sh calibrate
 #   INSTALL=/tmp/inav6_bench/install scripts/motor_music/sing.sh play SONG.rtttl [options]
-# play options go to sing.py: --part all, --base T (relative tuning), and with
+# play options go to sing.py: --part all, --stretch F (longer notes, 1.2),
+# --base T, --zero Z (relative), and with
 # a map --octave N, --nudge N (semitones).
-# Tuning: relative by default (--base T: the lowest note's throttle stick, 1150),
+# Tuning: relative by default (--base T: the lowest note's throttle stick, 1150;
+# --zero Z: the note spacing, 976),
 # or MAP=path/pitch.json for a calibration's measured map. Both need the
 # motors to get the throttle alone: a control profile with zero PIDs.
 #
