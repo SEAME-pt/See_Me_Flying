@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "3924fe387ffc2089",
+        "id": "ddb3354d8444d20d",
         "type": "tabs",
         "children": [
           {
-            "id": "8c33d43039f6aee3",
+            "id": "daad201fcf57ca1a",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "telemetry/candidatesList.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "candidatesList"
             }
           }
         ]
@@ -155,6 +159,7 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "telemetry/candidatesList.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -182,8 +187,17 @@
       "export-graph-view:Export graph view": false
     }
   },
-  "active": "8c33d43039f6aee3",
+  "active": "daad201fcf57ca1a",
   "lastOpenFiles": [
+    "telemetry/Groundstation.md",
+    "telemetry/README.md",
+    "telemetry/Telemetry_test.md",
+    "README.md",
+    "telemetry/candidatesList.md",
+    "seame-docker/logs/README.md",
+    "telemetry/inav/captures/README.md",
+    "docs/Li-Po_Battery_Tests.md",
+    "seame-docker/SIM_TELEOP.md",
     "telemetry/inav/captures/inav/msp/rates/run3.txt",
     "telemetry/inav/captures/inav/msp/rates/run2.txt",
     "telemetry/inav/captures/inav/msp/rates/run1.txt",
@@ -194,9 +208,6 @@
     "telemetry/inav/captures/inav/msp/captures/tilted.jsonl",
     "telemetry/inav/captures/inav/msp/captures/radio_off.jsonl",
     "telemetry/inav/captures/inav/msp/captures/flow_moving.jsonl",
-    "telemetry/inav/captures/inav/msp/captures/flat_still.jsonl",
-    "telemetry/inav/captures/README.md",
-    "telemetry/candidatesList.md",
     "seame-docker/ros2_ws/src/drone_fc_bridge/test/data/README.md",
     "seame-docker/logs/tests/2026-11-10_92117ca/report.md",
     "seame-docker/logs/tests/2026-11-10_70cdf3d/report.md",
@@ -210,18 +221,12 @@
     "seame-docker/logs/tests/2026-11-05_143323_ce2ea99-dirty/report.md",
     "seame-docker/logs/tests/2026-11-04_122025_eba9334/report.md",
     "seame-docker/logs/tests/2026-11-02_162848_ed2219d/report.md",
-    "telemetry/Telemetry_test.md",
-    "telemetry/README.md",
-    "README.md",
     "docs/extras/folders-graph.svg",
     "folders-graph.svg",
-    "telemetry/Groundstation.md",
     "Untitled.canvas",
     "docs/README.md",
-    "seame-docker/logs/README.md",
     "docs/Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md",
     "seame-docker/PLAN.md",
-    "docs/sprints/sprint_1.md",
-    "docs/sprints/sprint_0.md"
+    "docs/sprints/sprint_1.md"
   ]
 }
