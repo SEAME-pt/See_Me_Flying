@@ -135,7 +135,7 @@ Decides which command source reaches the drone. Since Oct 30 it is the **only pu
 
 ## fc\_bridge
 
-The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) or `inav`, the real FC (flight controller) over MSP through the ESP8266. `inav` reads INAV over MSP through esp-link (`src/inav_link.*`, TCP port 23) and publishes the same state topics as the sim, plus `fc/optical_flow`, `fc/battery` and `fc/rc`. By default it is listen-only: it only sends read requests (an allow-list in `src/msp.cpp`) and setpoints go nowhere. With `rc_override` true it also sends the setpoints as stick positions (item 10). It always refuses `fc/arm` (only the radio arms the real drone). It has no Gazebo topics and no enable, so nothing sim-only can reach the real drone. Any other value stops the node at start. Package `drone_fc_bridge`, file `src/fc_bridge.cpp`.
+The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) or `inav`, the real FC (flight controller) over MSP through the ESP8266. `inav` reads INAV over MSP through esp-link (`src/inav_link.*`, TCP port 23) and publishes the same state topics as the sim, plus `fc/optical_flow`, `fc/battery`, `fc/rc` and `fc/motors`. By default it is listen-only: it only sends read requests (an allow-list in `src/msp.cpp`) and setpoints go nowhere. With `rc_override` true it also sends the setpoints as stick positions (item 10). It always refuses `fc/arm` (only the radio arms the real drone). It has no Gazebo topics and no enable, so nothing sim-only can reach the real drone. Any other value stops the node at start. Package `drone_fc_bridge`, file `src/fc_bridge.cpp`.
 
 **What it does**
 
@@ -166,7 +166,7 @@ The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) 
 | --- | --- |
 | Subscribes | `fc/setpoint_velocity` (`geometry_msgs/TwistStamped`), sensor-data QoS |
 | Subscribes | `sim_odom_topic` (`nav_msgs/Odometry`), sensor-data QoS |
-| Publishes | `gz_twist_topic` (`geometry_msgs/Twist`) every tick; `gz_enable_topic` (`std_msgs/Bool`) every 1 s; `fc/odom` (`nav_msgs/Odometry`), `fc/attitude` (`geometry_msgs/QuaternionStamped`) and `fc/range` (`sensor_msgs/Range`) per sim odometry message; `fc/status` (`drone_interfaces/FcStatus`). With `inav`: no Gazebo topics; `fc/odom`, `fc/attitude`, `fc/range`, `fc/optical_flow` (`drone_interfaces/OpticalFlow`), `fc/battery` (`sensor_msgs/BatteryState`) and `fc/rc` (`drone_interfaces/RcChannels`) whenever INAV answers |
+| Publishes | `gz_twist_topic` (`geometry_msgs/Twist`) every tick; `gz_enable_topic` (`std_msgs/Bool`) every 1 s; `fc/odom` (`nav_msgs/Odometry`), `fc/attitude` (`geometry_msgs/QuaternionStamped`) and `fc/range` (`sensor_msgs/Range`) per sim odometry message; `fc/status` (`drone_interfaces/FcStatus`). With `inav`: no Gazebo topics; `fc/odom`, `fc/attitude`, `fc/range`, `fc/optical_flow` (`drone_interfaces/OpticalFlow`), `fc/battery` (`sensor_msgs/BatteryState`) `fc/rc` (`drone_interfaces/RcChannels`) and `fc/motors` (`drone_interfaces/MotorOutputs`, what INAV sends each motor) whenever INAV answers |
 | Services | `fc/arm`, `fc/hold` (`std_srvs/SetBool`) |
 | `backend` | `sim` or `inav` (read once at start) |
 | `gz_twist_topic` | `/X3/gazebo/command/twist` |

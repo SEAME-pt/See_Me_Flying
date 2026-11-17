@@ -48,6 +48,7 @@ bool is_read_command(uint16_t cmd)
     case MSP_FC_VARIANT:
     case MSP_FC_VERSION:
     case MSP_SONAR_ALTITUDE:
+    case MSP_MOTOR:
     case MSP_RC:
     case MSP_BOXNAMES:
     case MSP_ATTITUDE:

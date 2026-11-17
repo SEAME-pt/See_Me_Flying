@@ -270,7 +270,7 @@ InavLink::Cycle InavLink::cycle(uint64_t n)
     pending.push_back(msp::MSP_SET_RAW_RC);   // INAV acks it with an empty reply
   }
   std::vector<uint16_t> reads = {msp::MSP2_INAV_STATUS, msp::MSP2_INAV_FULL_LOCAL_POSE,
-    msp::MSP2_INAV_OPTICAL_FLOW, msp::MSP_SONAR_ALTITUDE, msp::MSP_RC};
+    msp::MSP2_INAV_OPTICAL_FLOW, msp::MSP_SONAR_ALTITUDE, msp::MSP_RC, msp::MSP_MOTOR};
   if (config_.battery_every > 0 && n % static_cast<uint64_t>(config_.battery_every) == 0) {
     reads.push_back(msp::MSP2_INAV_ANALOG);
   }
@@ -361,6 +361,7 @@ void InavLink::store(const msp::Frame & frame)
     case msp::MSP_SONAR_ALTITUDE: put(state_.range, decode_rangefinder(frame.payload)); break;
     case msp::MSP2_INAV_ANALOG: put(state_.analog, decode_analog(frame.payload)); break;
     case msp::MSP_RC: put(state_.rc, decode_rc(frame.payload)); break;
+    case msp::MSP_MOTOR: put(state_.motors, decode_motors(frame.payload)); break;
     case msp::MSP_BOXNAMES: state_.boxes = decode_box_names(frame.payload); break;
     default: break;
   }

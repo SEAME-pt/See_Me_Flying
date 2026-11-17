@@ -81,6 +81,16 @@ struct Rangefinder
   double distance_m{0.0};   // tilt-corrected by INAV; only meaningful when VALID
 };
 
+// MSP_MOTOR (104): what INAV sends each motor, in µs (DShot is shown on the
+// same scale). Disarmed and stopped: 1000 on ours. In the mixer's motor
+// order; on a quad X with the default mixer: 1 rear right, 2 front right,
+// 3 rear left, 4 front left. INAV sends 8; the motors past the mixer's count
+// read 0 and are dropped here.
+struct Motors
+{
+  std::vector<uint16_t> us;
+};
+
 // MSP_RC (105): the channel values INAV is using, in µs, after the MSP RC
 // override (and logic conditions). In INAV's internal order (roll, pitch,
 // yaw, throttle, then AUX1...), which is NOT the order MSP_SET_RAW_RC takes
@@ -176,6 +186,7 @@ std::optional<ApiVersion> decode_api_version(const Payload & p);
 std::optional<FcVariant> decode_fc_variant(const Payload & p);
 std::optional<FcVersion> decode_fc_version(const Payload & p);
 std::optional<Rangefinder> decode_rangefinder(const Payload & p);
+std::optional<Motors> decode_motors(const Payload & p);
 std::optional<RcChannels> decode_rc(const Payload & p);
 BoxNames decode_box_names(const Payload & p);   // any payload is a list, maybe empty
 std::optional<Attitude> decode_attitude(const Payload & p);

@@ -298,6 +298,8 @@ The previous run is still found from the order of `history.csv`, so the comparis
 | `drone_interfaces/msg/FcStatus.msg` | `rc_override_active`, `rc_sent` (false in the sim). Additive: nothing else changed |
 | `drone_fc_bridge/test/` | `test_inav_sticks.cpp` (9), `test_inav_rc.py` (7, against a fake INAV that mimics the override); more cases in `test_msp.cpp`, `test_inav_decode.cpp`, `test_inav_link.cpp` (sticks every cycle, stale, link down) and `test_inav_state.py` (nothing sent by default) |
 | `scripts/bench_rc_override.sh` | New. The bench run step by step, offline (the laptop is on the drone's Wi-Fi), with a bag and readouts into `logs/measurements/inav_rc_override/` |
+| `scripts/bench_rc_armed.sh`, `scripts/bench_common.sh` | New. The armed run, props off: the radio arms, ROS ramps the throttle from idle and tests three directions, 3 s each, with one publisher for the whole run so the throttle never falls back to 1500 between steps; optionally the radio-off failsafe. The helpers both scripts share |
+| `drone_fc_bridge` (`MSP_MOTOR`), `drone_interfaces/msg/MotorOutputs.msg` | `fc/motors`: what INAV sends each motor, polled every cycle, so a bag shows the motors next to the sticks |
 
 **FC config** (by hand, `logs/measurements/inav_rc_override/fc_config_2026-11-17/`): `msp_override_channels = 15`, MSP RC OVERRIDE on SA (channel 7).
 

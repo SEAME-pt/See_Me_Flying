@@ -22,7 +22,7 @@ import pytest
 import rclpy
 from std_srvs.srv import SetBool
 
-READS = {2, 3, 58, 105, 116, 0x2000, 0x2001, 0x2002, 0x2220}
+READS = {2, 3, 58, 104, 105, 116, 0x2000, 0x2001, 0x2002, 0x2220}
 SET_RAW_RC = 200
 BOXES = b'ARM;ANGLE;MSP RC OVERRIDE;'
 OVERRIDE_BIT = 2

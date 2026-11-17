@@ -2,7 +2,8 @@
 //   sim:  fc/setpoint_velocity (TwistStamped) -> clamp + timeout -> Gazebo Twist
 //         Gazebo odometry -> fc/odom, fc/attitude, fc/range
 //   inav: reads INAV over MSP through esp-link (inav_link.*) -> fc/odom,
-//         fc/attitude, fc/range, fc/optical_flow, fc/battery, fc/rc, and
+//         fc/attitude, fc/range, fc/optical_flow, fc/battery, fc/rc,
+//         fc/motors, and
 //         armed and link state in fc/status. fc/arm is refused: on the real
 //         drone only the radio arms. Nothing of the sim (Gazebo topics,
 //         enable) exists here.
@@ -39,6 +40,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "drone_interfaces/msg/motor_outputs.hpp"
 #include "drone_interfaces/msg/rc_channels.hpp"
 #include "inav_link.hpp"
 #include "inav_sticks.hpp"
@@ -50,6 +52,7 @@
 
 using namespace std::chrono_literals;
 using drone_interfaces::msg::FcStatus;
+using drone_interfaces::msg::MotorOutputs;
 using drone_interfaces::msg::OpticalFlow;
 using drone_interfaces::msg::RcChannels;
 using geometry_msgs::msg::Quaternion;
@@ -193,6 +196,7 @@ public:
       flow_pub_ = create_publisher<OpticalFlow>("fc/optical_flow", 10);
       battery_pub_ = create_publisher<BatteryState>("fc/battery", 10);
       rc_pub_ = create_publisher<RcChannels>("fc/rc", 10);
+      motors_pub_ = create_publisher<MotorOutputs>("fc/motors", 10);
       if (rc_override_) {
         RCLCPP_WARN(get_logger(), "Backend inav: reading INAV over MSP at %s:%u, and sending "
           "setpoints as sticks (rc_override). INAV uses them while the radio's MSP RC "
@@ -468,6 +472,14 @@ private:
       rc_pub_->publish(rc);
     }
 
+    if (s.motors.count != seen_motors_ && s.motors.value) {
+      seen_motors_ = s.motors.count;
+      MotorOutputs motors;
+      motors.header.stamp = arrival(s.motors.stamp);
+      motors.motors = s.motors.value->us;
+      motors_pub_->publish(motors);
+    }
+
     if (s.pose.count != seen_pose_ && s.pose.value) {
       seen_pose_ = s.pose.count;
       const auto & p = *s.pose.value;
@@ -595,6 +607,7 @@ private:
   rclcpp::Publisher<OpticalFlow>::SharedPtr flow_pub_;
   rclcpp::Publisher<BatteryState>::SharedPtr battery_pub_;
   rclcpp::Publisher<RcChannels>::SharedPtr rc_pub_;
+  rclcpp::Publisher<MotorOutputs>::SharedPtr motors_pub_;
   rclcpp::Service<SetBool>::SharedPtr arm_srv_;
   rclcpp::Service<SetBool>::SharedPtr hold_srv_;
   rclcpp::Subscription<TwistStamped>::SharedPtr sub_;
@@ -607,7 +620,7 @@ private:
   bool rc_override_active_{false};   // INAV's mode, as last reported
   bool rc_sent_{false};
   uint64_t seen_status_{0}, seen_pose_{0}, seen_flow_{0}, seen_range_{0}, seen_analog_{0};
-  uint64_t seen_rc_{0};
+  uint64_t seen_rc_{0}, seen_motors_{0};
 
   std::string backend_;
   Twist last_sp_;

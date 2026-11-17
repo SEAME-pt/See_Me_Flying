@@ -299,6 +299,8 @@ TEST(InavLink, PollsAndDecodes)
   EXPECT_LT(s.analog.count * 3, s.status.count + 3);
   ASSERT_TRUE(s.rc.value);
   EXPECT_EQ(s.rc.value->throttle(), 885);
+  ASSERT_TRUE(s.motors.value);
+  EXPECT_EQ(s.motors.value->us, (std::vector<uint16_t>{1000, 1000, 1000, 1000}));
   ASSERT_TRUE(s.boxes);
   EXPECT_EQ(s.boxes->names.size(), 31u);
   EXPECT_EQ(s.rc_override_active(), false);   // the captures' status: only FAILSAFE on
@@ -308,7 +310,7 @@ TEST(InavLink, PollsAndDecodes)
   expect_only_reads(fc);
   EXPECT_TRUE(fc.sticks().empty());
   EXPECT_EQ(fc.seen(), (std::set<uint16_t>{msp::MSP_FC_VARIANT, msp::MSP_FC_VERSION,
-      msp::MSP_SONAR_ALTITUDE, msp::MSP_RC, msp::MSP_BOXNAMES, msp::MSP2_INAV_STATUS,
+      msp::MSP_SONAR_ALTITUDE, msp::MSP_RC, msp::MSP_MOTOR, msp::MSP_BOXNAMES, msp::MSP2_INAV_STATUS,
       msp::MSP2_INAV_OPTICAL_FLOW, msp::MSP2_INAV_ANALOG, msp::MSP2_INAV_FULL_LOCAL_POSE}));
 }
 

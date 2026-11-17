@@ -181,6 +181,25 @@ TEST(Decode, RcHandBuilt)
   expect_needs(inav::decode_rc, 8);
 }
 
+TEST(Decode, MotorsFromCapture)
+{
+  // flat_still line 342: disarmed, the four motors at 1000, motors 5-8 unused.
+  const auto m = inav::decode_motors(payload(
+    "24583e0068001000e803e803e803e803000000000000000027", msp::MSP_MOTOR));
+  ASSERT_TRUE(m);
+  EXPECT_EQ(m->us, (std::vector<uint16_t>{1000, 1000, 1000, 1000}));
+}
+
+TEST(Decode, MotorsHandBuilt)
+{
+  const auto m = inav::decode_motors(join({le16(1100), le16(0), le16(1300), le16(1400),
+    le16(0), le16(0), le16(0), le16(0)}));
+  ASSERT_TRUE(m);
+  // Only trailing zeros are unused motors; a 0 among them stays.
+  EXPECT_EQ(m->us, (std::vector<uint16_t>{1100, 0, 1300, 1400}));
+  expect_needs(inav::decode_motors, 16);
+}
+
 TEST(Decode, BoxNamesFromCapture)
 {
   // The first intact reply in flat_still (line 107; some others are damaged).

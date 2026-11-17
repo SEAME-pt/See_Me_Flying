@@ -90,6 +90,21 @@ std::optional<Rangefinder> decode_rangefinder(const Payload & p)
   return r;
 }
 
+std::optional<Motors> decode_motors(const Payload & p)
+{
+  if (p.size() < 16) {
+    return std::nullopt;
+  }
+  Motors m;
+  for (std::size_t at = 0; at + 1 < 16; at += 2) {
+    m.us.push_back(u16(p, at));
+  }
+  while (!m.us.empty() && m.us.back() == 0) {
+    m.us.pop_back();
+  }
+  return m;
+}
+
 std::optional<RcChannels> decode_rc(const Payload & p)
 {
   if (p.size() < 8) {

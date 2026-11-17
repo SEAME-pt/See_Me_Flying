@@ -112,7 +112,7 @@ TEST(BuildRequest, SameBytesAsPython)
 
 TEST(BuildRequest, OnlyReadCommands)
 {
-  const std::vector<uint16_t> allowed = {1, 2, 3, 58, 105, 108, 116, 0x2000, 0x2001, 0x2002, 0x2220};
+  const std::vector<uint16_t> allowed = {1, 2, 3, 58, 104, 105, 108, 116, 0x2000, 0x2001, 0x2002, 0x2220};
   for (uint16_t cmd : allowed) {
     EXPECT_TRUE(msp::is_read_command(cmd)) << cmd;
     EXPECT_NO_THROW(msp::build_request(cmd)) << cmd;

@@ -10,7 +10,7 @@
 // INAV answers queued requests in order, one per 10 ms serial task run, so
 // this is far faster over Wi-Fi than one request at a time (about 3 cycles/s
 // at best). Its UART receive buffer is 256 bytes with no overflow guard, so a
-// cycle stays small: at most the stick frame and 7 requests, 80 bytes.
+// cycle stays small: at most the stick frame and 8 requests, 89 bytes.
 //
 // Sticks go first in the cycle, at the cycle rate (10 Hz; INAV wants 5 Hz or
 // more). Sticks the node hasn't refreshed within sticks_max_age_s are not
@@ -78,6 +78,7 @@ struct LinkState
   Latest<Rangefinder> range;
   Latest<Analog> analog;
   Latest<RcChannels> rc;
+  Latest<Motors> motors;
   std::optional<BoxNames> boxes;   // once per connection; the order of Status::box_mode_flags
 
   bool sending_sticks{false};      // the last cycle sent sticks
