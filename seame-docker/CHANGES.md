@@ -283,6 +283,28 @@ The previous run is still found from the order of `history.csv`, so the comparis
 
 **Result:** both pass; the whole suite passed (236 cases, 0 failed; run `logs/tests/2026-11-12_581471b-dirty`).
 
+## Nov 17: INAV-6, ROS sends sticks to the real drone (bench, unarmed)
+
+**Purpose:** the `inav` backend only listened. Now it can command INAV, through the one route INAV offers a ground station: stick positions over MSP (`MSP_SET_RAW_RC`), used only while the radio's MSP RC OVERRIDE switch is on. Off by default.
+
+| File | Change |
+| --- | --- |
+| `drone_fc_bridge/src/msp.*` | `build_set_raw_rc`: the only write, exactly four channels in the radio's AETR order, values outside 1000–2000 µs refused. `MSP_RC` and `MSP_BOXNAMES` join the read list |
+| `drone_fc_bridge/src/inav_decode.*` | `decode_rc` (channels in INAV's order: roll, pitch, yaw, throttle, AUX…), `decode_box_names` (finds the mode bit of MSP RC OVERRIDE) |
+| `drone_fc_bridge/src/inav_sticks.*` | New. Setpoint → sticks: linear, the speed limits are full stick, signs from INAV's source and the bench |
+| `drone_fc_bridge/src/inav_link.*` | `set_sticks`: sent first in each cycle while fresh (0.3 s) and the link is up; `MSP_RC` every cycle, the mode list once per connection |
+| `drone_fc_bridge/src/fc_bridge.cpp` | Parameter `rc_override` (default false); centred sticks on timeout or hold; publishes `fc/rc` |
+| `drone_interfaces/msg/RcChannels.msg` | New: what INAV uses, after the override |
+| `drone_interfaces/msg/FcStatus.msg` | `rc_override_active`, `rc_sent` (false in the sim). Additive: nothing else changed |
+| `drone_fc_bridge/test/` | `test_inav_sticks.cpp` (9), `test_inav_rc.py` (7, against a fake INAV that mimics the override); more cases in `test_msp.cpp`, `test_inav_decode.cpp`, `test_inav_link.cpp` (sticks every cycle, stale, link down) and `test_inav_state.py` (nothing sent by default) |
+| `scripts/bench_rc_override.sh` | New. The bench run step by step, offline (the laptop is on the drone's Wi-Fi), with a bag and readouts into `logs/measurements/inav_rc_override/` |
+
+**FC config** (by hand, `logs/measurements/inav_rc_override/fc_config_2026-11-17/`): `msp_override_channels = 15`, MSP RC OVERRIDE on SA (channel 7).
+
+**Checked:** the whole suite (306 cases, 0 failed; `logs/tests/2026-11-17_7b525e1`). Each new guard broken on purpose fails a test: sending without `rc_override`, ignoring hold, ignoring stale sticks, an inverted mode bit, a flipped roll or yaw sign, a swapped axis. On the drone, unarmed: all four axes with the right sign, radio ignored with SA on, centred on timeout, back to the radio when the frames stop or the Wi-Fi drops ([notes](logs/measurements/inav_rc_override/2026-11-17_70e3202/notes.md)).
+
+**Open:** the override kept applying with the radio off; whether INAV's RX failsafe trips with it on, while armed, is not checked. In ANGLE a stick is a bank angle or raw throttle, not a velocity, so centred throttle is about half power. Neither matters unarmed; both before anything flies on it.
+
 ## Docs updated
 
 - `README.md`: `fc_bridge` section (state topics and parameters), bridge table, `radio_teleop` debounce, a **Tests** section, known issues and the resolved list.
