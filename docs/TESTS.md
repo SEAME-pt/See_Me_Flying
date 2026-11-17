@@ -9,16 +9,18 @@ Every test and check the team runs, how to run it, and where its last result is.
 
 ## At a glance
 
-| Area | Test | How | Last result |
-| --- | --- | --- | --- |
-| ROS | Unit, launch and lint tests (174 cases) | `./scripts/run_tests.sh` | [logs/tests/history.csv](../seame-docker/logs/tests/history.csv) |
-| CI | Build + test, telemetry lint, Docker image | automatic on push and PR | GitHub → Actions |
-| Sim | Flights, takeover, failsafes, by hand | [SIM_TELEOP.md](../seame-docker/SIM_TELEOP.md) | [below](#sim-by-hand) |
-| Link | Wi-Fi round trip (`wifi_rtt`) | `logs/measurements/measure_wifi_rtt.py` | not run on the drone yet |
-| Link | MSP messages answer (`inav_telemetry.py`) | [telemetry/README.md](../telemetry/README.md) | Nov 8, all answer, ~3% no reply |
-| Link | MSP rate and loss per message (INAV-4, #126) | `msp_inventory.py rate`, see [captures/README.md](../telemetry/inav/captures/README.md) | Nov 9, 10–14 ms median, stalls of hundreds of ms |
-| Drone | Arming and radio-loss failsafe | [ELRS_Guide.md](./ELRS_Guide.md) | passed; on hold (motor wire) |
-| Drone | Battery voltage reading (`vbat_scale`) | [Li-Po_Battery_Tests.md](./Li-Po_Battery_Tests.md) | Oct 28, set to 1103 |
+| Area  | Test                                                      | How                                                                                     | Last result                                                      |
+| ----- | --------------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| ROS   | Unit, launch and lint tests (174 cases)                   | `./scripts/run_tests.sh`                                                                | [logs/tests/history.csv](../seame-docker/logs/tests/history.csv) |
+| CI    | Build + test, telemetry lint, Docker image                | automatic on push and PR                                                                | GitHub → Actions                                                 |
+| Sim   | Flights, takeover, failsafes, by hand                     | [SIM_TELEOP.md](../seame-docker/SIM_TELEOP.md)                                          | [below](#sim-by-hand)                                            |
+| Link  | Wi-Fi round trip (`wifi_rtt`)                             | `logs/measurements/measure_wifi_rtt.py`                                                 | not run on the drone yet                                         |
+| Link  | MSP messages answer (`inav_telemetry.py`)                 | [telemetry/README.md](../telemetry/README.md)                                           | Nov 8, all answer, ~3% no reply                                  |
+| Link  | MSP rate and loss per message (INAV-4, #126)              | `msp_inventory.py rate`, see [captures/README.md](../telemetry/inav/captures/README.md) | Nov 9, 10–14 ms median, stalls of hundreds of ms                 |
+| Drone | Arming and radio-loss failsafe                            | [ELRS_Guide.md](./ELRS_Guide.md)                                                        | passed; on hold (motor wire)                                     |
+| Drone | Battery voltage reading (`vbat_scale`)                    | [Li-Po_Battery_Tests.md](./Li-Po_Battery_Tests.md)                                      | Oct 28, set to 1103                                              |
+| Link  | Check if there's no interference between the ELRS and ESP | [ELRS_ESP_Interferance](ELRS_ESP_Interferance.md)                                       |                                                                  |
+
 
 ## ROS: automated tests
 
