@@ -90,6 +90,18 @@ std::optional<Rangefinder> decode_rangefinder(const Payload & p)
   return r;
 }
 
+std::optional<RcChannels> decode_rc(const Payload & p)
+{
+  if (p.size() < 8) {
+    return std::nullopt;
+  }
+  RcChannels rc;
+  for (std::size_t at = 0; at + 1 < p.size(); at += 2) {
+    rc.us.push_back(u16(p, at));
+  }
+  return rc;
+}
+
 std::optional<Attitude> decode_attitude(const Payload & p)
 {
   if (p.size() < 6) {

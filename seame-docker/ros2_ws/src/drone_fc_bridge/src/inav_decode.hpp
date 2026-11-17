@@ -16,6 +16,7 @@
 #ifndef INAV_DECODE_HPP_
 #define INAV_DECODE_HPP_
 
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -78,6 +79,21 @@ struct Rangefinder
   State state{State::NO_READING};
   int32_t raw_cm{0};
   double distance_m{0.0};   // tilt-corrected by INAV; only meaningful when VALID
+};
+
+// MSP_RC (105): the channel values INAV is using, in µs, after the MSP RC
+// override (and logic conditions). In INAV's internal order (roll, pitch,
+// yaw, throttle, then AUX1...), which is NOT the order MSP_SET_RAW_RC takes
+// (the radio's, AETR). As many channels as the radio receiver has: 17 on ours.
+struct RcChannels
+{
+  static constexpr std::size_t ROLL = 0, PITCH = 1, YAW = 2, THROTTLE = 3;
+  std::vector<uint16_t> us;   // at least the four flight channels
+
+  uint16_t roll() const {return us[ROLL];}
+  uint16_t pitch() const {return us[PITCH];}
+  uint16_t yaw() const {return us[YAW];}
+  uint16_t throttle() const {return us[THROTTLE];}
 };
 
 struct Attitude   // MSP_ATTITUDE (108)
@@ -147,6 +163,7 @@ std::optional<ApiVersion> decode_api_version(const Payload & p);
 std::optional<FcVariant> decode_fc_variant(const Payload & p);
 std::optional<FcVersion> decode_fc_version(const Payload & p);
 std::optional<Rangefinder> decode_rangefinder(const Payload & p);
+std::optional<RcChannels> decode_rc(const Payload & p);
 std::optional<Attitude> decode_attitude(const Payload & p);
 std::optional<Status> decode_status(const Payload & p);
 std::optional<OpticalFlow> decode_optical_flow(const Payload & p);

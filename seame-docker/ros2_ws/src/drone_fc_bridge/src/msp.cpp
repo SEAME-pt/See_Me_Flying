@@ -14,6 +14,20 @@ uint16_t le16(const uint8_t * p)
 {
   return static_cast<uint16_t>(p[0] | (p[1] << 8));
 }
+
+std::vector<uint8_t> request_frame(uint16_t cmd, const std::vector<uint8_t> & payload)
+{
+  if (payload.size() > MAX_REQUEST_PAYLOAD) {
+    throw std::invalid_argument("MSP request payload too long for the FC");
+  }
+  const auto size = static_cast<uint16_t>(payload.size());
+  std::vector<uint8_t> out{'$', 'X', '<', 0,
+    static_cast<uint8_t>(cmd & 0xFF), static_cast<uint8_t>(cmd >> 8),
+    static_cast<uint8_t>(size & 0xFF), static_cast<uint8_t>(size >> 8)};
+  out.insert(out.end(), payload.begin(), payload.end());
+  out.push_back(crc8_dvb_s2(out.data() + 3, out.size() - 3));
+  return out;
+}
 }  // namespace
 
 uint8_t crc8_dvb_s2(const uint8_t * data, std::size_t n, uint8_t crc)
@@ -34,6 +48,7 @@ bool is_read_command(uint16_t cmd)
     case MSP_FC_VARIANT:
     case MSP_FC_VERSION:
     case MSP_SONAR_ALTITUDE:
+    case MSP_RC:
     case MSP_ATTITUDE:
     case MSP2_INAV_STATUS:
     case MSP2_INAV_OPTICAL_FLOW:
@@ -47,24 +62,31 @@ bool is_read_command(uint16_t cmd)
 
 std::vector<uint8_t> build_request(uint16_t cmd, const std::vector<uint8_t> & payload)
 {
-  // Safety: this is the only place a request is built, and it only builds the
-  // reads on the list. A write (MSP_SET_RAW_RC 200 moves the sticks, others
-  // change settings) can then never leave the laptop, whatever the code that
-  // calls this gets wrong. A new command has to be added to the list on purpose.
+  // Safety: this only builds the reads on the list. A write (MSP_SET_RAW_RC
+  // 200 moves the sticks, others change settings) can then never leave the
+  // laptop through here, whatever the code that calls this gets wrong. A new
+  // command has to be added to the list on purpose. The one write the
+  // backend has is build_set_raw_rc, below, and it can only build sticks.
   if (!is_read_command(cmd)) {
     throw std::invalid_argument(
             "MSP command " + std::to_string(cmd) + " is not on the read-only list");
   }
-  if (payload.size() > MAX_REQUEST_PAYLOAD) {
-    throw std::invalid_argument("MSP request payload too long for the FC");
+  return request_frame(cmd, payload);
+}
+
+std::vector<uint8_t> build_set_raw_rc(const Sticks & sticks)
+{
+  std::vector<uint8_t> payload;
+  for (uint16_t us : {sticks.roll, sticks.pitch, sticks.throttle, sticks.yaw}) {
+    if (us < RC_MIN_US || us > RC_MAX_US) {
+      throw std::invalid_argument(
+              "stick value " + std::to_string(us) + " us is outside " +
+              std::to_string(RC_MIN_US) + "-" + std::to_string(RC_MAX_US));
+    }
+    payload.push_back(static_cast<uint8_t>(us & 0xFF));
+    payload.push_back(static_cast<uint8_t>(us >> 8));
   }
-  const auto size = static_cast<uint16_t>(payload.size());
-  std::vector<uint8_t> out{'$', 'X', '<', 0,
-    static_cast<uint8_t>(cmd & 0xFF), static_cast<uint8_t>(cmd >> 8),
-    static_cast<uint8_t>(size & 0xFF), static_cast<uint8_t>(size >> 8)};
-  out.insert(out.end(), payload.begin(), payload.end());
-  out.push_back(crc8_dvb_s2(out.data() + 3, out.size() - 3));
-  return out;
+  return request_frame(MSP_SET_RAW_RC, payload);
 }
 
 void Parser::feed(const uint8_t * data, std::size_t n)

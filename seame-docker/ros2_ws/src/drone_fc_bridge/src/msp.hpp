@@ -21,11 +21,21 @@ constexpr uint16_t MSP_API_VERSION = 1;
 constexpr uint16_t MSP_FC_VARIANT = 2;
 constexpr uint16_t MSP_FC_VERSION = 3;
 constexpr uint16_t MSP_SONAR_ALTITUDE = 58;
+constexpr uint16_t MSP_RC = 105;
 constexpr uint16_t MSP_ATTITUDE = 108;
 constexpr uint16_t MSP2_INAV_STATUS = 0x2000;
 constexpr uint16_t MSP2_INAV_OPTICAL_FLOW = 0x2001;
 constexpr uint16_t MSP2_INAV_ANALOG = 0x2002;
 constexpr uint16_t MSP2_INAV_FULL_LOCAL_POSE = 0x2220;
+
+// The one write: sticks for INAV's MSP RC override. Built only by
+// build_set_raw_rc, never by build_request.
+constexpr uint16_t MSP_SET_RAW_RC = 200;
+
+// The stick values build_set_raw_rc accepts, in µs. INAV's own range is
+// wider (885-2115), but the radio's full deflection is 1000-2000.
+constexpr uint16_t RC_MIN_US = 1000;
+constexpr uint16_t RC_MAX_US = 2000;
 
 // Longest reply payload the parser accepts. INAV's reply buffer is 512 bytes
 // (MSP_PORT_OUTBUF_SIZE) for everything that isn't a flash download, the
@@ -45,6 +55,24 @@ bool is_read_command(uint16_t cmd);
 // Bytes of one MSP v2 request. Throws std::invalid_argument for any command
 // that is not on the read list, or a payload the FC would drop.
 std::vector<uint8_t> build_request(uint16_t cmd, const std::vector<uint8_t> & payload = {});
+
+// The four flight sticks, in µs, named so their order can't be mixed up: the
+// wire order (below) and the order MSP_RC reads back in are different.
+struct Sticks
+{
+  uint16_t roll{1500};
+  uint16_t pitch{1500};
+  uint16_t yaw{1500};
+  uint16_t throttle{1500};
+};
+
+// Bytes of one MSP_SET_RAW_RC request with exactly these four channels, in
+// the radio's order with INAV's default rcmap (AETR: roll, pitch, throttle,
+// yaw; the CLI's `map` must read AETR). Only flight channels: AUX channels,
+// the arm switch among them, can't be sent at all. Throws
+// std::invalid_argument for a value outside RC_MIN_US..RC_MAX_US: the caller
+// clamps, so one out there is a bug, and full stick is no safe guess for it.
+std::vector<uint8_t> build_set_raw_rc(const Sticks & sticks);
 
 struct Frame
 {

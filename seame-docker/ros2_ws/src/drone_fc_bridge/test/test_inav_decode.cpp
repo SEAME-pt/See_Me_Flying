@@ -128,6 +128,59 @@ TEST(Decode, RangefinderStates)
   }
 }
 
+TEST(Decode, RcFromCaptures)
+{
+  // Line 242 of every capture: radio sticks centred, throttle at rx_min 885
+  // (fourth: INAV's internal order), AUX1 1675.
+  const auto rc = inav::decode_rc(payload(
+    "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581",
+    msp::MSP_RC));
+  ASSERT_TRUE(rc);
+  EXPECT_EQ(rc->us.size(), 17u);
+  EXPECT_EQ(rc->roll(), 1500);
+  EXPECT_EQ(rc->pitch(), 1500);
+  EXPECT_EQ(rc->yaw(), 1500);
+  EXPECT_EQ(rc->throttle(), 885);
+  EXPECT_EQ(rc->us[4], 1675);   // AUX1
+
+  // Nothing moved the sticks during the captures: every good MSP_RC reply
+  // decodes to the same channels.
+  for (const char * name : CAPTURE_FILES) {
+    int seen = 0;
+    for (const auto & l : load_capture(name)) {
+      msp::Parser parser;
+      parser.feed(l.frame.data(), l.frame.size());
+      const auto frame = parser.next();
+      if (l.cmd != msp::MSP_RC || !frame || frame->cmd != msp::MSP_RC) {
+        continue;
+      }
+      const auto got = inav::decode_rc(frame->payload);
+      ASSERT_TRUE(got) << name << " line " << l.line;
+      EXPECT_EQ(got->us, rc->us) << name << " line " << l.line;
+      ++seen;
+    }
+    EXPECT_GT(seen, 0) << name;
+  }
+}
+
+TEST(Decode, RcHandBuilt)
+{
+  // Internal order: roll, pitch, yaw, throttle. Not AETR like MSP_SET_RAW_RC.
+  const auto rc = inav::decode_rc(join({le16(1100), le16(1200), le16(1300), le16(1400)}));
+  ASSERT_TRUE(rc);
+  EXPECT_EQ(rc->roll(), 1100);
+  EXPECT_EQ(rc->pitch(), 1200);
+  EXPECT_EQ(rc->yaw(), 1300);
+  EXPECT_EQ(rc->throttle(), 1400);
+  EXPECT_EQ(rc->us.size(), 4u);
+
+  // A stray odd byte at the end is not half a channel.
+  const auto odd = inav::decode_rc(join({le16(1100), le16(1200), le16(1300), le16(1400), {0x05}}));
+  ASSERT_TRUE(odd);
+  EXPECT_EQ(odd->us.size(), 4u);
+  expect_needs(inav::decode_rc, 8);
+}
+
 TEST(Decode, Attitude)
 {
   struct Golden {const char * hex; double roll_deg, pitch_deg, yaw_deg;};

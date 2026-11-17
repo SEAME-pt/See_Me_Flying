@@ -18,7 +18,6 @@ namespace
 const char ATTITUDE_HEX[] = "24583e006c000600f7ffc0ff300089";
 const uint16_t MSP_ALTITUDE = 109;          // not ours: stale replies in the captures
 const uint16_t MSP_BOXNAMES = 116;
-const uint16_t MSP_SET_RAW_RC = 200;
 const uint16_t MSP2_INAV_GET_LINK_STATS = 0x2103;
 
 void feed(msp::Parser & parser, const Bytes & bytes)
@@ -114,7 +113,7 @@ TEST(BuildRequest, SameBytesAsPython)
 
 TEST(BuildRequest, OnlyReadCommands)
 {
-  const std::vector<uint16_t> allowed = {1, 2, 3, 58, 108, 0x2000, 0x2001, 0x2002, 0x2220};
+  const std::vector<uint16_t> allowed = {1, 2, 3, 58, 105, 108, 0x2000, 0x2001, 0x2002, 0x2220};
   for (uint16_t cmd : allowed) {
     EXPECT_TRUE(msp::is_read_command(cmd)) << cmd;
     EXPECT_NO_THROW(msp::build_request(cmd)) << cmd;
@@ -126,7 +125,7 @@ TEST(BuildRequest, OnlyReadCommands)
   }
   EXPECT_EQ(count, static_cast<int>(allowed.size()));
 
-  EXPECT_THROW(msp::build_request(MSP_SET_RAW_RC), std::invalid_argument);
+  EXPECT_THROW(msp::build_request(msp::MSP_SET_RAW_RC), std::invalid_argument);
   // Other writes, and reads that are simply not on the list.
   for (uint16_t cmd : {0, 68 /* reboot */, 109, 116, 201, 205, 250 /* eeprom write */,
       0x2003, 0x2103, 0x1F01 /* MSP2 sensor rangefinder */, 0xFFFF})
@@ -144,6 +143,57 @@ TEST(BuildRequest, PayloadAndItsLimit)
   EXPECT_THROW(
     msp::build_request(msp::MSP_ATTITUDE, Bytes(msp::MAX_REQUEST_PAYLOAD + 1)),
     std::invalid_argument);
+}
+
+TEST(BuildSetRawRc, SameBytesAsPython)
+{
+  // Built with struct.pack("<4H", ...) and the same CRC in Python. The wire
+  // order is roll, pitch, throttle, yaw (AETR): throttle 1450 comes before
+  // yaw 1550 here.
+  msp::Sticks s;
+  s.roll = 1600;
+  s.pitch = 1400;
+  s.yaw = 1550;
+  s.throttle = 1450;
+  EXPECT_EQ(msp::build_set_raw_rc(s), from_hex("24583c00c800080040067805aa050e0628"));
+
+  msp::Sticks low;
+  low.throttle = 1000;
+  EXPECT_EQ(msp::build_set_raw_rc(low), from_hex("24583c00c8000800dc05dc05e803dc0598"));
+}
+
+TEST(BuildSetRawRc, ExactlyFourChannelsInAetrOrder)
+{
+  msp::Sticks s;
+  s.roll = 1001;
+  s.pitch = 1002;
+  s.yaw = 1004;
+  s.throttle = 1003;
+  const Bytes req = msp::build_set_raw_rc(s);
+  EXPECT_EQ(req, make_frame('<', msp::MSP_SET_RAW_RC,
+    {0xE9, 0x03, 0xEA, 0x03, 0xEB, 0x03, 0xEC, 0x03}));
+  // 8 payload bytes: no AUX channel, so no arm switch, can ever be sent.
+  EXPECT_EQ(req.size(), 9u + 8u);
+}
+
+TEST(BuildSetRawRc, RefusesValuesOutsideTheStickRange)
+{
+  msp::Sticks edge;
+  edge.roll = msp::RC_MIN_US;
+  edge.pitch = msp::RC_MAX_US;
+  edge.yaw = msp::RC_MIN_US;
+  edge.throttle = msp::RC_MAX_US;
+  EXPECT_NO_THROW(msp::build_set_raw_rc(edge));
+
+  for (uint16_t bad : {uint16_t{0}, uint16_t{885}, uint16_t{999}, uint16_t{2001}, uint16_t{2115},
+      uint16_t{0xFFFF}})
+  {
+    for (int axis = 0; axis < 4; ++axis) {
+      msp::Sticks s;
+      (axis == 0 ? s.roll : axis == 1 ? s.pitch : axis == 2 ? s.yaw : s.throttle) = bad;
+      EXPECT_THROW(msp::build_set_raw_rc(s), std::invalid_argument) << bad << " on axis " << axis;
+    }
+  }
 }
 
 TEST(Captures, EveryGoodFrameParses)
@@ -354,7 +404,7 @@ TEST(Parser, IgnoresRequestFrames)
   const Bytes attitude = from_hex(ATTITUDE_HEX);
   const auto frames = parse(
     msp::build_request(msp::MSP_ATTITUDE) + attitude +
-    make_frame('<', MSP_SET_RAW_RC, {1, 2, 3, 4}));
+    make_frame('<', msp::MSP_SET_RAW_RC, {1, 2, 3, 4}));
   ASSERT_EQ(frames.size(), 1u);
   EXPECT_EQ(frames[0].cmd, msp::MSP_ATTITUDE);
   EXPECT_FALSE(frames[0].is_error);
