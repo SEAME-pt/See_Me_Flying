@@ -35,7 +35,7 @@ class SafetyManager(Node):
         for source in priority:
             self.create_subscription(TwistStamped, f'cmd/{source}',
                                      partial(self.on_command, source), qos_profile_sensor_data)
-        # Placeholder: nothing publishes fc/battery yet (the inav backend will).
+        # fc/battery comes from the inav backend; nothing publishes it in the sim.
         self.create_subscription(BatteryState, 'fc/battery', self.on_battery, 10)
         self.battery_warned = False
         self.create_timer(0.05, self.check)

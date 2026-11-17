@@ -47,7 +47,7 @@ What was added on top of "the X3 flies circles on its own", and how to try each 
                                    /X3/odom ──► fc_bridge ──► fc/odom, fc/attitude, fc/range
 ```
 
-With `backend:=inav`, Gazebo, `ros_gz_bridge` and the radio nodes are gone, and `fc_bridge` is the MSP stub: it sends nothing yet.
+With `backend:=inav`, Gazebo, `ros_gz_bridge` and the radio nodes are gone, and `fc_bridge` reads the real drone over MSP (esp-link, port 23) without sending it any commands.
 
 Only `safety_manager` publishes on `/fc/setpoint_velocity`, so sources never fight: the radio beats manual beats the mission. Every source still ends in `fc_bridge`, so the timeout, NaN guard and clamp apply to all of them.
 
@@ -329,4 +329,4 @@ Flip SA on and off slowly about 20 times, then Ctrl-C. A clean switch prints one
 | Radio-as-joystick is sim only and needs RF off | A transmitting radio could command a bench drone | Always the `INAV-SIM` model |
 # Tags
 
-#resources 
+#tests

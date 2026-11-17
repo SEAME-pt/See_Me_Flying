@@ -9,7 +9,6 @@ Times are the node clock, so with use_sim_time everything follows Gazebo.
 from dataclasses import fields
 import math
 import threading
-import time
 
 from drone_interfaces.action import Goto, Land, Takeoff
 from drone_interfaces.msg import FcStatus
@@ -20,9 +19,10 @@ import rclpy
 from rclpy._rclpy_pybind11 import RCLError
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.executors import ExternalShutdownException, MultiThreadedExecutor
+from rclpy.executors import ExternalShutdownException, SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
+from rclpy.task import Future
 from sensor_msgs.msg import Range
 from std_msgs.msg import String
 from std_srvs.srv import SetBool
@@ -52,6 +52,8 @@ class MissionNode(Node):
         self.arm = self.create_client(SetBool, 'fc/arm', callback_group=group)
         self.create_timer(1.0 / rate, self.tick, callback_group=group)
         self.logged = 0
+        self.waiting = []                          # running goals, woken by the next tick
+        self.feedback_ticks = max(1, round(0.1 * rate))   # feedback at about 10 Hz
 
         self.servers = []
         for name, kind, request in [('takeoff', Takeoff, self.request_takeoff),
@@ -122,7 +124,10 @@ class MissionNode(Node):
                 return CancelResponse.ACCEPT
         return CancelResponse.REJECT
 
-    def execute(self, handle):
+    async def execute(self, handle):
+        # A coroutine, not a blocking loop: while it waits for the next tick the
+        # executor's one thread keeps running tick() and the subscriptions, so the
+        # 20 Hz commands never stall behind a sleeping goal.
         with self.lock:
             _, g = self.accepted.pop(id(handle.request))
             self.goals[bytes(handle.goal_id.uuid)] = g
@@ -133,7 +138,8 @@ class MissionNode(Node):
             for k, v in g.feedback.items():
                 setattr(fb, k, float(v))
             handle.publish_feedback(fb)
-            time.sleep(0.1)
+            for _ in range(self.feedback_ticks):
+                await self.next_tick()
 
         result = action.Result()
         if not rclpy.ok():
@@ -154,6 +160,12 @@ class MissionNode(Node):
             self.goals.pop(bytes(handle.goal_id.uuid), None)
         return result
 
+    def next_tick(self):
+        """Return a future that the next tick() completes (node clock, so sim time too)."""
+        future = Future()
+        self.waiting.append(future)
+        return future
+
     def set_armed(self, armed):
         if not self.arm.service_is_ready():
             self.get_logger().warn('fc/arm not available')
@@ -172,6 +184,9 @@ class MissionNode(Node):
         where = 'no range' if h is None else f'height {h:.2f} m'
         for _, old, state in new:
             self.get_logger().info(f'State: {old} -> {state} ({where})')
+        waiting, self.waiting = self.waiting, []
+        for future in waiting:
+            future.set_result(None)
         if cmd is None:
             return   # on the ground: silence, so fc_bridge times out and holds
 
@@ -188,15 +203,17 @@ class MissionNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = MissionNode()
-    executor = MultiThreadedExecutor()
+    # One thread: execute() is a coroutine (see there). The multi-threaded executor
+    # missed the 20 Hz tick by 0.3-0.8 s at a time, so fc_bridge timed out (bug 3).
+    executor = SingleThreadedExecutor()
     executor.add_node(node)
     try:
         executor.spin()
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
     except RCLError:
-        # Ctrl-C: rclpy's handler shuts the context down while the multi-threaded
-        # executor waits, and the next wait fails. rclpy's handler is kept anyway:
+        # Ctrl-C: rclpy's handler shuts the context down while the executor
+        # waits, and the next wait fails. rclpy's handler is kept anyway:
         # it wakes the executor even when nothing else does (no /clock, no messages).
         if rclpy.ok():
             raise

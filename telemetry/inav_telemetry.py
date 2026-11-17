@@ -79,9 +79,14 @@ class MSPClient:
             if len(self.buf) < total:
                 return None
             body, crc = self.buf[3:8 + size], self.buf[8 + size]
+            if crc8_dvb_s2(body) != crc:
+                # Don't trust the length of a damaged header: a reply that lost
+                # bytes still claims its full size, and the next good reply sits
+                # inside that span. Drop only this "$X" and search again.
+                self.buf = self.buf[2:]
+                continue
             self.buf = self.buf[total:]
-            if crc8_dvb_s2(body) == crc:
-                return cmd, direction == b">", body[5:]
+            return cmd, direction == b">", body[5:]
 
     def request(self, cmd, payload=b""):
         """Send one request; return (ok, payload) or (None, None) on timeout."""
@@ -162,7 +167,7 @@ def d_raw_imu(p):
 SENSOR_BITS = ["acc", "baro", "mag", "gps", "rangefinder", "opflow", "pitot", "temp"]
 
 # INAV armingFlag_e (runtime_config.h). Bit numbers can change between INAV
-# versions; unknown bits are shown as flag_bit_N.
+# versions; checked against INAV 9.1.0.
 ARMING_BITS = {
     2: "armed", 3: "was_ever_armed", 4: "simulator_hitl", 5: "simulator_sitl",
     6: "geozone", 7: "failsafe_system", 8: "not_level",
@@ -189,9 +194,14 @@ def sensor_fields(bits):
             "hardware_ok": not bits >> 15 & 1}
 
 
+# The bits that block arming: INAV ARMING_DISABLED_ALL_FLAGS, the same as
+# ARMING_BLOCKERS in drone_fc_bridge/src/inav_decode.hpp. Bits 2-5 are state
+# (armed, was_ever_armed, simulator HITL/SITL), and 0, 1, 17, 31 are unused.
+ARMING_BLOCKER_BITS = [*range(6, 17), *range(18, 31)]
+
+
 def arming_fields(flags):
-    blockers = [ARMING_BITS.get(i, f"flag_bit_{i}")
-                for i in range(32) if flags >> i & 1 and i not in (2, 3)]
+    blockers = [ARMING_BITS[i] for i in ARMING_BLOCKER_BITS if flags >> i & 1]
     return {"armed": bool(flags >> 2 & 1), "was_ever_armed": bool(flags >> 3 & 1),
             "arming_blockers": blockers}
 
@@ -231,7 +241,7 @@ def d_inav_status(p):                             # MSP2_INAV_STATUS (0x2000)
 
 def d_inav_analog(p):                             # MSP2_INAV_ANALOG (0x2002)
     flags, volt, amps, power, mah, mwh, remaining, pct, rssi = \
-        struct.unpack_from("<BHhIIIIBH", p)
+        struct.unpack_from("<BHhiiiIBH", p)       # power, mAh, mWh are int32 in INAV
     return {"voltage_v": volt / 100, "current_a": amps / 100,
             "power_w": power / 100, "mah_drawn": mah, "mwh_drawn": mwh,
             "remaining_capacity": remaining, "battery_pct": pct,
@@ -263,7 +273,7 @@ def d_board_info(p):                              # MSP_BOARD_INFO (4)
 
 def d_rangefinder(p):                             # MSP_SONAR_ALTITUDE (58)
     (cm,) = struct.unpack_from("<i", p)
-    if cm < 0:                                    # -1 = out of range, other negatives = no reading
+    if cm <= 0:                                   # 0 = no rangefinder running, -1 = out of range
         return {"valid": False, "code": cm}
     return {"valid": True, "distance_m": cm / 100}
 

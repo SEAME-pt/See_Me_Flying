@@ -88,6 +88,12 @@ jobs:
           pip install flake8
           flake8 telemetry --max-line-length=140
 
+      - name: Unit tests            # MSP framing and decoders, no drone needed (telemetry/tests/)
+        if: hashFiles('telemetry/tests/*.py') != ''
+        run: |
+          pip install pytest
+          python -m pytest telemetry -v
+
   # 3. Dev container: proves the Dockerfile still builds from scratch (STK-2)
   docker-image:
     runs-on: ubuntu-24.04

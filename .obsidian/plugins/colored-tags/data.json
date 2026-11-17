@@ -16,6 +16,7 @@
     "resources": 4,
     "simulator": 7,
     "sprints": 5,
+    "tests": 8,
     "tools": 6
   },
   "tagColors": {},

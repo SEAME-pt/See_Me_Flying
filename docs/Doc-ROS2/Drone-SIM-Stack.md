@@ -141,6 +141,16 @@ The list lives in `drone_bringup/config/gz_bridge.yaml`, which the bridge reads 
 
 `/fc/odom` arrives at 50 Hz with `frame_id: x3/odom` and `child_frame_id: x3/base_footprint`; covariances are all zero. Any topic not listed does not cross: the IMU (inertial measurement unit) is not visible in ROS yet.
 
+**Camera views** (#237). `sim.launch.py camera:=...` picks the main view of the Gazebo window; `start.sh` asks for it after options 2 and 3:
+
+| `camera` | Window shows | How |
+| --- | --- | --- |
+| `free` (default) | Gazebo's own view, moved with the mouse | Gazebo's default window |
+| `follow` | Behind and above the drone, turning with it | `config/gui/follow.config` (offset `-1.5 0 0.6`); the launch asks the window to follow `x3` once it is up, because the config alone starts before the drone is in the scene |
+| `fpv` | The drone's front camera, filling the window | `config/gui/fpv.config`: an image panel on Gazebo topic `/fpv/image` |
+
+The FPV camera is a sensor on the X3 in our worlds only (`room_world.sdf`, `outdoor_field.sdf`): 120° wide, 640×480 at up to 30 Hz, on the front edge of the body and tilted 20° up like a real FPV camera. The X3 comes from Fuel, so each world adds it in its `<include>` with `<experimental:params>`; a new world needs the same block. In Gazebo's default world `fpv` shows nothing. The camera makes `sim.launch.py` start Gazebo as two processes, the server (`gz sim -s -r <world>`) and the window (`gz sim -g`, which ends the launch when closed): in one process, the window and the camera's rendering deadlock on the dev container's software rendering, and Gazebo shows nothing. With no GPU (the dev container), the camera reaches about 10 frames per second.
+
 **Gazebo** (`gz sim`, Gazebo Harmonic) is not a ROS node. It loads the world `multicopter_velocity_control.sdf` (SDF: Simulation Description Format) running from the start (`-r`). The world holds two quadcopters, X3 and X4; only X3 is used. X3 has a built-in velocity controller: given a Twist, it works out the motor speeds to reach that velocity and holds it until the next command. Underneath, the physics is real: per-rotor motor models (thrust, rotor drag, spin-up), gravity and collisions. The controller reads commands in the **body frame** (verified Oct 22, 2026: forward follows the nose to within 1°). It accepts commands only while enabled. Our stack never touches the X4 or the `motor_speed` topic, which drives the propellers directly.
 
 ## Launch files
