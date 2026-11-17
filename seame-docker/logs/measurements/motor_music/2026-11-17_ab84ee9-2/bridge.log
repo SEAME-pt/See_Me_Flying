@@ -1,0 +1,10 @@
+[WARN] [1794932886.226007080] [fc_bridge]: Backend inav: reading INAV over MSP at 192.168.4.1:23, and sending setpoints as sticks (rc_override). INAV uses them while the radio's MSP RC OVERRIDE switch is on
+[INFO] [1794932886.926724898] [fc_bridge]: Setpoints received, following them
+[WARN] [1794932887.231491332] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[WARN] [1794932889.240494890] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[WARN] [1794932891.243515373] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[WARN] [1794932893.260592855] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[WARN] [1794932895.265970586] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[WARN] [1794932897.269201733] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[WARN] [1794932899.271355889] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[INFO] [1794932900.106206718] [rclcpp]: signal_handler(SIGINT/SIGTERM)

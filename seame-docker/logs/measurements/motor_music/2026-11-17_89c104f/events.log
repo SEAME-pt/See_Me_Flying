@@ -1,0 +1,8 @@
+1794932414.578560447 bag start
+1794932414.722743596 sing start (idle)
+1794932417.872928972 fc_bridge start, rc_override true
+1794932426.274059254 LOOK connected (expect armed False, throttle 1000): fc/rc: nothing in 3 s | fc/motors: nothing | override_active False rc_sent False link_ok False armed False
+1794932437.637271108 props off confirmed
+1794932597.939073583 fc_bridge stop
+1794932599.630850719 sing stop
+1794932600.302010128 bag stop

@@ -1,0 +1,50 @@
+[
+ {
+  "label": "step 1050",
+  "value": 1050,
+  "start_epoch": 1794934029.006,
+  "end_epoch": 1794934031.006
+ },
+ {
+  "label": "step 1100",
+  "value": 1100,
+  "start_epoch": 1794934031.006,
+  "end_epoch": 1794934033.006
+ },
+ {
+  "label": "step 1150",
+  "value": 1150,
+  "start_epoch": 1794934033.006,
+  "end_epoch": 1794934035.006
+ },
+ {
+  "label": "step 1200",
+  "value": 1200,
+  "start_epoch": 1794934035.006,
+  "end_epoch": 1794934037.006
+ },
+ {
+  "label": "step 1250",
+  "value": 1250,
+  "start_epoch": 1794934037.006,
+  "end_epoch": 1794934039.006
+ },
+ {
+  "label": "step 1300",
+  "value": 1300,
+  "start_epoch": 1794934039.006,
+  "end_epoch": 1794934041.006
+ },
+ {
+  "label": "step 1350",
+  "value": 1350,
+  "start_epoch": 1794934041.006,
+  "end_epoch": 1794934043.006
+ },
+ {
+  "label": "step 1400",
+  "value": 1400,
+  "start_epoch": 1794934043.006,
+  "end_epoch": 1794934045.006
+ }
+]
