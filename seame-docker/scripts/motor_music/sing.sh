@@ -10,8 +10,11 @@
 # Usage, on the host in seame-docker/, dev container running:
 #   INSTALL=/tmp/inav6_bench/install scripts/motor_music/sing.sh calibrate
 #   INSTALL=/tmp/inav6_bench/install scripts/motor_music/sing.sh play SONG.rtttl [options]
-# play options go to sing.py: --part all, --octave N, --nudge N (semitones).
-# The pitch map is the latest calibration's (MAP=path/pitch.json for another).
+# play options go to sing.py: --part all, --base T (relative tuning), and with
+# a map --octave N, --nudge N (semitones).
+# Tuning: relative by default (--base T: the lowest note's throttle stick, 1150),
+# or MAP=path/pitch.json for a calibration's measured map. Both need the
+# motors to get the throttle alone: a control profile with zero PIDs.
 #
 # calibrate: throttle stick 1050-1400 in 8 steps, 2 s each, recorded; the
 # pitch of each step goes to pitch.json. play: the song, recorded.
@@ -29,10 +32,12 @@ case "$MODE" in
         SONG="${2:-}"
         [ -f "$SONG" ] || { echo "❌ play needs an RTTTL file"; exit 2; }
         shift 2
-        MAP="${MAP:-$(ls -t "$PROJECT"/logs/measurements/motor_music/*/pitch.json 2>/dev/null | head -1)}"
-        [ -f "$MAP" ] || { echo "❌ No pitch map: run calibrate first (or MAP=...)"; exit 2; }
-        echo "Pitch map: ${MAP#"$PROJECT"/}"
-        python3 "$HERE/sing.py" play "$SONG" --map "$MAP" --dry-run "$@" || exit 2
+        MAP_ARG=""
+        if [ -n "${MAP:-}" ]; then
+            [ -f "$MAP" ] || { echo "❌ No pitch map at $MAP"; exit 2; }
+            MAP_ARG="--map $MAP"
+        fi
+        python3 "$HERE/sing.py" play "$SONG" $MAP_ARG --dry-run "$@" || exit 2
         ;;
     *) echo "Usage: $0 calibrate | play SONG.rtttl [options]"; exit 2 ;;
 esac
@@ -50,10 +55,13 @@ docker compose cp "$HERE/analyse.py" "dev:$TMP/analyse.py" > /dev/null 2>&1
 SING_ARGS="$MODE --tmp $TMP"
 if [ "$MODE" = play ]; then
     docker compose cp "$SONG" "dev:$TMP/song.rtttl" > /dev/null 2>&1
-    docker compose cp "$MAP" "dev:$TMP/map.json" > /dev/null 2>&1
     cp "$SONG" "$RUN/song.rtttl"
-    cp "$MAP" "$RUN/map.json"
-    SING_ARGS="play $TMP/song.rtttl --map $TMP/map.json --tmp $TMP $*"
+    SING_ARGS="play $TMP/song.rtttl --tmp $TMP $*"
+    if [ -n "${MAP:-}" ]; then
+        docker compose cp "$MAP" "dev:$TMP/map.json" > /dev/null 2>&1
+        cp "$MAP" "$RUN/map.json"
+        SING_ARGS="$SING_ARGS --map $TMP/map.json"
+    fi
 fi
 WAV="$RUN/$([ "$MODE" = calibrate ] && echo calib || echo song).wav"
 REC=""
