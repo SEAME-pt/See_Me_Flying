@@ -1,0 +1,13 @@
+{
+  "kind": "measurements",
+  "name": "inav_link",
+  "date": "2026-11-16T13:33:10+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "dbf5804f7f2b8b4b5b2edb78197bc111d3f14c5d",
+  "commit_short": "dbf5804",
+  "commit_subject": "Record the test run on ROS-6 step C",
+  "branch": "staging",
+  "uncommitted_code": [],
+  "uncommitted_other": [],
+  "note": "bench, laptop on the drone's AP, esp-link port 23, fc_bridge backend:=inav, props off, not armed, no rangefinder; recovery = battery pulled for a few seconds"
+}
