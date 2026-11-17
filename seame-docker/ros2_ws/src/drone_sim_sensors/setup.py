@@ -27,6 +27,7 @@ setup(
             'flow_model = drone_sim_sensors.flow_model:main',
             'flow_check = drone_sim_sensors.flow_check:main',
             'estimator = drone_sim_sensors.estimator_node:main',
+            'odom_check = drone_sim_sensors.odom_check:main',
         ],
     },
 )
