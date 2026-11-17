@@ -2,7 +2,8 @@
 # ---------------------------------------------------------------------------- #
 #   Shared by the INAV bench scripts (bench_rc_override.sh, bench_rc_armed.sh)  #
 # ---------------------------------------------------------------------------- #
-# Sourced, not run. Before sourcing, set BENCH_NOTE (goes into meta.json).
+# Sourced, not run. Before sourcing, set BENCH_NOTE (goes into meta.json), and
+# BENCH_NAME for a run folder other than logs/measurements/inav_rc_override/.
 # Sets PROJECT_DIR, RUN (the run folder), TMP (a folder in the container,
 # copied into RUN by bench_save) and EVENTS, and gives the helpers below.
 #
@@ -28,9 +29,9 @@ if ! docker compose exec -T dev test -f "$INSTALL/setup.bash" < /dev/null; then
     exit 2
 fi
 
-RUN=$(BENCH_NOTE="$BENCH_NOTE, install $INSTALL" python3 -c "import os, sys; \
+RUN=$(BENCH_NAME="${BENCH_NAME:-inav_rc_override}" BENCH_NOTE="$BENCH_NOTE, install $INSTALL" python3 -c "import os, sys; \
 sys.path.insert(0, 'scripts'); from logbook import new_run; \
-print(new_run('measurements', 'inav_rc_override', {'note': os.environ['BENCH_NOTE']}))")
+print(new_run('measurements', os.environ['BENCH_NAME'], {'note': os.environ['BENCH_NOTE']}))")
 TMP="/tmp/inav6_rc_$(date +%s)"
 EVENTS="$RUN/events.log"
 echo "📁 ${RUN#"$PROJECT_DIR"/}"
@@ -121,6 +122,7 @@ look() {   # $1: label
 
 # Leftovers of an earlier run that was cut short.
 in_dev "pkill -f '[t]opic pub -r 20 /fc/setpoint_velocity'; pkill -INT -f '[f]eed.py'; \
+pkill -INT -f '[s]ing.py'; \
 pkill -INT -x fc_bridge; pkill -INT -f '[r]os2 bag record'; sleep 1" || true
 
 docker compose exec -T dev bash -c "mkdir -p $TMP && cat > $TMP/look.py" <<'EOF'
