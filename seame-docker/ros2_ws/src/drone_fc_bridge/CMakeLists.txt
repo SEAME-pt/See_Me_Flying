@@ -16,10 +16,12 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(drone_interfaces REQUIRED)
 
-# MSP framing, INAV decoders and the TCP link for the inav backend. No ROS in
-# it, so the tests below run it against captured frames and a fake FC.
+# MSP framing, INAV decoders, the stick mapping and the TCP link for the inav
+# backend. No ROS in it, so the tests below run it against captured frames and
+# a fake FC.
 find_package(Threads REQUIRED)
-add_library(fc_msp STATIC src/msp.cpp src/inav_decode.cpp src/inav_link.cpp)
+add_library(fc_msp STATIC
+  src/msp.cpp src/inav_decode.cpp src/inav_link.cpp src/inav_sticks.cpp)
 target_include_directories(fc_msp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(fc_msp PUBLIC Threads::Threads)
 
@@ -52,7 +54,7 @@ if(BUILD_TESTING)
 
   # Captured frames from the real drone live in test/data (see its README).
   find_package(ament_cmake_gtest REQUIRED)
-  foreach(name test_msp test_inav_decode test_inav_link)
+  foreach(name test_msp test_inav_decode test_inav_link test_inav_sticks)
     ament_add_gtest(${name} test/${name}.cpp)
     target_link_libraries(${name} fc_msp)
     target_compile_definitions(${name} PRIVATE
