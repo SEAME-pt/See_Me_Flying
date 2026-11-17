@@ -305,7 +305,9 @@ The previous run is still found from the order of `history.csv`, so the comparis
 
 **Checked:** the whole suite (306 cases, 0 failed; `logs/tests/2026-11-17_7b525e1`). Each new guard broken on purpose fails a test: sending without `rc_override`, ignoring hold, ignoring stale sticks, an inverted mode bit, a flipped roll or yaw sign, a swapped axis. On the drone, unarmed: all four axes with the right sign, radio ignored with SA on, centred on timeout, back to the radio when the frames stop or the Wi-Fi drops ([notes](logs/measurements/inav_rc_override/2026-11-17_70e3202/notes.md)).
 
-**Open:** the override kept applying with the radio off; whether INAV's RX failsafe trips with it on, while armed, is not checked. In ANGLE a stick is a bank angle or raw throttle, not a velocity, so centred throttle is about half power. Neither matters unarmed; both before anything flies on it.
+**Armed, props off** ([notes](logs/measurements/inav_rc_override/2026-11-17_c3c73c0/notes.md)): SA on at idle without a jump, the motors follow the throttle ramp, roll and pitch as the mixer should, and with the radio off INAV's failsafe disarmed even with the override on.
+
+**Open:** yaw left raised motors 2 and 3; whether that turns left depends on the motors' spin, to compare with the radio's yaw stick. In ANGLE a stick is a bank angle or raw throttle, not a velocity, so centred throttle is about half power.
 
 ## Docs updated
 

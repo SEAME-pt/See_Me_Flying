@@ -60,7 +60,7 @@ Key design rules:
 
 - **`fc_bridge` is the only node allowed to command the drone.** All sources publish to `/fc/setpoint_velocity`; the bridge clamps and forwards them.
 - **Arming stays on the radio.** ROS never arms the real drone. The sim-only "enable" topic will not exist in the `inav` backend.
-- **Two failsafe layers.** ROS side: `fc_bridge` sends zero velocity (hover) when setpoints go stale; to the real drone (with `rc_override`) that is centred sticks, which is only hover with altitude and position hold. FC side: INAV's RX failsafe `DROP` after 0.5 s. ROS reaches the real drone's sticks only through INAV's MSP RC OVERRIDE mode, on a radio switch (SA). On the bench, unarmed, the override kept applying with the radio off: whether the RX failsafe still trips with it on is not checked yet, so don't fly with SA on.
+- **Two failsafe layers.** ROS side: `fc_bridge` sends zero velocity (hover) when setpoints go stale; to the real drone (with `rc_override`) that is centred sticks, which is only hover with altitude and position hold. FC side: INAV's RX failsafe `DROP` after 0.5 s. ROS reaches the real drone's sticks only through INAV's MSP RC OVERRIDE mode, on a radio switch (SA). Unarmed, the override keeps applying with the radio off; armed (props off, Nov 17), the RX failsafe still disarms the drone with it on.
 
 ## Repository layout
 
