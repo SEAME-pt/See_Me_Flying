@@ -8,3 +8,6 @@ __pycache__/
 # Motor music: songs stay local (ringtones of other people's music)
 seame-docker/scripts/motor_music/songs/
 seame-docker/logs/measurements/motor_music/*/song.rtttl
+seame-docker/logs/measurements/motor_music/_archive/
+seame-docker/logs/measurements/motor_music/*/bag/
+seame-docker/logs/measurements/motor_music/*/*.wav

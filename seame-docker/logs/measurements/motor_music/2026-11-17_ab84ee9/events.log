@@ -1,7 +1,0 @@
-1794932812.669117286 bag start
-1794932812.839433147 sing start (idle)
-1794932815.989521000 fc_bridge start, rc_override true
-1794932846.014273006 LOOK connected (expect armed False, throttle 1000): fc/rc: nothing in 3 s | fc/motors: nothing | override_active False rc_sent False link_ok False armed False
-1794932846.021886660 fc_bridge stop
-1794932847.660353938 sing stop
-1794932848.277466426 bag stop

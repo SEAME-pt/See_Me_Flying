@@ -102,6 +102,8 @@ stop_bag() {
 }
 bench_save() {
     docker compose cp "dev:$TMP/." "$RUN/" > /dev/null 2>&1
+    # The helper scripts and go/done flags are copies or empty: not results.
+    (cd "$RUN" && rm -rf -- *.py __pycache__ go done)
     echo
     echo "✅ Saved in ${RUN#"$PROJECT_DIR"/}: bag/, events.log, bridge.log, bag.log"
 }
