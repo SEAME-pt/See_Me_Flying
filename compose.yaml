@@ -3,8 +3,8 @@ services:
     build:
       context: .
       args:
-        HOST_UID: ${HOST_UID:-1000}
-        HOST_GID: ${HOST_GID:-1000}
+        HOST_UID: ${HOST_UID}
+        HOST_GID: ${HOST_GID}
     image: seame/ros2-dev:jazzy
     container_name: seame-dev
     network_mode: host   # DDS discovery across containers and machines
