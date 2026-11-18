@@ -27,8 +27,8 @@ from xml.etree import ElementTree
 
 from ament_index_python.packages import get_package_prefix, get_package_share_directory
 from launch import LaunchContext
-from launch.actions import (DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction,
-                            TimerAction)
+from launch.actions import (DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription,
+                            OpaqueFunction, TimerAction)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.utilities import perform_substitutions
 from launch_ros.actions import Node
@@ -182,7 +182,7 @@ def test_default_is_the_sim_with_the_radio_and_the_mission():
     assert set(started(actions)) == {
         'parameter_bridge', 'flow_model', 'estimator', 'fc_bridge', 'safety_manager',
         'mission', 'joy_node', 'radio_teleop'}
-    assert len(gazebo(actions)) == 1
+    assert len(gazebo(actions)) == 2      # server and window
 
 
 def test_inav_backend_starts_no_gazebo_and_no_radio_nodes():
@@ -234,12 +234,36 @@ def test_nothing_flies_without_a_source(arguments):
 
 # ---------- what goes to Gazebo ----------
 
-def test_gazebo_gets_the_world_and_headless_adds_server_only():
-    (gz,) = gazebo(launch(world='some_world.sdf'))
-    assert gz.recorded['gz_args'] == '-r some_world.sdf'
+def test_gazebo_server_and_window_are_two_processes():
+    # One process with both deadlocks once the world has a camera (llvmpipe).
+    server, window = gazebo(launch(world='some_world.sdf'))
+    assert server.recorded['gz_args'] == '-s -r some_world.sdf'
+    assert window.recorded['gz_args'] == '-g'
+    assert window.recorded['on_exit_shutdown'] == 'true'   # closing it ends the launch
+    for gz in (server, window):
+        assert gz.path.endswith(os.path.join('launch', 'gz_sim.launch.py'))
+
+
+def test_headless_starts_the_server_only():
     (gz,) = gazebo(launch(world='some_world.sdf', headless='true'))
     assert gz.recorded['gz_args'] == '-s -r some_world.sdf'
-    assert gz.path.endswith(os.path.join('launch', 'gz_sim.launch.py'))
+
+
+def test_camera_picks_the_window_view():
+    for camera in ('free', 'follow', 'fpv'):
+        actions = launch(camera=camera)
+        _, window = gazebo(actions)
+        follows = [a for a in actions if type(a) is ExecuteProcess]   # not a Node
+        if camera == 'free':
+            assert window.recorded['gz_args'] == '-g'     # Gazebo's own view
+        else:
+            option, config = window.recorded['gz_args'].split()[1:]
+            assert option == '--gui-config' and os.path.isfile(config), config
+            assert config.endswith(os.path.join('gui', camera + '.config'))
+        # Only follow asks the window to follow the drone once it is up.
+        assert len(follows) == (camera == 'follow'), camera
+    assert not [a for a in launch(camera='follow', headless='true')
+                if type(a) is ExecuteProcess]
 
 
 # ---------- how the nodes are wired ----------

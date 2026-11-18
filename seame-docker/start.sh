@@ -30,6 +30,19 @@ options=(
     "Exit"
 )
 
+# Options 2 and 3: which view the Gazebo window shows (sim.launch.py camera:=...).
+ask_camera() {
+    local PS3="Select the camera (1-3): " cam
+    select cam in "FPV (the drone's front camera)" "Follow mode (behind the drone)" "Normal camera (free)"; do
+        case $REPLY in
+            1) CAMERA=fpv; return ;;
+            2) CAMERA=follow; return ;;
+            3) CAMERA=free; return ;;
+            *) echo "Invalid option: $REPLY. Choose a number between 1 and 3." ;;
+        esac
+    done
+}
+
 select opt in "${options[@]}"; do
     case $opt in
         "Smoke Test (Publishers & Watchdog)")
@@ -38,13 +51,15 @@ select opt in "${options[@]}"; do
             break
             ;;
         "Gazebo + ROS 2 (Keyboard Control)")
-            echo -e "\n🎮 Launching Gazebo with Keyboard Control..."
-            bash scripts/sim_keyboard.sh
+            ask_camera
+            echo -e "\n🎮 Launching Gazebo with Keyboard Control ($CAMERA camera)..."
+            bash scripts/sim_keyboard.sh "$CAMERA"
             break
             ;;
         "Gazebo + ROS 2 (RadioMaster / Joystick)")
-            echo -e "\n📻 Launching Gazebo with Joystick Control..."
-            bash scripts/sim_joy.sh
+            ask_camera
+            echo -e "\n📻 Launching Gazebo with Joystick Control ($CAMERA camera)..."
+            bash scripts/sim_joy.sh "$CAMERA"
             break
             ;;
         "Interactive Shell (Container Bash)")
