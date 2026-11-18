@@ -1,0 +1,17 @@
+[WARN] [ros2bag]: Positional "topics" argument deprecated. Please use optional "--topics" argument instead.
+[INFO] [1794925153.540116884] [rosbag2_recorder]: Press SPACE for pausing/resuming
+[INFO] [1794925153.540137389] [rosbag2_recorder]: Event publisher thread: Started
+[INFO] [1794925153.545322784] [rosbag2_recorder]: Starting recording to '/tmp/inav6_rc_1794924928/bag'
+[INFO] [1794925153.546786879] [rosbag2_recorder]: Listening for topics...
+[INFO] [1794925153.546818436] [rosbag2_recorder]: Recording...
+[INFO] [1794925153.546826878] [rosbag2_recorder]: Topics discovery started.
+[INFO] [1794925153.648676197] [rosbag2_recorder]: Subscribed to topic '/fc/attitude'
+[INFO] [1794925153.656024550] [rosbag2_recorder]: Subscribed to topic '/fc/rc'
+[INFO] [1794925153.658757487] [rosbag2_recorder]: Subscribed to topic '/fc/status'
+[INFO] [1794925217.548749813] [rosbag2_recorder]: Subscribed to topic '/fc/setpoint_velocity'
+[INFO] [1794925217.548801350] [rosbag2_recorder]: All requested topics are subscribed. Stopping discovery...
+[INFO] [1794925217.548812954] [rosbag2_recorder]: Topics discovery stopped.
+[INFO] [1794925366.654352467] [rosbag2_recorder]: Pausing recording.
+[INFO] [1794925366.654423287] [rosbag2_cpp]: Writing remaining messages from cache to the bag. It may take a while
+[INFO] [1794925366.657353799] [rosbag2_recorder]: Recording stopped
+[INFO] [1794925366.659098518] [rosbag2_recorder]: Event publisher thread: Exited

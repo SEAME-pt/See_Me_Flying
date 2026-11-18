@@ -65,6 +65,25 @@ LinkState InavLink::state() const
   return state_;
 }
 
+void InavLink::set_sticks(std::optional<msp::Sticks> sticks)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  sticks_ = sticks;
+  sticks_stamp_ = Clock::now();
+}
+
+std::optional<bool> LinkState::rc_override_active() const
+{
+  if (!boxes || !status.value) {
+    return std::nullopt;
+  }
+  const auto index = boxes->index_of(BOX_MSP_RC_OVERRIDE);
+  if (!index) {
+    return std::nullopt;
+  }
+  return status.value->box_active(*index);
+}
+
 void InavLink::run()
 {
   bool failing = false;   // log a failure to connect once, not on every retry
@@ -175,6 +194,8 @@ void InavLink::close_socket()
   std::lock_guard<std::mutex> lock(mutex_);
   state_.connected = false;
   state_.link_ok = false;
+  state_.sending_sticks = false;
+  state_.boxes.reset();   // another connection may be another FC
 }
 
 bool InavLink::startup()
@@ -232,17 +253,47 @@ bool InavLink::startup()
 InavLink::Cycle InavLink::cycle(uint64_t n)
 {
   drop_stale();
-  std::vector<uint16_t> pending = {msp::MSP2_INAV_STATUS, msp::MSP2_INAV_FULL_LOCAL_POSE,
-    msp::MSP2_INAV_OPTICAL_FLOW, msp::MSP_SONAR_ALTITUDE};
-  if (config_.battery_every > 0 && n % static_cast<uint64_t>(config_.battery_every) == 0) {
-    pending.push_back(msp::MSP2_INAV_ANALOG);
+  std::optional<msp::Sticks> sticks;
+  bool need_boxes = false;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (sticks_ && Clock::now() - sticks_stamp_ <= seconds(config_.sticks_max_age_s)) {
+      sticks = sticks_;
+    }
+    need_boxes = !state_.boxes;
   }
+
   std::vector<uint8_t> request;
-  for (uint16_t cmd : pending) {
+  std::vector<uint16_t> pending;
+  if (sticks) {
+    request = msp::build_set_raw_rc(*sticks);
+    pending.push_back(msp::MSP_SET_RAW_RC);   // INAV acks it with an empty reply
+  }
+  std::vector<uint16_t> reads = {msp::MSP2_INAV_STATUS, msp::MSP2_INAV_FULL_LOCAL_POSE,
+    msp::MSP2_INAV_OPTICAL_FLOW, msp::MSP_SONAR_ALTITUDE, msp::MSP_RC, msp::MSP_MOTOR};
+  if (config_.battery_every > 0 && n % static_cast<uint64_t>(config_.battery_every) == 0) {
+    reads.push_back(msp::MSP2_INAV_ANALOG);
+  }
+  if (need_boxes && config_.box_names_every > 0 &&
+    n % static_cast<uint64_t>(config_.box_names_every) == 0)
+  {
+    reads.push_back(msp::MSP_BOXNAMES);
+  }
+  for (uint16_t cmd : reads) {
     const auto one = msp::build_request(cmd);
     request.insert(request.end(), one.begin(), one.end());
+    pending.push_back(cmd);
   }
-  if (!send_all(request)) {
+  const bool sent = send_all(request);
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    state_.sending_sticks = sent && sticks;
+    if (state_.sending_sticks) {
+      state_.last_sticks = sticks;
+      ++state_.sticks_sent;
+    }
+  }
+  if (!sent) {
     return Cycle::CLOSED;
   }
   const std::size_t asked = pending.size();
@@ -309,6 +360,9 @@ void InavLink::store(const msp::Frame & frame)
     case msp::MSP2_INAV_OPTICAL_FLOW: put(state_.flow, decode_optical_flow(frame.payload)); break;
     case msp::MSP_SONAR_ALTITUDE: put(state_.range, decode_rangefinder(frame.payload)); break;
     case msp::MSP2_INAV_ANALOG: put(state_.analog, decode_analog(frame.payload)); break;
+    case msp::MSP_RC: put(state_.rc, decode_rc(frame.payload)); break;
+    case msp::MSP_MOTOR: put(state_.motors, decode_motors(frame.payload)); break;
+    case msp::MSP_BOXNAMES: state_.boxes = decode_box_names(frame.payload); break;
     default: break;
   }
 }

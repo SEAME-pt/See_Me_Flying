@@ -135,7 +135,7 @@ Decides which command source reaches the drone. Since Oct 30 it is the **only pu
 
 ## fc\_bridge
 
-The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) or `inav`, the real FC (flight controller) over MSP through the ESP8266. `inav` reads INAV over MSP through esp-link (`src/inav_link.*`, TCP port 23) and publishes the same state topics as the sim, plus `fc/optical_flow` and `fc/battery`. It is listen-only: it only ever sends read requests (an allow-list in `src/msp.cpp`), setpoints go nowhere, and it refuses `fc/arm` (only the radio arms the real drone). It has no Gazebo topics and no enable, so nothing sim-only can reach the real drone. Any other value stops the node at start. Package `drone_fc_bridge`, file `src/fc_bridge.cpp`.
+The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) or `inav`, the real FC (flight controller) over MSP through the ESP8266. `inav` reads INAV over MSP through esp-link (`src/inav_link.*`, TCP port 23) and publishes the same state topics as the sim, plus `fc/optical_flow`, `fc/battery`, `fc/rc` and `fc/motors`. By default it is listen-only: it only sends read requests (an allow-list in `src/msp.cpp`) and setpoints go nowhere. With `rc_override` true it also sends the setpoints as stick positions (item 10). It always refuses `fc/arm` (only the radio arms the real drone). It has no Gazebo topics and no enable, so nothing sim-only can reach the real drone. Any other value stops the node at start. Package `drone_fc_bridge`, file `src/fc_bridge.cpp`.
 
 **What it does**
 
@@ -150,7 +150,10 @@ The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) 
    - `fc/attitude`: the orientation alone.
    - `fc/range`: a downward rangefinder. Reads distance along the body's down axis, so longer when tilted; `+inf` above `range_max`, `-inf` below `range_min` (REP 117). About 0.05 m with the drone on the ground.
 8. **Services** (`std_srvs/SetBool`): `fc/arm` sets the armed state (sim only: `radio_teleop` calls it from the arm switch, or `mission` with `radio:=false`; `inav` refuses it); `fc/hold` true makes it ignore setpoints and send zero until set false. Both log the change.
-9. **Status** on `fc/status` (`drone_interfaces/FcStatus`) once a second and on every change: backend, armed, holding, following setpoints, setpoint age, rangefinder valid.
+9. **Status** on `fc/status` (`drone_interfaces/FcStatus`) once a second and on every change: backend, armed, holding, following setpoints, setpoint age, rangefinder valid; with `inav` also `link_ok`, `state_age_s`, `rc_override_active` (INAV reports its MSP RC OVERRIDE mode on) and `rc_sent` (sticks are being sent).
+10. **Sticks to INAV** (`inav` with `rc_override` true only). Each tick the clamped setpoint becomes four stick values (`src/inav_sticks.*`): `1500 + 500 × v / limit` µs per axis, so `max_speed_xy`, `max_speed_z` and `max_yaw_rate` are full stick. Forward is pitch up, left is roll left (below 1500), up is throttle up, turning left is yaw left (below 1500). Stale setpoints or `fc/hold` send centred sticks. The link sends them first in every poll cycle as `MSP_SET_RAW_RC`, the only write it can build: four channels, never an AUX channel, so never arming. Sticks the node hasn't refreshed in 0.3 s, or a dropped link, stop the frames.
+    - INAV uses them only while its **MSP RC OVERRIDE** mode is on (on our radio: switch SA, channel 7) and only on the channels in `msp_override_channels` (15: all four); otherwise the radio flies. On the bench it took them over 1–2 s after the frames started, and was back on the radio within about 2 s after they stopped. `fc/rc` (`drone_interfaces/RcChannels`) shows what INAV actually uses.
+    - What a stick means is up to INAV's mode, **not** the sim's velocity: in ANGLE, roll and pitch are a bank angle and throttle is raw power, so centred throttle (1500) is about half power, not hover. Bench-tested, unarmed ([notes](logs/measurements/inav_rc_override/2026-11-17_70e3202/notes.md), [script](scripts/bench_rc_override.sh)). With the radio off and SA on, the override keeps applying while disarmed; armed, INAV's failsafe still disarms. Armed, props off, ROS's sticks drive the motors as the mixer should ([armed run](logs/measurements/inav_rc_override/2026-11-17_c3c73c0/notes.md), [script](scripts/bench_rc_armed.sh)); `fc/motors` shows them.
 
 **The clamp**, applied to every command before it leaves:
 
@@ -163,7 +166,7 @@ The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) 
 | --- | --- |
 | Subscribes | `fc/setpoint_velocity` (`geometry_msgs/TwistStamped`), sensor-data QoS |
 | Subscribes | `sim_odom_topic` (`nav_msgs/Odometry`), sensor-data QoS |
-| Publishes | `gz_twist_topic` (`geometry_msgs/Twist`) every tick; `gz_enable_topic` (`std_msgs/Bool`) every 1 s; `fc/odom` (`nav_msgs/Odometry`), `fc/attitude` (`geometry_msgs/QuaternionStamped`) and `fc/range` (`sensor_msgs/Range`) per sim odometry message; `fc/status` (`drone_interfaces/FcStatus`). With `inav`: no Gazebo topics; `fc/odom`, `fc/attitude`, `fc/range`, `fc/optical_flow` (`drone_interfaces/OpticalFlow`) and `fc/battery` (`sensor_msgs/BatteryState`) whenever INAV answers |
+| Publishes | `gz_twist_topic` (`geometry_msgs/Twist`) every tick; `gz_enable_topic` (`std_msgs/Bool`) every 1 s; `fc/odom` (`nav_msgs/Odometry`), `fc/attitude` (`geometry_msgs/QuaternionStamped`) and `fc/range` (`sensor_msgs/Range`) per sim odometry message; `fc/status` (`drone_interfaces/FcStatus`). With `inav`: no Gazebo topics; `fc/odom`, `fc/attitude`, `fc/range`, `fc/optical_flow` (`drone_interfaces/OpticalFlow`), `fc/battery` (`sensor_msgs/BatteryState`) `fc/rc` (`drone_interfaces/RcChannels`) and `fc/motors` (`drone_interfaces/MotorOutputs`, what INAV sends each motor) whenever INAV answers |
 | Services | `fc/arm`, `fc/hold` (`std_srvs/SetBool`) |
 | `backend` | `sim` or `inav` (read once at start) |
 | `gz_twist_topic` | `/X3/gazebo/command/twist` |
@@ -181,6 +184,7 @@ The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) 
 | `armed_at_start` | true (read once at start; sim only; the launch sets it) |
 | `msp_host`, `msp_port` | `192.168.4.1`, 23 (inav only; esp-link's transparent port. Never 2323: it resets the FC) |
 | `msp_timeout_s` | 0.25 s for a poll cycle's replies (inav only) |
+| `rc_override` | false (read once at start; inav only): true sends setpoints to INAV as sticks |
 
 Timeout and clamp limits are read every tick, so `ros2 param set` changes them live. Numeric parameters are doubles, except `msp_port`: set them as `2.0`, not `2`. The code still declares every parameter with a default; `sim.yaml` only overrides the value. Removing a declaration makes the node crash the first time it reads that parameter.
 
@@ -235,7 +239,7 @@ Both live in `drone_bringup/launch/` and are installed by the `install(DIRECTORY
 
 | Argument | Values | Default |
 | --- | --- | --- |
-| `backend` | `sim`: Gazebo. `inav`: the real drone over MSP (reads state only; setpoints go nowhere). No Gazebo, bridge, radio nodes or sim time with `inav` | `sim` |
+| `backend` | `sim`: Gazebo. `inav`: the real drone over MSP (reads state only; setpoints go nowhere unless `fc_bridge`'s `rc_override` is true, which the launch doesn't set). No Gazebo, bridge, radio nodes or sim time with `inav` | `sim` |
 | `source` | `mission` (action servers), `circle` (`setpoint_pub`, only with `demo:=true`), `none` (anything else is rejected, including the old `joy`) | `mission` |
 | `radio` | `true`, `false`. Sim only. `false`: no Pocket (someone else has it): no radio nodes, `fc_bridge` starts armed and `mission` arms on Takeoff and disarms after Land | `true` |
 | `demo` | `true`, `false`: fly a scripted demo, the square (`demo_flight`, with `source:=mission`) or the circle (`setpoint_pub`, with `source:=circle`). Without it nothing flies until a goal is sent or the radio takes over | `false` |

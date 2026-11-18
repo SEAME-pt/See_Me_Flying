@@ -1,0 +1,12 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-17T11:56:10+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "facb91aaf670f27aec2b96e5b9cd2f087516aa63",
+  "commit_short": "facb91a",
+  "commit_subject": "INAV-6 step A: MSP_SET_RAW_RC builder and MSP_RC decoder",
+  "branch": "inav-6",
+  "uncommitted_code": [],
+  "uncommitted_other": []
+}

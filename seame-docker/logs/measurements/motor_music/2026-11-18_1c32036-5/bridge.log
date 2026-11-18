@@ -1,0 +1,80 @@
+[WARN] [1795013527.985678952] [fc_bridge]: Backend inav: reading INAV over MSP at 192.168.4.1:23, and sending setpoints as sticks (rc_override). INAV uses them while the radio's MSP RC OVERRIDE switch is on
+[INFO] [1795013528.038072601] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1795013528.136534124] [fc_bridge]: Setpoints received, following them
+[INFO] [1795013528.288200711] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013530.739012474] [fc_bridge]: No reply from the FC
+[INFO] [1795013530.839156872] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013532.389892929] [fc_bridge]: No reply from the FC
+[INFO] [1795013532.640013022] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013534.790943916] [fc_bridge]: No reply from the FC
+[INFO] [1795013535.291139827] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013537.191729706] [fc_bridge]: No reply from the FC
+[INFO] [1795013537.441850790] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013551.396871472] [fc_bridge]: No reply from the FC
+[INFO] [1795013552.147127417] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013552.647328705] [fc_bridge]: No reply from the FC
+[WARN] [1795013553.397571954] [fc_bridge]: No reply in 4 cycles with the connection open: reconnecting
+[INFO] [1795013554.466289207] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1795013554.586049463] [fc_bridge]: INAV reports armed
+[INFO] [1795013554.716423022] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013555.817243760] [fc_bridge]: No reply from the FC
+[WARN] [1795013556.567414254] [fc_bridge]: No reply in 4 cycles with the connection open: reconnecting
+[INFO] [1795013558.124274915] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1795013558.374393104] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013558.624537044] [fc_bridge]: No reply from the FC
+[INFO] [1795013558.874711332] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013559.625047750] [fc_bridge]: No reply from the FC
+[INFO] [1795013559.875197603] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013560.375400840] [fc_bridge]: No reply from the FC
+[INFO] [1795013560.625533083] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013562.226037937] [fc_bridge]: No reply from the FC
+[INFO] [1795013562.476154624] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013563.826634217] [fc_bridge]: No reply from the FC
+[INFO] [1795013564.076759251] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013574.629981667] [fc_bridge]: No reply from the FC
+[INFO] [1795013575.380229568] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013575.630343566] [fc_bridge]: No reply from the FC
+[WARN] [1795013576.380601635] [fc_bridge]: No reply in 4 cycles with the connection open: reconnecting
+[WARN] [1795013578.387803139] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[INFO] [1795013579.440778738] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1795013579.591079715] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013579.636052248] [fc_bridge]: INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks
+[WARN] [1795013587.646202037] [fc_bridge]: No reply from the FC
+[INFO] [1795013587.896318957] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013588.396492016] [fc_bridge]: No reply from the FC
+[INFO] [1795013588.896692302] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013589.146809016] [fc_bridge]: No reply from the FC
+[WARN] [1795013589.897054196] [fc_bridge]: No reply in 4 cycles with the connection open: reconnecting
+[WARN] [1795013589.936015814] [fc_bridge]: INAV reports MSP RC OVERRIDE off: the radio flies
+[WARN] [1795013591.905593052] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[WARN] [1795013593.910145737] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[WARN] [1795013595.917580268] [fc_bridge]: Connected, but the FC did not say what it is: reconnecting
+[INFO] [1795013596.969689203] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1795013597.119914128] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013597.136048681] [fc_bridge]: INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks
+[WARN] [1795013605.874327980] [fc_bridge]: No reply from the FC
+[INFO] [1795013606.124438711] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013610.877327916] [fc_bridge]: No reply from the FC
+[WARN] [1795013611.627481592] [fc_bridge]: No reply in 4 cycles with the connection open: reconnecting
+[WARN] [1795013611.635968680] [fc_bridge]: INAV reports MSP RC OVERRIDE off: the radio flies
+[INFO] [1795013612.680133257] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1795013612.736043402] [fc_bridge]: INAV reports disarmed
+[INFO] [1795013612.830318666] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013612.836041522] [fc_bridge]: INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks
+[WARN] [1795013613.530677303] [fc_bridge]: No reply from the FC
+[WARN] [1795013614.280830598] [fc_bridge]: No reply in 4 cycles with the connection open: reconnecting
+[WARN] [1795013614.286005383] [fc_bridge]: INAV reports MSP RC OVERRIDE off: the radio flies
+[INFO] [1795013615.582838732] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1795013615.832961367] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013620.134331653] [fc_bridge]: No reply from the FC
+[WARN] [1795013620.884576336] [fc_bridge]: No reply in 4 cycles with the connection open: reconnecting
+[WARN] [1795013624.885803521] [fc_bridge]: Cannot connect to 192.168.4.1:23: retrying every 1.000000 s
+[INFO] [1795013727.179314662] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1795013727.429475006] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013727.679600740] [fc_bridge]: No reply from the FC
+[INFO] [1795013727.929735776] [fc_bridge]: Link up: the FC replies
+[WARN] [1795013739.033447711] [fc_bridge]: No reply from the FC
+[WARN] [1795013739.783751823] [fc_bridge]: No reply in 4 cycles with the connection open: reconnecting
+[INFO] [1795013740.836676601] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1795013741.086784295] [fc_bridge]: Link up: the FC replies
+[INFO] [1795013742.013956984] [rclcpp]: signal_handler(SIGINT/SIGTERM)
