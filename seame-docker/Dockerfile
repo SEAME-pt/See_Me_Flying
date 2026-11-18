@@ -17,8 +17,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-jazzy-rqt-graph \
       ros-jazzy-teleop-twist-keyboard \
       ros-jazzy-joy \
-      ros-jazzy-usb-cam ros-jazzy-image-transport \
-      ros-jazzy-image-transport-plugins ros-jazzy-cv-bridge \
+      ros-jazzy-image-transport-plugins \
+      ros-jazzy-usb-cam ros-jazzy-v4l2-camera ros-jazzy-image-transport \
+      ros-jazzy-image-view \
+      ros-jazzy-cv-bridge \
+      ros-jazzy-image-proc \
+      ros-jazzy-camera-calibration \
       ros-jazzy-rqt-image-view v4l-utils mesa-utils \
       ros-jazzy-tf2-tools \
       ros-jazzy-ament-mypy \
