@@ -1,0 +1,19 @@
+[WARN] [1794929591.571479354] [fc_bridge]: Backend inav: reading INAV over MSP at 192.168.4.1:23, and sending setpoints as sticks (rc_override). INAV uses them while the radio's MSP RC OVERRIDE switch is on
+[INFO] [1794929591.673529385] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1794929591.722589666] [fc_bridge]: Setpoints received, following them
+[INFO] [1794929591.823930145] [fc_bridge]: Link up: the FC replies
+[INFO] [1794929616.971980884] [fc_bridge]: INAV reports armed
+[WARN] [1794929632.572035395] [fc_bridge]: INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks
+[INFO] [1794929697.372008031] [fc_bridge]: INAV reports disarmed
+[INFO] [1794929703.872016662] [fc_bridge]: INAV reports armed
+[WARN] [1794929706.872082958] [fc_bridge]: INAV reports MSP RC OVERRIDE off: the radio flies
+[INFO] [1794929734.672060068] [fc_bridge]: INAV reports disarmed
+[INFO] [1794929757.422000647] [fc_bridge]: INAV reports armed
+[WARN] [1794929762.372076504] [fc_bridge]: INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks
+[INFO] [1794929774.471998404] [fc_bridge]: INAV reports disarmed
+[INFO] [1794929784.376817727] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1794929811.077083583] [fc_bridge]: Backend inav: reading INAV over MSP at 192.168.4.1:23. Listen-only: setpoints go nowhere (rc_override false)
+[INFO] [1794929811.128738533] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1794929811.227977121] [fc_bridge]: Setpoints received, following them
+[INFO] [1794929811.279189450] [fc_bridge]: Link up: the FC replies
+[INFO] [1794929816.917922486] [rclcpp]: signal_handler(SIGINT/SIGTERM)

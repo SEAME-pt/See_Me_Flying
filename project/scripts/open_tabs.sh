@@ -33,7 +33,7 @@ open_tabs() {
     done
 
     if [ -z "$term" ] || [ -z "$DISPLAY$WAYLAND_DISPLAY" ]; then
-        echo "❌ No graphical terminal available (tried wt.exe, gnome-terminal, ptyxis, konsole, xterm)."
+        echo " No graphical terminal available (tried wt.exe, gnome-terminal, ptyxis, konsole, xterm)."
         echo "   Run each of these in its own terminal instead:"
         while [ $# -gt 0 ]; do
             echo -e "\n# $1\n$2"
@@ -53,5 +53,5 @@ open_tabs() {
         esac
         shift 2
     done
-    echo "✅ Opened tabs in $term."
+    echo "Opened tabs in $term."
 }

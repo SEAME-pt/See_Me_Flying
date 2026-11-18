@@ -145,7 +145,7 @@
       "id": 6,
       "type": "stat",
       "title": "FC link",
-      "description": "fc_bridge got FC state in the last 0.5 s (link_timeout_s): Gazebo odometry in the sim, MSP replies on inav (not implemented yet, so LOST).",
+      "description": "inav: the FC answered in the last poll cycle. Always OK in the sim.",
       "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
@@ -253,7 +253,7 @@
       "id": 10,
       "type": "timeseries",
       "title": "FC state age and setpoint age",
-      "description": "state_age: since the last FC state (sim: Gazebo odometry; inav: MSP reply). setpoint_age: since the last accepted setpoint; above 0.3 s fc_bridge sends zero (hover).",
+      "description": "state_age: since the last reply from the FC (0 in the sim). setpoint_age: since the last accepted setpoint; above 0.3 s fc_bridge sends zero (hover).",
       "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [

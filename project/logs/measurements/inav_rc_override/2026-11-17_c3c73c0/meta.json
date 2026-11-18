@@ -1,0 +1,13 @@
+{
+  "kind": "measurements",
+  "name": "inav_rc_override",
+  "date": "2026-11-17T15:32:22+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "c3c73c049421028a5054821aa14fa6f4c73c5a48",
+  "commit_short": "c3c73c0",
+  "commit_subject": "Record the test run on the motor readback and armed bench script",
+  "branch": "inav-6",
+  "uncommitted_code": [],
+  "uncommitted_other": [],
+  "note": "bench, PROPS OFF, armed from the radio, laptop on the drone AP, fc_bridge backend inav rc_override, throttle ramp and directions, install /tmp/inav6_bench/install"
+}

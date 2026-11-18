@@ -11,3 +11,9 @@ __pycache__/
 # (big); the rest of the run folder (meta, result, logs, xUnit) is committed.
 project/logs/sim_flight/*/flight_bag/
 project/logs/sim_flight/*/ros_log/
+# Motor music: songs stay local (ringtones of other people's music)
+project/scripts/motor_music/songs/
+project/logs/measurements/motor_music/*/song.rtttl
+project/logs/measurements/motor_music/_archive/
+project/logs/measurements/motor_music/*/bag/
+project/logs/measurements/motor_music/*/*.wav

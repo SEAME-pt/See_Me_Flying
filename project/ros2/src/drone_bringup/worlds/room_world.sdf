@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<sdf version="1.9">
+<sdf version="1.9" xmlns:experimental="http://sdformat.org/schemas/experimental">
   <world name="room_world">
     <physics name="1ms" type="ignored">
       <max_step_size>0.001</max_step_size>
@@ -192,6 +192,24 @@
         name="gz::sim::systems::OdometryPublisher">
         <dimensions>3</dimensions>
       </plugin>
+      <!-- FPV camera, for sim.launch.py camera:=fpv. The X3 comes from Fuel, so it
+           is added here: front edge of the body, between the front rotors, tilted
+           20 deg up (negative pitch = up), 120 deg wide. -->
+      <experimental:params>
+        <sensor element_id="X3/base_link" action="add" name="fpv_camera" type="camera">
+          <pose>0.24 0 0.03 0 -0.35 0</pose>
+          <update_rate>30</update_rate>
+          <topic>fpv/image</topic>
+          <camera>
+            <horizontal_fov>2.09</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+            </image>
+            <clip><near>0.02</near><far>50</far></clip>
+          </camera>
+        </sensor>
+      </experimental:params>
     </include>
 
   </world>

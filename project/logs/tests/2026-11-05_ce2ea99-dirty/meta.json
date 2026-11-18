@@ -1,0 +1,21 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-05T14:33:23+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "ce2ea99f00fb5de583e608d79c8ad50e5181cef4",
+  "commit_short": "ce2ea99",
+  "commit_subject": "Add the first tester run, the run-tests skill and a test-run commit hook",
+  "branch": "staging",
+  "uncommitted_code": [
+    "seame-docker/ros2_ws/src/drone_bringup/config/gz_bridge.yaml",
+    "seame-docker/ros2_ws/src/drone_bringup/config/sim.yaml",
+    "seame-docker/ros2_ws/src/drone_fc_bridge/src/fc_bridge.cpp",
+    "seame-docker/ros2_ws/src/drone_interfaces/CMakeLists.txt",
+    "seame-docker/ros2_ws/src/drone_interfaces/msg/OpticalFlow.msg",
+    "seame-docker/ros2_ws/src/drone_interfaces/package.xml"
+  ],
+  "uncommitted_other": [
+    "seame-docker/PLAN.md"
+  ]
+}

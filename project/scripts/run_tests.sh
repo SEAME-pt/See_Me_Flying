@@ -22,12 +22,12 @@ REPO_DIR="$(cd "$SCRIPTS/../.." && pwd)"
 cd "$REPO_DIR"   # docker compose finds compose.yaml and .env here
 
 if [ -z "$(docker compose ps -q --status running dev)" ]; then
-    echo "❌ The dev container isn't running. Start it: make up"
+    echo "Error: The dev container isn't running. Start it: make up"
     exit 2
 fi
 
 RUN=$(python3 -c "import sys; sys.path.insert(0, '$SCRIPTS'); from logbook import new_run; print(new_run('tests'))")
-echo "📁 ${RUN#"$REPO_DIR"/}"
+echo "Results in ${RUN#"$REPO_DIR"/}"
 
 # Inside the container: clean build + test, everything into /tmp/seame_tests.
 docker compose exec -T dev bash -s <<'EOF'

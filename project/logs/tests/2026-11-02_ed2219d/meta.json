@@ -1,0 +1,13 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-02T16:28:48+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "ed2219d0e0cfc2a272d04c2795e90fecda55496d",
+  "commit_short": "ed2219d",
+  "commit_subject": "Merge test into staging: CI, helper scripts, camera packages",
+  "branch": "staging",
+  "note": "Recorded after the fact (before scripts/run_tests.sh existed). The tests ran on the merge of test into staging just before it was committed as ed2219d, same content. report.md is the hand-made report from that day; the raw result files were not kept, so there is no results.json.",
+  "uncommitted_code": [],
+  "uncommitted_other": []
+}

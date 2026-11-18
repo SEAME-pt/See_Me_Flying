@@ -8,6 +8,9 @@ services:
       args:
         HOST_UID: ${HOST_UID:-1000}
         HOST_GID: ${HOST_GID:-1000}
+        VIDEO_GID: ${VIDEO_GID:-44}     # same numbers as group_add below
+        RENDER_GID: ${RENDER_GID:-993}
+        INPUT_GID: ${INPUT_GID:-994}
     image: seame/ros2-dev:jazzy
     container_name: seame-dev
     network_mode: host   # DDS discovery across containers and machines

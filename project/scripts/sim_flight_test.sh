@@ -24,7 +24,7 @@ PROJECT_DIR="$(cd "$SCRIPTS/.." && pwd)"
 IMAGE="${SIM_IMAGE:-seame/ros2-dev:jazzy}"
 
 if ! docker image inspect "$IMAGE" > /dev/null 2>&1; then
-    echo "❌ No $IMAGE image. Build it first: make build"
+    echo "Error: No $IMAGE image. Build it first: make build"
     exit 2
 fi
 
@@ -38,7 +38,7 @@ fi
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 chmod a+rwx "$OUT"   # the container's user (dev) writes here, whatever the host user is
-echo "📁 $OUT"
+echo "Results in $OUT"
 
 # Inside the container. Passed with bash -c, not on stdin: rosbag reads the keyboard.
 INSIDE=$(cat <<'EOF'

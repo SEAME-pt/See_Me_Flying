@@ -1,0 +1,13 @@
+{
+  "kind": "measurements",
+  "name": "motor_music",
+  "date": "2026-11-18T14:51:57+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "1c32036c6e74467d53c2fb040126717b25c3daae",
+  "commit_short": "1c32036",
+  "commit_subject": "Motor music: the other runs of Nov 17",
+  "branch": "motor-music",
+  "uncommitted_code": [],
+  "uncommitted_other": [],
+  "note": "motor music play through ROS (fc/setpoint_velocity, fc_bridge rc_override), PROPS OFF, armed from the radio, laptop on the drone AP, install /tmp/inav6_bench/install"
+}

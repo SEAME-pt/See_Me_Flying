@@ -1,0 +1,14 @@
+1795013523.802039322 bag start
+1795013523.934591103 sing start (idle)
+1795013527.082922301 fc_bridge start, rc_override true
+1795013536.489159760 LOOK connected (expect armed False, throttle 1000): fc/rc roll 1503 pitch 1500 yaw 1497 throttle 989 ch7(SA) 1000 | motors 1000 1000 1000 1000 | override_active False rc_sent True link_ok True armed False
+1795013542.697964457 props off confirmed
+1795013563.051853642 LOOK armed on the radio (expect armed True): fc/rc: nothing in 3 s | fc/motors: nothing | fc/status: nothing in 3 s
+1795013574.796208614 LOOK SA on (expect throttle 1000, override_active True): fc/rc: nothing in 3 s | fc/motors: nothing | fc/status: nothing in 3 s
+1795013575.810613320 go
+1795013592.346678318 done
+1795013597.605409962 LOOK after (expect throttle 1000): fc/rc: nothing in 3 s | fc/motors: nothing | fc/status: nothing in 3 s
+1795013741.389706563 LOOK disarmed (expect armed False): fc/rc roll 1503 pitch 1500 yaw 1497 throttle 989 ch7(SA) 1000 | motors 1000 1000 1000 1000 | override_active False rc_sent False link_ok False armed False
+1795013741.393913592 fc_bridge stop
+1795013743.023204205 sing stop
+1795013743.617872477 bag stop

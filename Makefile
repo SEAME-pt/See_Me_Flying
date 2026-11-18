@@ -74,5 +74,19 @@ wifi-rtt: ## Wi-Fi round trip to the FC: make wifi-rtt NOTE="where, ESP mode" [A
 	@test -n "$(NOTE)" || { echo 'Say the conditions: make wifi-rtt NOTE="bench, AP mode, radio on"'; exit 2; }
 	python3 $(SCRIPTS)/measure_wifi_rtt.py --note "$(NOTE)" $(ARGS)
 
+# INAV bench runs, PROPS OFF. Interactive: they say what to do with the radio.
+# Results in project/logs/measurements/. INSTALL=<path> uses another build in the container.
+bench-rc: up ## INAV bench, unarmed: ROS sticks through MSP RC OVERRIDE [INSTALL=...]
+	bash $(SCRIPTS)/bench_rc_override.sh
+
+bench-armed: up ## INAV bench, ARMED, PROPS OFF: ROS drives the motors [INSTALL=...]
+	bash $(SCRIPTS)/bench_rc_armed.sh
+
+motor-music: up ## PROPS OFF: make motor-music MODE=calibrate | MODE=play SONG=f.rtttl [ARGS=...] [MAP=...]
+	@case "$(MODE)" in calibrate) ;; play) test -f "$(SONG)" || { echo 'MODE=play needs SONG=path/song.rtttl'; exit 2; } ;; \
+		*) echo 'Say MODE=calibrate or MODE=play SONG=path/song.rtttl'; exit 2 ;; esac
+	bash $(SCRIPTS)/motor_music/sing.sh $(MODE) $(if $(filter play,$(MODE)),"$(SONG)") $(ARGS)
+
 .PHONY: help up build down clean-volumes logs shell ws ws-clean test sim-test \
-	sim-keyboard sim-joy sim-stop monitor monitor-stop wifi-rtt
+	sim-keyboard sim-joy sim-stop monitor monitor-stop wifi-rtt \
+	bench-rc bench-armed motor-music

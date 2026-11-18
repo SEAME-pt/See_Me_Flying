@@ -23,6 +23,7 @@
   <test_depend>rclpy</test_depend>
   <test_depend>nav_msgs</test_depend>
   <test_depend>sensor_msgs</test_depend>
+  <test_depend>rcl_interfaces</test_depend>   <!-- test_watchdog.py reads /rosout -->
   <test_depend>python3-pytest</test_depend>
 
   <export>

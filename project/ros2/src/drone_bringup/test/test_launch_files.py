@@ -27,7 +27,8 @@ from xml.etree import ElementTree
 
 from ament_index_python.packages import get_package_prefix, get_package_share_directory
 from launch import LaunchContext
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import (DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription,
+                            OpaqueFunction)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.utilities import perform_substitutions
 from launch_ros.actions import Node
@@ -167,17 +168,17 @@ def remaps(node):
 def test_default_is_the_sim_with_the_radio_and_the_mission():
     actions = launch()
     assert set(started(actions)) == {
-        'parameter_bridge', 'flow_model', 'estimator', 'fc_bridge', 'safety_manager',
-        'metrics_exporter', 'mission', 'joy_node', 'radio_teleop'}
-    assert len(gazebo(actions)) == 1
+        'parameter_bridge', 'flow_model', 'estimator', 'fc_bridge', 'watchdog',
+        'safety_manager', 'metrics_exporter', 'mission', 'joy_node', 'radio_teleop'}
+    assert len(gazebo(actions)) == 2      # server and window
 
 
 def test_inav_backend_starts_no_gazebo_and_no_radio_nodes():
     # On the real drone the radio talks ELRS to INAV, and there is nothing to simulate.
     actions = launch(backend='inav', radio='true')
     assert gazebo(actions) == []
-    assert set(started(actions)) == {'fc_bridge', 'safety_manager', 'metrics_exporter',
-                                     'mission'}
+    assert set(started(actions)) == {'fc_bridge', 'watchdog', 'safety_manager',
+                                     'metrics_exporter', 'mission'}
     assert values(started(actions)['fc_bridge'])['backend'] == 'inav'
 
 
@@ -212,12 +213,36 @@ def test_nothing_flies_without_a_source(arguments):
 
 # ---------- what goes to Gazebo ----------
 
-def test_gazebo_gets_the_world_and_headless_adds_server_only():
-    (gz,) = gazebo(launch(world='some_world.sdf'))
-    assert gz.recorded['gz_args'] == '-r some_world.sdf'
+def test_gazebo_server_and_window_are_two_processes():
+    # One process with both deadlocks once the world has a camera (llvmpipe).
+    server, window = gazebo(launch(world='some_world.sdf'))
+    assert server.recorded['gz_args'] == '-s -r some_world.sdf'
+    assert window.recorded['gz_args'] == '-g'
+    assert window.recorded['on_exit_shutdown'] == 'true'   # closing it ends the launch
+    for gz in (server, window):
+        assert gz.path.endswith(os.path.join('launch', 'gz_sim.launch.py'))
+
+
+def test_headless_starts_the_server_only():
     (gz,) = gazebo(launch(world='some_world.sdf', headless='true'))
     assert gz.recorded['gz_args'] == '-s -r some_world.sdf'
-    assert gz.path.endswith(os.path.join('launch', 'gz_sim.launch.py'))
+
+
+def test_camera_picks_the_window_view():
+    for camera in ('free', 'follow', 'fpv'):
+        actions = launch(camera=camera)
+        _, window = gazebo(actions)
+        follows = [a for a in actions if type(a) is ExecuteProcess]   # not a Node
+        if camera == 'free':
+            assert window.recorded['gz_args'] == '-g'     # Gazebo's own view
+        else:
+            option, config = window.recorded['gz_args'].split()[1:]
+            assert option == '--gui-config' and os.path.isfile(config), config
+            assert config.endswith(os.path.join('gui', camera + '.config'))
+        # Only follow asks the window to follow the drone once it is up.
+        assert len(follows) == (camera == 'follow'), camera
+    assert not [a for a in launch(camera='follow', headless='true')
+                if type(a) is ExecuteProcess]
 
 
 # ---------- how the nodes are wired ----------
@@ -228,6 +253,14 @@ def test_each_source_publishes_on_its_own_topic():
     assert remaps(nodes['mission']) == {'setpoint_velocity': '/cmd/mission'}
     assert remaps(nodes['radio_teleop']) == {'setpoint_velocity': '/cmd/radio'}
     assert remaps(nodes['safety_manager']) == {}
+
+
+def test_watchdog_always_watches_what_fc_bridge_gets():
+    # Mandatory with every backend and source: it checks the link into fc_bridge.
+    for arguments in COMBINATIONS:
+        nodes = started(launch(**arguments))
+        assert 'watchdog' in nodes, name_of(arguments)
+        assert remaps(nodes['watchdog']) == {'setpoint_velocity': '/fc/setpoint_velocity'}
 
 
 def test_sim_time_only_in_the_sim():

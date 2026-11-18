@@ -6,6 +6,7 @@ from launch import LaunchDescription
 from launch.actions import (
     AppendEnvironmentVariable,
     DeclareLaunchArgument,
+    ExecuteProcess,
     IncludeLaunchDescription,
     OpaqueFunction,
 )
@@ -16,10 +17,19 @@ from launch_ros.actions import Node
 # Every source publishes on its own topic; safety_manager picks one for fc_bridge.
 TO_MISSION = [('setpoint_velocity', '/cmd/mission')]
 TO_RADIO = [('setpoint_velocity', '/cmd/radio')]
+# The watchdog listens to what fc_bridge gets: safety_manager's output.
+TO_WATCHDOG = [('setpoint_velocity', '/fc/setpoint_velocity')]
 
 PACKAGES = ['ros_gz_sim', 'ros_gz_bridge', 'drone_fc_bridge', 'drone_safety', 'drone_mission',
             'drone_monitoring', 'joy', 'drone_sim', 'drone_teleop']
 REAL_PACKAGES = ['drone_fc_bridge', 'drone_safety', 'drone_mission', 'drone_monitoring']
+
+# camera:=follow. The window loads before the drone is in its scene, so its config
+# cannot start following (offset and smoothing do come from follow.config).
+# Ask the window to follow x3 (the drone in every world) once it answers.
+FOLLOW_DRONE = ('until gz service -s /gui/follow --reqtype gz.msgs.StringMsg '
+                '--reptype gz.msgs.Boolean --timeout 1000 --req \'data: "x3"\' '
+                '| grep -q true; do sleep 1; done')
 
 
 def gz_servers_in_my_partition():
@@ -82,15 +92,26 @@ def setup(context):
         ours = os.path.join(share, 'worlds', world)
         if os.path.isfile(ours):
             world = ours
-        # headless:=true: server only (-s), no window, for CI and the nightly flight tests
-        gz_args = '-r ' + world
-        if arg('headless') == 'true':
-            gz_args = '-s ' + gz_args
+        # The server (-s) and the window (-g) run as two processes. In one process
+        # the window and the server's FPV camera rendering deadlock on software
+        # rendering (llvmpipe, the dev container): Gazebo hangs and shows nothing.
+        # headless:=true: server only, no window, for CI and the nightly flight tests.
+        gz_sim = PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py'))
         actions.append(IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(os.path.join(
-                get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')),
-            launch_arguments={'gz_args': gz_args}.items(),
+            gz_sim, launch_arguments={'gz_args': '-s -r ' + world}.items(),
         ))
+        if arg('headless') != 'true':
+            # camera: the window's main view, from config/gui/<camera>.config;
+            # free is Gazebo's own. Closing the window ends the launch.
+            gui = '-g'
+            if arg('camera') != 'free':
+                gui += ' --gui-config ' + os.path.join(config, 'gui', arg('camera') + '.config')
+            actions.append(IncludeLaunchDescription(
+                gz_sim, launch_arguments={'gz_args': gui, 'on_exit_shutdown': 'true'}.items(),
+            ))
+            if arg('camera') == 'follow':
+                actions.append(ExecuteProcess(cmd=['bash', '-c', FOLLOW_DRONE]))
         actions.append(Node(
             package='ros_gz_bridge', executable='parameter_bridge',
             parameters=[{'config_file': os.path.join(config, 'gz_bridge.yaml')}],
@@ -111,6 +132,12 @@ def setup(context):
         package='drone_fc_bridge', executable='fc_bridge', output='screen',
         parameters=[params, clock, {'backend': arg('backend'),
                                     'armed_at_start': not radio_arms}],
+    ))
+    # Watches the setpoint stream into fc_bridge: warns when it stops for timeout_s
+    # and when it comes back. Mandatory; only logs (fc_bridge's timeout sends zero).
+    actions.append(Node(
+        package='drone_fc_bridge', executable='watchdog', output='screen',
+        remappings=TO_WATCHDOG, parameters=[params, clock],
     ))
     # The only publisher of /fc/setpoint_velocity: radio > manual > mission.
     actions.append(Node(
@@ -161,7 +188,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('backend', default_value='sim', choices=['sim', 'inav'],
                               description='sim: Gazebo. inav: the real drone over MSP '
-                                          '(stub: nothing sent yet)'),
+                                          '(listen-only: reads state, sends no commands)'),
         DeclareLaunchArgument('source', default_value='mission',
                               choices=['mission', 'none'],
                               description='What commands the drone besides the radio: '
@@ -174,6 +201,11 @@ def generate_launch_description():
                                           'takeoff, a square, land'),
         DeclareLaunchArgument('world', default_value='multicopter_velocity_control.sdf',
                               description='Sim only: SDF world file name or full path'),
+        DeclareLaunchArgument('camera', default_value='free',
+                              choices=['free', 'follow', 'fpv'],
+                              description="Sim only: the Gazebo window's main view. free: "
+                                          "Gazebo's own, follow: behind the drone, fpv: "
+                                          "the drone's front camera (our worlds only)"),
         DeclareLaunchArgument('headless', default_value='false', choices=['true', 'false'],
                               description='Sim only. true: Gazebo without its window '
                                           '(server only), for CI and the nightly tests'),
