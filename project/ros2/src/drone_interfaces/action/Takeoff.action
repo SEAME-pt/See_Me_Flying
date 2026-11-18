@@ -1,0 +1,10 @@
+# Climb to a height above the ground, measured by the rangefinder (fc/range).
+# Accepted only on the ground with a working rangefinder. Arms first.
+
+float32 height        # m; 0 means the mission's target_h parameter
+---
+bool success
+float32 height        # m, measured when it finished
+string message
+---
+float32 height        # m, now

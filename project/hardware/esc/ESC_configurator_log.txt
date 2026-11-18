@@ -1,0 +1,73 @@
+LOGS, top bar
+2026-10-16 @ 12:10:00 -- Done reading ESCs
+2026-10-16 @ 12:10:00 -- Read ESC 4: G-H-30 - Bluejay, 0.19, 48kHz
+2026-10-16 @ 12:10:00 -- Read ESC 3: G-H-30 - Bluejay, 0.19, 48kHz
+2026-10-16 @ 12:09:59 -- Read ESC 2: G-H-30 - Bluejay, 0.19, 48kHz
+2026-10-16 @ 12:09:59 -- Read ESC 1: G-H-30 - Bluejay, 0.19, 48kHz
+2026-10-16 @ 12:09:59 -- Trying to read 4 ESCs
+2026-10-16 @ 12:09:48 -- Unique device ID received - 0x03f00263233511133363430
+2026-10-16 @ 12:09:48 -- Board: S7X2, version: 0
+2026-10-16 @ 12:09:48 -- Running firmware released on: Oct 17 2024 19:49:44
+2026-10-16 @ 12:09:48 -- Flight controller info, identifier: BTFL version: 4.5.1
+2026-10-16 @ 12:09:48 -- MultiWii API version received: 1.46.0
+2026-10-16 @ 12:09:48 -- Opened serial port
+2026-10-16 @ 12:09:47 -- Port selected
+2026-10-16 @ 12:09:37 -- Plugged in
+2026-10-16 @ 12:09:00 -- Unplugged
+2026-10-16 @ 12:08:48 -- Port already in use by another application - try re-connecting
+2026-10-16 @ 12:08:46 -- Port selected
+2026-10-16 @ 12:08:35 -- Plugged in
+2026-10-16 @ 12:08:34 -- Chrome (146.0.0.0) on Linux
+
+LOGS, main
+2026/10/14 15:12:53: Chrome (146.0.0.0) on Linux
+2026/10/14 15:13:05: NotFoundError: Failed to execute 'requestPort' on 'Serial': No port selected by the user. 
+2026/10/16 11:48:52: Chrome (146.0.0.0) on Linux
+2026/10/16 11:48:59: Port selected
+2026/10/16 11:49:54: NotFoundError: Failed to execute 'requestPort' on 'Serial': No port selected by the user. 
+2026/10/16 12:03:32: Opened serial port
+2026/10/16 12:03:33: MSP command failed: Timed out after 1000ms
+2026/10/16 12:03:33: Command cmd_DeviceInitFlash failed: invalid message start: 47 
+2026/10/16 12:03:33: Command cmd_DeviceInitFlash failed: invalid message start: 47 
+2026/10/16 12:03:34: Command cmd_DeviceInitFlash failed: invalid message start: 47 
+2026/10/16 12:03:34: Command cmd_DeviceInitFlash failed: invalid message start: 47 
+2026/10/16 12:03:35: Command cmd_DeviceInitFlash failed: invalid message start: 47 
+2026/10/16 12:03:35: Failed processing command cmd_DeviceInitFlash after 5 retries. 
+2026/10/16 12:03:35: Failed resetting ESC 1 - power cycle and try again
+2026/10/16 12:03:35: Port already in use by another application - try re-connecting
+2026/10/16 12:04:02: Could not open serial port 
+2026/10/16 12:04:02: Error: Could not open serial port 
+2026/10/16 12:04:02: Port already in use by another application - try re-connecting
+2026/10/16 12:04:12: Chrome (146.0.0.0) on Linux
+2026/10/16 12:04:12: Plugged in
+2026/10/16 12:04:13: Could not open serial port 
+2026/10/16 12:04:13: Error: Could not open serial port 
+2026/10/16 12:04:13: Port already in use by another application - try re-connecting
+2026/10/16 12:04:21: Port selected
+2026/10/16 12:08:25: Chrome (146.0.0.0) on Linux
+2026/10/16 12:08:25: Plugged in
+2026/10/16 12:08:27: Could not open serial port 
+2026/10/16 12:08:27: Error: Could not open serial port 
+2026/10/16 12:08:27: Port already in use by another application - try re-connecting
+2026/10/16 12:08:31: Port selected
+2026/10/16 12:08:34: Chrome (146.0.0.0) on Linux
+2026/10/16 12:08:35: Plugged in
+2026/10/16 12:08:46: Port selected
+2026/10/16 12:08:48: Could not open serial port 
+2026/10/16 12:08:48: Error: Could not open serial port 
+2026/10/16 12:08:48: Port already in use by another application - try re-connecting
+2026/10/16 12:09:00: Unplugged
+2026/10/16 12:09:37: Plugged in
+2026/10/16 12:09:47: Port selected
+2026/10/16 12:09:48: Opened serial port
+2026/10/16 12:09:48: MultiWii API version received: 1.46.0
+2026/10/16 12:09:48: Flight controller info, identifier: BTFL version: 4.5.1
+2026/10/16 12:09:48: Running firmware released on: Oct 17 2024 19:49:44
+2026/10/16 12:09:48: Board: S7X2, version: 0
+2026/10/16 12:09:48: Unique device ID received - 0x03f00263233511133363430
+2026/10/16 12:09:59: Trying to read 4 ESCs
+2026/10/16 12:09:59: Read ESC 1: G-H-30 - Bluejay, 0.19, 48kHz
+2026/10/16 12:09:59: Read ESC 2: G-H-30 - Bluejay, 0.19, 48kHz
+2026/10/16 12:10:00: Read ESC 3: G-H-30 - Bluejay, 0.19, 48kHz
+2026/10/16 12:10:00: Read ESC 4: G-H-30 - Bluejay, 0.19, 48kHz
+2026/10/16 12:10:00: Done reading ESCs

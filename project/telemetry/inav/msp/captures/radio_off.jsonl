@@ -1,0 +1,361 @@
+{"setup": {"fc": "INAV 9.1.0", "bridge": "esp-link 3.2.47"}, "state": "radio_off", "host": "192.168.4.1", "time": "2026-11-09T14:37:32"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 0, "ok": true, "rtt_ms": 20.31, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 1, "ok": true, "rtt_ms": 13.01, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 2, "error": "timeout"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 3, "ok": true, "rtt_ms": 179.37, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 4, "ok": true, "rtt_ms": 4.75, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 5, "ok": true, "rtt_ms": 75.28, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 6, "error": "timeout"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 7, "ok": true, "rtt_ms": 343.22, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 8, "ok": true, "rtt_ms": 31.89, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 9, "ok": true, "rtt_ms": 69.92, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 10, "ok": true, "rtt_ms": 14.66, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 11, "ok": true, "rtt_ms": 10.07, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 12, "ok": true, "rtt_ms": 48.2, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 13, "ok": true, "rtt_ms": 11.68, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 14, "error": "timeout"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 15, "ok": true, "rtt_ms": 318.52, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 16, "ok": true, "rtt_ms": 38.05, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 17, "ok": true, "rtt_ms": 53.94, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 18, "ok": true, "rtt_ms": 39.31, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_API_VERSION", "cmd": 1, "i": 19, "ok": true, "rtt_ms": 10.33, "hex": "24583e0001000300000205a6"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 0, "ok": true, "rtt_ms": 57.95, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 1, "error": "timeout"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 2, "error": "timeout"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 3, "ok": true, "rtt_ms": 231.37, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 4, "ok": true, "rtt_ms": 32.22, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 5, "ok": true, "rtt_ms": 11.08, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 6, "ok": true, "rtt_ms": 49.39, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 7, "error": "timeout"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 8, "ok": true, "rtt_ms": 36.88, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 9, "error": "timeout"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 10, "ok": true, "rtt_ms": 93.16, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 11, "error": "timeout"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 12, "ok": true, "rtt_ms": 319.0, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 13, "error": "timeout"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 14, "ok": true, "rtt_ms": 341.48, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 15, "ok": true, "rtt_ms": 1.53, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 16, "ok": true, "rtt_ms": 218.65, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 17, "ok": true, "rtt_ms": 0.07, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 18, "error": "timeout"}
+{"name": "MSP_FC_VARIANT", "cmd": 2, "i": 19, "ok": true, "rtt_ms": 280.51, "hex": "24583e0002000400494e415694"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 0, "error": "timeout"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 1, "error": "timeout"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 2, "ok": true, "rtt_ms": 44.28, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 3, "ok": true, "rtt_ms": 2.25, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 4, "ok": true, "rtt_ms": 0.13, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 5, "ok": true, "rtt_ms": 11.64, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 6, "ok": true, "rtt_ms": 17.96, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 7, "ok": true, "rtt_ms": 3.4, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 8, "ok": true, "rtt_ms": 69.05, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 9, "ok": true, "rtt_ms": 0.09, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 10, "ok": true, "rtt_ms": 6.85, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 11, "ok": true, "rtt_ms": 13.04, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 12, "error": "timeout"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 13, "error": "timeout"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 14, "error": "timeout"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 15, "error": "timeout"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 16, "error": "timeout"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 17, "ok": true, "rtt_ms": 10.64, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 18, "ok": true, "rtt_ms": 24.7, "hex": "24583e000300030009010008"}
+{"name": "MSP_FC_VERSION", "cmd": 3, "i": 19, "ok": true, "rtt_ms": 0.35, "hex": "24583e000300030009010008"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 0, "ok": true, "rtt_ms": 101.43, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 1, "ok": true, "rtt_ms": 12.32, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 2, "ok": true, "rtt_ms": 58.11, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 3, "error": "timeout"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 4, "ok": true, "rtt_ms": 323.64, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 5, "ok": true, "rtt_ms": 136.15, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 6, "ok": true, "rtt_ms": 16.4, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 7, "ok": true, "rtt_ms": 78.58, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 8, "ok": true, "rtt_ms": 11.03, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 9, "ok": true, "rtt_ms": 11.74, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 10, "ok": true, "rtt_ms": 20.42, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 11, "ok": true, "rtt_ms": 16.96, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 12, "ok": true, "rtt_ms": 12.42, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 13, "ok": true, "rtt_ms": 114.23, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 14, "ok": true, "rtt_ms": 26.15, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 15, "error": "timeout"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 16, "ok": true, "rtt_ms": 74.83, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 17, "ok": true, "rtt_ms": 29.09, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 18, "ok": true, "rtt_ms": 16.33, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_BOARD_INFO", "cmd": 4, "i": 19, "ok": true, "rtt_ms": 56.34, "hex": "24583e00040016004f444637000002010d4f44444954595243463741494fb5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 0, "ok": true, "rtt_ms": 41.62, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 1, "ok": true, "rtt_ms": 10.45, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 2, "ok": true, "rtt_ms": 48.6, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 3, "ok": true, "rtt_ms": 11.22, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 4, "ok": true, "rtt_ms": 29.32, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 5, "ok": true, "rtt_ms": 9.95, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 6, "ok": true, "rtt_ms": 12.81, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 7, "ok": true, "rtt_ms": 5.99, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 8, "ok": true, "rtt_ms": 11.63, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 9, "ok": true, "rtt_ms": 8.82, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 10, "ok": true, "rtt_ms": 10.9, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 11, "ok": true, "rtt_ms": 33.63, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 12, "ok": true, "rtt_ms": 56.72, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 13, "ok": true, "rtt_ms": 12.14, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 14, "ok": true, "rtt_ms": 7.87, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 15, "ok": true, "rtt_ms": 37.46, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 16, "ok": true, "rtt_ms": 11.55, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 17, "ok": true, "rtt_ms": 49.31, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 18, "ok": true, "rtt_ms": 9.94, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_NAME", "cmd": 10, "i": 19, "ok": true, "rtt_ms": 30.68, "hex": "24583e000a000d0050494c4f5449582d42524f4f4ba5"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 0, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 1, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 2, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 3, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 4, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 5, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 6, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 7, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 8, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 9, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 10, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 11, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 12, "ok": true, "rtt_ms": 190.94, "hex": "24583e007400670141524d3b50524541524d3b4d554c54492046554e4354494f4e3b414e474c453b484f52495a4f4e3b5455524e204153534953543b48454144494e4720484f4c443b43414d535441423b48454144465245453b4845414441444a3b46505620414e474c45204d49583b4d43204252414b494e473b4e415620414c54484f4c443b4245455045523b424545504552204d5554453b4f5344204f46463b424c41434b424f583b4641494c534146453b43414d45524120434f4e54524f4c20313b43414d45524120434f4e54524f4c20323b43414d45524120434f4e54524f4c20333b4f534420414c5420313b4f534420414c5420323b4f534420414c5420333b4d5350205243204f564552524944453b545552544c453b4d495845522050524f46494c4520323b4d49584552205452414e534954494f4e3b47494d42414c204c4556454c2054494c543b47494d42414c204c4556454c20524f4c4c3b47494d42414c2043454e5445523b29"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 13, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 14, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 15, "ok": false, "rtt_ms": 121.66, "hex": "24583e007400670141524d3b50524541524d3b4d554c54492046554e4354494f4e3b414e474c453b484f52495a4f4e3b5455524e204153534953543b48454144494e4720484f4c443b43414d5354414224583e006d000a0000000000000010000000fc24583e007400670141524d3b50524541524d3b4d554c54492046554e4354494f4e3b414e474c453b484f52495a4f4e3b5455524e204153534953543b48454144494e4720484f4c443b43414d535441423b48454144465245453b4845414441444a3b46505620414e474c45204d49583b4d43204252414b494e473b4e415620414c54484f4c443b4245455045523b424545504552204d5554453b4f5344204f46463b424c41434b424f583b4641494c534146453b43414d45524120434f4e54524f4c20313b43414d45524120434f4e54524f4c20323b43414d45524120434f4e54524f4c20333b4f534420414c5420313b4f534420414c5420323b4f534420414c5420333b4d5350205243204f"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 16, "ok": true, "rtt_ms": 1.22, "hex": "24583e007400670141524d3b50524541524d3b4d554c54492046554e4354494f4e3b414e474c453b484f52495a4f4e3b5455524e204153534953543b48454144494e4720484f4c443b43414d535441423b48454144465245453b4845414441444a3b46505620414e474c45204d49583b4d43204252414b494e473b4e415620414c54484f4c443b4245455045523b424545504552204d5554453b4f5344204f46463b424c41434b424f583b4641494c534146453b43414d45524120434f4e54524f4c20313b43414d45524120434f4e54524f4c20323b43414d45524120434f4e54524f4c20333b4f534420414c5420313b4f534420414c5420323b4f534420414c5420333b4d5350205243204f564552524944453b545552544c453b4d495845522050524f46494c4520323b4d49584552205452414e534954494f4e3b47494d42414c204c4556454c2054494c543b47494d42414c204c4556454c20524f4c4c3b47494d42414c2043454e5445523b29"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 17, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 18, "error": "timeout"}
+{"name": "MSP_BOXNAMES", "cmd": 116, "i": 19, "error": "timeout"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 0, "error": "timeout"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 1, "error": "timeout"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 2, "ok": true, "rtt_ms": 34.24, "hex": "24583e0000201600f9013200a3000d0000000204100000020000000000009d"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 3, "ok": true, "rtt_ms": 0.13, "hex": "24583e00002016000a023200a3000d000000020410000002000000000000f1"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 4, "ok": true, "rtt_ms": 0.08, "hex": "24583e00002016000b023200a3000d000000020410000002000000000000ca"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 5, "ok": true, "rtt_ms": 26.21, "hex": "24583e000020160005023200a3000c0000000204100000020000000000000a"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 6, "ok": true, "rtt_ms": 22.43, "hex": "24583e0000201600fc013200a3000c0000000204100000020000000000001d"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 7, "ok": true, "rtt_ms": 74.07, "hex": "24583e0000201600f6013200a3000d00000002041000000200000000000031"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 8, "ok": true, "rtt_ms": 15.3, "hex": "24583e0000201600fd013200a3000d00000002041000000200000000000071"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 9, "ok": true, "rtt_ms": 66.69, "hex": "24583e000020160009023200a3000d000000020410000002000000000000bc"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 10, "error": "timeout"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 11, "ok": true, "rtt_ms": 15.63, "hex": "24583e000020160005023200a3000d0000000204100000020000000000005d"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 12, "error": "timeout"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 13, "error": "timeout"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 14, "error": "timeout"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 15, "ok": true, "rtt_ms": 162.42, "hex": "24583e0000201600ff013200a3000c00000002041000000200000000000050"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 16, "ok": true, "rtt_ms": 0.31, "hex": "24583e000020160004023200a3000c00000002041000000200000000000031"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 17, "ok": true, "rtt_ms": 0.24, "hex": "24583e00002016000e023200a3000d0000000204100000020000000000001d"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 18, "ok": true, "rtt_ms": 0.09, "hex": "24583e0000201600f7013200a3000c0000000204100000020000000000005d"}
+{"name": "MSP2_INAV_STATUS", "cmd": 8192, "i": 19, "ok": true, "rtt_ms": 24.62, "hex": "24583e0000201600f6013200a3000c00000002041000000200000000000066"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 0, "ok": true, "rtt_ms": 68.18, "hex": "24583e006c000600ddffbfff01001d"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 1, "ok": true, "rtt_ms": 80.32, "hex": "24583e006c000600ddffbfff01001d"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 2, "ok": true, "rtt_ms": 26.84, "hex": "24583e006c000600dcffbfff010085"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 3, "ok": true, "rtt_ms": 16.52, "hex": "24583e006c000600dcffbfff010085"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 4, "ok": true, "rtt_ms": 26.73, "hex": "24583e006c000600dcffbfff010085"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 5, "ok": true, "rtt_ms": 10.64, "hex": "24583e006c000600dcffbfff010085"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 6, "ok": true, "rtt_ms": 8.61, "hex": "24583e006c000600dcffbfff010085"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 7, "ok": true, "rtt_ms": 12.59, "hex": "24583e006c000600dcffbfff010085"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 8, "error": "timeout"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 9, "ok": true, "rtt_ms": 222.43, "hex": "24583e006c000600dbffbfff0100e7"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 10, "ok": true, "rtt_ms": 197.77, "hex": "24583e006c000600d8ffbeff0100df"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 11, "error": "timeout"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 12, "ok": true, "rtt_ms": 319.18, "hex": "24583e006c000600d8ffbeff0100df"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 13, "ok": true, "rtt_ms": 98.74, "hex": "24583e006c000600d8ffbdff010010"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 14, "error": "timeout"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 15, "ok": true, "rtt_ms": 224.17, "hex": "24583e006c000600d8ffbdff010010"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 16, "ok": true, "rtt_ms": 16.79, "hex": "24583e006c000600d8ffbbff01005b"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 17, "ok": true, "rtt_ms": 16.83, "hex": "24583e006c000600d8ffbbff01005b"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 18, "ok": true, "rtt_ms": 6.55, "hex": "24583e006c000600d8ffbbff01005b"}
+{"name": "MSP_ATTITUDE", "cmd": 108, "i": 19, "ok": true, "rtt_ms": 52.86, "hex": "24583e006c000600d8ffbbff01005b"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 0, "ok": true, "rtt_ms": 22.46, "hex": "24583e006d000a0000000000000029000000c9"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 1, "ok": true, "rtt_ms": 15.8, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 2, "error": "timeout"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 3, "ok": true, "rtt_ms": 78.72, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 4, "ok": true, "rtt_ms": 28.0, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 5, "ok": true, "rtt_ms": 19.7, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 6, "ok": true, "rtt_ms": 51.79, "hex": "24583e006d000a0000000000000029000000c9"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 7, "ok": true, "rtt_ms": 25.73, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 8, "ok": true, "rtt_ms": 15.37, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 9, "ok": true, "rtt_ms": 11.3, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 10, "ok": true, "rtt_ms": 52.93, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 11, "ok": true, "rtt_ms": 22.56, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 12, "ok": true, "rtt_ms": 14.3, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 13, "ok": true, "rtt_ms": 8.89, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 14, "ok": true, "rtt_ms": 54.3, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 15, "ok": true, "rtt_ms": 24.43, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 16, "ok": true, "rtt_ms": 13.14, "hex": "24583e006d000a0000000000000032000000ff"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 17, "error": "timeout"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 18, "ok": true, "rtt_ms": 318.57, "hex": "24583e006d000a000000000000003a000000a8"}
+{"name": "MSP_ALTITUDE", "cmd": 109, "i": 19, "ok": true, "rtt_ms": 12.16, "hex": "24583e006d000a000000000000003a000000a8"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 0, "ok": true, "rtt_ms": 52.93, "hex": "24583e00660012003a00cfffed01000000000000000000000000e0"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 1, "ok": true, "rtt_ms": 25.52, "hex": "24583e00660012002b00e6ffff01000000000000000000000000a9"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 2, "ok": true, "rtt_ms": 10.4, "hex": "24583e00660012002c00dbff020200000000000000000000000046"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 3, "error": "timeout"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 4, "ok": true, "rtt_ms": 181.18, "hex": "24583e00660012002a00cefff301000000000000000000000000ec"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 5, "ok": true, "rtt_ms": 18.74, "hex": "24583e00660012002700d4ff020200000000000000000000000096"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 6, "ok": true, "rtt_ms": 21.51, "hex": "24583e00660012002700d6ff050200000000000000000000000065"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 7, "ok": true, "rtt_ms": 165.07, "hex": "24583e00660012002800d7ff0402000000000000000000000000f5"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 8, "error": "timeout"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 9, "error": "timeout"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 10, "ok": true, "rtt_ms": 458.78, "hex": "24583e00660012003200ccff000200000000000000000000000036"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 11, "ok": true, "rtt_ms": 8.46, "hex": "24583e00660012002600e0ff010200000000000000000000000024"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 12, "ok": true, "rtt_ms": 10.05, "hex": "24583e00660012002900defffd010000000000000000000000004f"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 13, "ok": true, "rtt_ms": 13.83, "hex": "24583e00660012002d00d9fff701000000000000000000000000c8"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 14, "ok": true, "rtt_ms": 15.97, "hex": "24583e00660012003000cffff10100000000000000000000000018"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 15, "ok": true, "rtt_ms": 10.01, "hex": "24583e00660012002e00cefff30100000000000000000000000014"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 16, "ok": true, "rtt_ms": 10.83, "hex": "24583e00660012002900cffff7010000000000000000000000004c"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 17, "ok": true, "rtt_ms": 26.94, "hex": "24583e00660012002200d5fff901000000000000000000000000a3"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 18, "error": "timeout"}
+{"name": "MSP_RAW_IMU", "cmd": 102, "i": 19, "ok": true, "rtt_ms": 403.69, "hex": "24583e00660012003600d0fffd010000000000000000000000007a"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 0, "ok": true, "rtt_ms": 19.55, "hex": "24583e0002201800405f063f00030400000b000000c20000000000000056000039"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 1, "ok": true, "rtt_ms": 12.57, "hex": "24583e0002201800405f063f00030400000b000000c20000000000000056000039"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 2, "ok": true, "rtt_ms": 21.67, "hex": "24583e0002201800405f063f00030400000b000000c20000000000000056000039"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 3, "error": "timeout"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 4, "error": "timeout"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 5, "ok": true, "rtt_ms": 212.1, "hex": "24583e0002201800405f063f00030400000c000000c60000000000000056000024"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 6, "ok": true, "rtt_ms": 39.12, "hex": "24583e0002201800405f063f00030400000c000000c60000000000000056000024"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 7, "ok": true, "rtt_ms": 16.45, "hex": "24583e0002201800405f063f00030400000c000000c60000000000000056000024"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 8, "ok": true, "rtt_ms": 133.85, "hex": "24583e0002201800405f063f00030400000c000000c60000000000000056000024"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 9, "ok": true, "rtt_ms": 202.5, "hex": "24583e0002201800405f063f00030400000c000000c60000000000000056000024"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 10, "error": "timeout"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 11, "error": "timeout"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 12, "ok": true, "rtt_ms": 439.68, "hex": "24583e0002201800405f063e00f30300000c000000ca0000000000000056000081"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 13, "ok": true, "rtt_ms": 14.88, "hex": "24583e0002201800405f063e00f30300000c000000cb00000000000000560000b5"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 14, "ok": true, "rtt_ms": 33.91, "hex": "24583e0002201800405f063e00f30300000c000000cb00000000000000560000b5"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 15, "ok": true, "rtt_ms": 17.25, "hex": "24583e0002201800405f063e00f30300000c000000cb00000000000000560000b5"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 16, "ok": true, "rtt_ms": 62.98, "hex": "24583e0002201800405f063f00030400000c000000cb00000000000000560000b5"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 17, "ok": true, "rtt_ms": 165.08, "hex": "24583e0002201800405f063f00030400000c000000cb00000000000000560000b5"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 18, "ok": true, "rtt_ms": 11.23, "hex": "24583e0002201800405f063f00030400000c000000cc0000000000000056000039"}
+{"name": "MSP2_INAV_ANALOG", "cmd": 8194, "i": 19, "ok": true, "rtt_ms": 24.68, "hex": "24583e0002201800405f063f00030400000c000000cc0000000000000056000039"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 0, "error": "timeout"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 1, "ok": true, "rtt_ms": 363.75, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 2, "ok": true, "rtt_ms": 31.56, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 3, "ok": true, "rtt_ms": 10.39, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 4, "ok": true, "rtt_ms": 13.34, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 5, "ok": true, "rtt_ms": 67.48, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 6, "ok": true, "rtt_ms": 28.27, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 7, "error": "timeout"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 8, "ok": true, "rtt_ms": 395.74, "hex": "24583e000120090064090009000000000040"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 9, "ok": true, "rtt_ms": 78.86, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 10, "ok": true, "rtt_ms": 37.94, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 11, "ok": true, "rtt_ms": 58.49, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 12, "ok": true, "rtt_ms": 27.02, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 13, "ok": true, "rtt_ms": 14.85, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 14, "ok": true, "rtt_ms": 8.77, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 15, "ok": true, "rtt_ms": 51.78, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 16, "ok": true, "rtt_ms": 26.87, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 17, "ok": true, "rtt_ms": 11.12, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 18, "ok": true, "rtt_ms": 11.88, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP2_INAV_OPTICAL_FLOW", "cmd": 8193, "i": 19, "ok": true, "rtt_ms": 55.87, "hex": "24583e0001200900640000000000000000c2"}
+{"name": "MSP_RC", "cmd": 105, "i": 0, "ok": true, "rtt_ms": 35.95, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 1, "ok": true, "rtt_ms": 63.84, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 2, "ok": true, "rtt_ms": 46.79, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 3, "ok": true, "rtt_ms": 55.76, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 4, "ok": true, "rtt_ms": 59.21, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 5, "ok": true, "rtt_ms": 70.16, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 6, "ok": true, "rtt_ms": 13.64, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 7, "error": "timeout"}
+{"name": "MSP_RC", "cmd": 105, "i": 8, "ok": true, "rtt_ms": 404.99, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 9, "ok": true, "rtt_ms": 105.72, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 10, "ok": true, "rtt_ms": 11.41, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 11, "ok": true, "rtt_ms": 25.58, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 12, "ok": true, "rtt_ms": 16.16, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 13, "ok": true, "rtt_ms": 19.29, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 14, "ok": true, "rtt_ms": 39.22, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 15, "ok": true, "rtt_ms": 47.81, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 16, "ok": true, "rtt_ms": 12.78, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 17, "ok": true, "rtt_ms": 28.56, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 18, "ok": true, "rtt_ms": 20.61, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_RC", "cmd": 105, "i": 19, "ok": true, "rtt_ms": 62.08, "hex": "24583e0069002200dc05dc05dc0575038b06dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc05dc0581"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 0, "ok": true, "rtt_ms": 23.31, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 1, "ok": true, "rtt_ms": 10.56, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 2, "ok": true, "rtt_ms": 10.27, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 3, "ok": true, "rtt_ms": 55.89, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 4, "error": "timeout"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 5, "ok": true, "rtt_ms": 170.81, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 6, "ok": true, "rtt_ms": 15.95, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 7, "error": "timeout"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 8, "ok": true, "rtt_ms": 151.87, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 9, "ok": true, "rtt_ms": 20.2, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 10, "ok": true, "rtt_ms": 174.3, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 11, "ok": true, "rtt_ms": 23.22, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 12, "ok": true, "rtt_ms": 11.2, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 13, "ok": true, "rtt_ms": 9.27, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 14, "ok": true, "rtt_ms": 36.57, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 15, "ok": true, "rtt_ms": 14.42, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 16, "error": "timeout"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 17, "ok": true, "rtt_ms": 451.52, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 18, "ok": true, "rtt_ms": 10.88, "hex": "24583e003a0004000000000079"}
+{"name": "MSP_SONAR_ALTITUDE", "cmd": 58, "i": 19, "error": "timeout"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 0, "error": "timeout"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 1, "error": "timeout"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 2, "ok": true, "rtt_ms": 142.01, "hex": "24583e0020221800eaffcbff130000000000000000000000000000000000000005"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 3, "error": "timeout"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 4, "ok": true, "rtt_ms": 98.14, "hex": "24583e0020221800e8ffcbff130000000000000000000000000000000000000085"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 5, "ok": true, "rtt_ms": 13.05, "hex": "24583e0020221800e8ffcbff130000000000000000000000000000000000000085"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 6, "ok": true, "rtt_ms": 194.92, "hex": "24583e0020221800e8ffcbff130000000000000000000000000000000000000085"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 7, "ok": true, "rtt_ms": 79.82, "hex": "24583e0020221800e6ffcaff130000000000000000000000000000000000000094"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 8, "ok": true, "rtt_ms": 19.08, "hex": "24583e0020221800e6ffcaff130000000000000000000000000000000000000094"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 9, "ok": true, "rtt_ms": 16.13, "hex": "24583e0020221800e6ffcaff130000000000000000000000000000000000000094"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 10, "ok": true, "rtt_ms": 88.12, "hex": "24583e0020221800e6ffcaff130000000000000000000000000000000000000094"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 11, "ok": true, "rtt_ms": 11.0, "hex": "24583e0020221800e6ffcaff130000000000000000000000000000000000000094"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 12, "error": "timeout"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 13, "error": "timeout"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 14, "ok": true, "rtt_ms": 216.77, "hex": "24583e0020221800e6ffcaff130000000000000000000000000000000000000094"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 15, "ok": true, "rtt_ms": 75.66, "hex": "24583e0020221800e0ffcbff1300000000000000000000000000000000000000fa"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 16, "ok": true, "rtt_ms": 24.57, "hex": "24583e0020221800e0ffcbff1300000000000000000000000000000000000000fa"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 17, "ok": true, "rtt_ms": 15.7, "hex": "24583e0020221800e0ffcbff1300000000000000000000000000000000000000fa"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 18, "ok": true, "rtt_ms": 18.06, "hex": "24583e0020221800e0ffcbff1300000000000000000000000000000000000000fa"}
+{"name": "MSP2_INAV_FULL_LOCAL_POSE", "cmd": 8736, "i": 19, "ok": true, "rtt_ms": 20.34, "hex": "24583e0020221800e0ffcbff1300000000000000000000000000000000000000fa"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 0, "ok": true, "rtt_ms": 18.15, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 1, "ok": true, "rtt_ms": 29.63, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 2, "ok": true, "rtt_ms": 8.86, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 3, "ok": true, "rtt_ms": 10.41, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 4, "ok": true, "rtt_ms": 12.88, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 5, "ok": true, "rtt_ms": 7.09, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 6, "ok": true, "rtt_ms": 9.64, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 7, "ok": true, "rtt_ms": 11.67, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 8, "ok": true, "rtt_ms": 9.22, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 9, "ok": true, "rtt_ms": 38.73, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 10, "ok": true, "rtt_ms": 10.16, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 11, "ok": true, "rtt_ms": 15.73, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 12, "error": "timeout"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 13, "ok": true, "rtt_ms": 363.78, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 14, "error": "timeout"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 15, "ok": true, "rtt_ms": 33.95, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 16, "ok": true, "rtt_ms": 11.91, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 17, "ok": true, "rtt_ms": 64.77, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 18, "ok": true, "rtt_ms": 24.17, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP_NAV_STATUS", "cmd": 121, "i": 19, "ok": true, "rtt_ms": 11.57, "hex": "24583e00790007000000000100010063"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 0, "ok": true, "rtt_ms": 24.57, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 1, "ok": true, "rtt_ms": 68.86, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 2, "ok": true, "rtt_ms": 15.28, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 3, "ok": true, "rtt_ms": 59.08, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 4, "ok": true, "rtt_ms": 29.56, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 5, "error": "timeout"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 6, "ok": true, "rtt_ms": 110.89, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 7, "ok": true, "rtt_ms": 10.94, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 8, "ok": true, "rtt_ms": 63.81, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 9, "ok": true, "rtt_ms": 34.76, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 10, "ok": true, "rtt_ms": 67.67, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 11, "ok": true, "rtt_ms": 44.09, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 12, "error": "timeout"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 13, "error": "timeout"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 14, "error": "timeout"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 15, "ok": true, "rtt_ms": 332.77, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 16, "ok": true, "rtt_ms": 75.23, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 17, "ok": true, "rtt_ms": 22.72, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 18, "ok": true, "rtt_ms": 71.8, "hex": "24583e000321030000000006"}
+{"name": "MSP2_INAV_GET_LINK_STATS", "cmd": 8451, "i": 19, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 0, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 1, "ok": true, "rtt_ms": 60.74, "hex": "24583e0068001000e803e803e803e803000000000000000027"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 2, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 3, "ok": true, "rtt_ms": 487.54, "hex": "24583e0068001000e803e803e803e803000000000000000027"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 4, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 5, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 6, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 7, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 8, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 9, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 10, "ok": true, "rtt_ms": 61.57, "hex": "24583e0068001000e803e803e803e803000000000000000027"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 11, "ok": true, "rtt_ms": 50.14, "hex": "24583e0068001000e803e803e803e803000000000000000027"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 12, "ok": true, "rtt_ms": 52.62, "hex": "24583e0068001000e803e803e803e803000000000000000027"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 13, "ok": true, "rtt_ms": 99.24, "hex": "24583e0068001000e803e803e803e803000000000000000027"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 14, "ok": true, "rtt_ms": 30.84, "hex": "24583e0068001000e803e803e803e803000000000000000027"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 15, "ok": true, "rtt_ms": 10.31, "hex": "24583e0068001000e803e803e803e803000000000000000027"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 16, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 17, "error": "timeout"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 18, "ok": true, "rtt_ms": 194.86, "hex": "24583e0068001000e803e803e803e803000000000000000027"}
+{"name": "MSP_MOTOR", "cmd": 104, "i": 19, "error": "timeout"}

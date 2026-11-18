@@ -1,6 +1,8 @@
-D       := seame-docker
-COMPOSE := docker compose -f $(D)/compose.yaml
+
+SCRIPTS := project/scripts
+COMPOSE := docker compose
 SERVICE := dev
+in_ws    = $(COMPOSE) exec $(SERVICE) bash -c 'source /opt/ros/jazzy/setup.bash && cd ~/ros2_ws && $(1)'
 
 .DEFAULT_GOAL := help
 
@@ -8,11 +10,13 @@ help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*## "}; {printf "  %-14s %s\n", $$1, $$2}'
 
+# ========== dev container ==========
 up: ## Write .env and start the dev container (builds the image the first time)
-	$(D)/scripts/make-env.sh
+	@$(SCRIPTS)/make-env.sh
 	$(COMPOSE) up -d
 
-build: ## Rebuild the image (after changing the Dockerfile)
+build: ## Rebuild the image (after changing project/Dockerfile)
+	@$(SCRIPTS)/make-env.sh
 	$(COMPOSE) build
 
 down: ## Stop and remove the dev container
@@ -27,13 +31,38 @@ logs: ## Follow container logs
 shell: up ## Open a bash shell in the container
 	$(COMPOSE) exec $(SERVICE) bash
 
-smoke: up ## Smoke test (publishers and watchdog)
-	bash $(D)/scripts/smoke_test.sh
+# ========== ROS workspace (project/ros2) ==========
 
-sim-keyboard: up ## Gazebo + keyboard control
-	bash $(D)/scripts/sim_keyboard.sh
+ws: up ## colcon build the ROS workspace (project/ros2/src)
+	$(call in_ws,colcon build)
 
-sim-joy: up ## Gazebo + joystick (RadioMaster)
-	bash $(D)/scripts/sim_joy.sh
+ws-clean: up ## Delete the workspace build/, install/ and log/
+	$(call in_ws,rm -rf build install log)
 
-.PHONY: help up build down clean-volumes logs shell smoke sim-keyboard sim-joy
+# ========== tests (results in project/logs/) ==========
+
+test: up ## All tests (ROS + telemetry), like CI: results in project/logs/tests/
+	bash $(SCRIPTS)/run_tests.sh
+
+sim-test: ## Headless Gazebo flight test (nightly): results in project/logs/sim_flight/
+	bash $(SCRIPTS)/sim_flight_test.sh
+
+# ========== simulation (Gazebo) ==========
+
+sim-keyboard: ws ## Gazebo + keyboard control (no radio: the drone starts armed)
+	bash $(SCRIPTS)/sim_keyboard.sh
+
+sim-joy: ws ## Gazebo + joystick (RadioMaster Pocket over USB)
+	bash $(SCRIPTS)/sim_joy.sh
+
+sim-stop: ## Stop every sim process left in the container
+	bash $(SCRIPTS)/stop_sim.sh
+
+# ========== real drone (laptop on the drone's Wi-Fi) ==========
+
+wifi-rtt: ## Wi-Fi round trip to the FC: make wifi-rtt NOTE="where, ESP mode" [ARGS="-n 1000"]
+	@test -n "$(NOTE)" || { echo 'Say the conditions: make wifi-rtt NOTE="bench, AP mode, radio on"'; exit 2; }
+	python3 $(SCRIPTS)/measure_wifi_rtt.py --note "$(NOTE)" $(ARGS)
+
+.PHONY: help up build down clean-volumes logs shell ws ws-clean test sim-test \
+	sim-keyboard sim-joy sim-stop wifi-rtt
