@@ -1,21 +1,25 @@
+# Dev container for the drone stack. Use it through the Makefile: `make help`.
+name: seame
+
 services:
   dev:
     build:
-      context: .
+      context: project          # project/Dockerfile; project/.dockerignore keeps the context small
       args:
-        HOST_UID: ${HOST_UID}
-        HOST_GID: ${HOST_GID}
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
     image: seame/ros2-dev:jazzy
     container_name: seame-dev
     network_mode: host   # DDS discovery across containers and machines
     ipc: host            # Fast DDS shared-memory transport
     environment:
       - DISPLAY=${DISPLAY}
-      - ROS_DOMAIN_ID=6
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-6}
       - XDG_RUNTIME_DIR=/tmp/runtime-dev   # silences the Qt warning; dir is created in the Dockerfile
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
-      - ./ros2_ws:/home/dev/ros2_ws
+      - ./project/ros2:/home/dev/ros2_ws   # the colcon workspace (src/, build/, install/, log/)
+      - ./project:/home/dev/project        # the rest: telemetry/ (make test runs its tests here)
       - /dev/input:/dev/input
       - gz-cache:/home/dev/.gz   # Fuel models (X3, X4) survive recreating the container
       - /dev:/dev
@@ -25,7 +29,7 @@ services:
       - 'c 13:* rmw'   # input devices (js*, event*), incl. replugging the radio
       - 'c 81:* rmw'
     # GPU access: the dev user must be in the host's video and render groups.
-    # Numbers come from .env (run ./scripts/make-env.sh once). Wrong numbers = software rendering, never a failure.
+    # Numbers come from .env (`make up` writes it). Wrong numbers = software rendering, never a failure.
     group_add:
       - "${VIDEO_GID:-44}"
       - "${RENDER_GID:-993}"
