@@ -19,11 +19,11 @@ build: ## Rebuild the image (after changing project/Dockerfile)
 	@$(SCRIPTS)/make-env.sh
 	$(COMPOSE) build
 
-down: ## Stop and remove the dev container
-	$(COMPOSE) down
+down: ## Stop and remove the dev container (and monitoring, if running)
+	$(COMPOSE) --profile monitoring down
 
-clean-volumes: ## Stop the container and delete its volumes (Gazebo model cache)
-	$(COMPOSE) down -v
+clean-volumes: ## Stop everything and delete the volumes (Gazebo model cache, Prometheus and Grafana data)
+	$(COMPOSE) --profile monitoring down -v
 
 logs: ## Follow container logs
 	$(COMPOSE) logs -f $(SERVICE)
@@ -58,6 +58,16 @@ sim-joy: ws ## Gazebo + joystick (RadioMaster Pocket over USB)
 sim-stop: ## Stop every sim process left in the container
 	bash $(SCRIPTS)/stop_sim.sh
 
+# ========== monitoring (Prometheus + Grafana, monitoring/) ==========
+
+monitor: ## Prometheus + Grafana: the drone dashboard on http://localhost:3000
+	$(COMPOSE) --profile monitoring up -d prometheus grafana
+	@echo "Grafana: http://localhost:3000 (view without login; admin/admin to edit)"
+	@echo "Data appears while a sim or the drone stack runs (metrics_exporter, port 9105)"
+
+monitor-stop: ## Stop Prometheus and Grafana (their data is kept)
+	$(COMPOSE) --profile monitoring rm -sf prometheus grafana
+
 # ========== real drone (laptop on the drone's Wi-Fi) ==========
 
 wifi-rtt: ## Wi-Fi round trip to the FC: make wifi-rtt NOTE="where, ESP mode" [ARGS="-n 1000"]
@@ -65,4 +75,4 @@ wifi-rtt: ## Wi-Fi round trip to the FC: make wifi-rtt NOTE="where, ESP mode" [A
 	python3 $(SCRIPTS)/measure_wifi_rtt.py --note "$(NOTE)" $(ARGS)
 
 .PHONY: help up build down clean-volumes logs shell ws ws-clean test sim-test \
-	sim-keyboard sim-joy sim-stop wifi-rtt
+	sim-keyboard sim-joy sim-stop monitor monitor-stop wifi-rtt

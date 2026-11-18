@@ -168,7 +168,7 @@ def test_default_is_the_sim_with_the_radio_and_the_mission():
     actions = launch()
     assert set(started(actions)) == {
         'parameter_bridge', 'flow_model', 'estimator', 'fc_bridge', 'safety_manager',
-        'mission', 'joy_node', 'radio_teleop'}
+        'metrics_exporter', 'mission', 'joy_node', 'radio_teleop'}
     assert len(gazebo(actions)) == 1
 
 
@@ -176,7 +176,8 @@ def test_inav_backend_starts_no_gazebo_and_no_radio_nodes():
     # On the real drone the radio talks ELRS to INAV, and there is nothing to simulate.
     actions = launch(backend='inav', radio='true')
     assert gazebo(actions) == []
-    assert set(started(actions)) == {'fc_bridge', 'safety_manager', 'mission'}
+    assert set(started(actions)) == {'fc_bridge', 'safety_manager', 'metrics_exporter',
+                                     'mission'}
     assert values(started(actions)['fc_bridge'])['backend'] == 'inav'
 
 

@@ -18,8 +18,8 @@ TO_MISSION = [('setpoint_velocity', '/cmd/mission')]
 TO_RADIO = [('setpoint_velocity', '/cmd/radio')]
 
 PACKAGES = ['ros_gz_sim', 'ros_gz_bridge', 'drone_fc_bridge', 'drone_safety', 'drone_mission',
-            'joy', 'drone_sim', 'drone_teleop']
-REAL_PACKAGES = ['drone_fc_bridge', 'drone_safety', 'drone_mission']
+            'drone_monitoring', 'joy', 'drone_sim', 'drone_teleop']
+REAL_PACKAGES = ['drone_fc_bridge', 'drone_safety', 'drone_mission', 'drone_monitoring']
 
 
 def gz_servers_in_my_partition():
@@ -115,6 +115,12 @@ def setup(context):
     # The only publisher of /fc/setpoint_velocity: radio > manual > mission.
     actions.append(Node(
         package='drone_safety', executable='safety_manager',
+        parameters=[params, clock], output='screen',
+    ))
+    # Prometheus metrics on localhost:9105 for the Grafana dashboard (make monitor).
+    # Only listens; if it fails, the rest flies on.
+    actions.append(Node(
+        package='drone_monitoring', executable='metrics_exporter',
         parameters=[params, clock], output='screen',
     ))
 

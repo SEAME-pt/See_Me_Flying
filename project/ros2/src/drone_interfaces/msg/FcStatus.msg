@@ -9,3 +9,5 @@ bool holding                 # fc/hold is on: setpoints are ignored and zero is 
 bool following_setpoints     # a fresh setpoint is being forwarded
 float32 setpoint_age_s       # since the last accepted setpoint; -1 if none yet
 bool range_valid             # the last fc/range reading was a finite distance
+float32 state_age_s          # since the last FC state (sim: Gazebo odometry; inav: MSP reply); -1 if none yet
+bool link_ok                 # 0 <= state_age_s <= link_timeout_s: the FC is answering

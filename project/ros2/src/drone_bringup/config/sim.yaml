@@ -32,6 +32,11 @@ safety_manager:
     source_timeout_s: 0.3   # keep equal to fc_bridge setpoint_timeout_s
     battery_low: 0.2        # placeholder: only warns
 
+metrics_exporter:
+  ros__parameters:
+    # Serves 127.0.0.1:9105 (parameters address, port), scraped by monitoring/prometheus.yml
+    stale_after_s: 3.0      # a topic quiet this long: its values show NO DATA in Grafana
+
 mission:
   ros__parameters:
     rate_hz: 20.0

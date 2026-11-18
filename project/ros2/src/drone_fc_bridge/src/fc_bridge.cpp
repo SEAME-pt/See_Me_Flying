@@ -86,6 +86,7 @@ public:
       declare_parameter<std::string>("gz_enable_topic", "/X3/enable");
     const double rate_hz = declare_parameter<double>("rate_hz", 20.0);
     declare_parameter<double>("setpoint_timeout_s", 0.3);
+    declare_parameter<double>("link_timeout_s", 0.5);  // no FC state for longer: link_ok false
     declare_parameter<double>("max_speed_xy", 0.5);   // m/s
     declare_parameter<double>("max_speed_z", 0.3);    // m/s
     declare_parameter<double>("max_yaw_rate", 1.0);   // rad/s
@@ -199,7 +200,33 @@ private:
     st.following_setpoints = !stale_ && !holding_;
     st.setpoint_age_s = last_rx_ ? static_cast<float>((now() - *last_rx_).seconds()) : -1.0f;
     st.range_valid = range_valid_;
+    const double state_age = state_age_s();
+    st.state_age_s = static_cast<float>(state_age);
+    st.link_ok = link_ok_;
     status_pub_->publish(st);
+  }
+
+  // Since the last FC state: Gazebo odometry in the sim, an MSP reply on inav
+  // (not implemented yet, so always -1 there). -1 if none yet.
+  double state_age_s()
+  {
+    return last_state_rx_ ? (now() - *last_state_rx_).seconds() : -1.0;
+  }
+
+  void check_link()
+  {
+    const double age = state_age_s();
+    const bool ok = age >= 0.0 && age <= param("link_timeout_s");
+    if (ok == link_ok_) {
+      return;
+    }
+    link_ok_ = ok;
+    if (ok) {
+      RCLCPP_INFO(get_logger(), "FC link up: state arriving");
+    } else {
+      RCLCPP_WARN(get_logger(), "FC link lost: no state for %.2f s", age);
+    }
+    publish_status();
   }
 
   void tick()
@@ -223,6 +250,7 @@ private:
     if (cmd_pub_) {
       cmd_pub_->publish(fresh && !holding_ ? clamp(last_sp_) : Twist());
     }
+    check_link();
   }
 
   double noise(double stddev)
@@ -241,6 +269,8 @@ private:
       }
     }
     last_odom_stamp_ = stamp;
+    last_state_rx_ = now();   // node clock, like setpoint_age_s; not the message stamp
+    check_link();
     const auto & q = sim.pose.pose.orientation;
 
     // Velocity as optical flow would measure it: body frame, noisy, with a
@@ -349,6 +379,8 @@ private:
   bool armed_{true};
   bool holding_{false};
   bool range_valid_{false};
+  std::optional<rclcpp::Time> last_state_rx_;
+  bool link_ok_{false};
 
   std::mt19937 rng_{42};   // fixed seed: the same run drifts the same way
   std::normal_distribution<double> normal_{0.0, 1.0};

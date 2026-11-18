@@ -38,5 +38,31 @@ services:
     tty: true
     init: true
 
+  # Monitoring: `make monitor`. Only started with the monitoring profile, so
+  # `make up` still starts the dev container alone.
+  # Prometheus scrapes metrics_exporter (drone_monitoring) on localhost:9105.
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    profiles: [monitoring]
+    network_mode: host   # reaches the exporter in the dev container on localhost
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom-data:/prometheus
+  # Grafana on http://localhost:3000: the drone dashboard opens without login;
+  # log in as admin/admin to edit.
+  grafana:
+    image: grafana/grafana:13.2.6
+    profiles: [monitoring]
+    network_mode: host
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/drone.json
+    volumes:
+      - ./monitoring/grafana:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+
 volumes:
   gz-cache:
+  prom-data:
+  grafana-data:
