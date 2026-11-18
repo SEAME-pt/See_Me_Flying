@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "3d33793d832c17d8",
+        "id": "eef384b280fb948f",
         "type": "tabs",
         "children": [
           {
-            "id": "beb2a77c04396c2b",
+            "id": "7b8fc058377e7433",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/See_Me_Flying-MTF-02.md",
+                "file": "docs/Drone_Firmware_Choices.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "See_Me_Flying-MTF-02"
+              "title": "Drone_Firmware_Choices"
             }
           }
         ]
@@ -159,7 +159,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "docs/See_Me_Flying-MTF-02.md",
+                "file": "docs/Drone_Firmware_Choices.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -187,8 +187,15 @@
       "export-graph-view:Export graph view": false
     }
   },
-  "active": "beb2a77c04396c2b",
+  "active": "7b8fc058377e7433",
   "lastOpenFiles": [
+    "docs/extras/wire_diagram.png",
+    "docs/extras/folders-graph.svg",
+    "docs/extras/ESC_settings.png",
+    "docs/Li-Po_Battery_Tests.md",
+    "docs/pull_request_template.md",
+    "docs/Msp_primer.md",
+    "docs/See_Me_Flying-MTF-02.md",
     "telemetry/tests/test_msp_frame.py",
     "telemetry/tests/test_decoders.py",
     "telemetry/tests/test_captures.py",
@@ -199,7 +206,6 @@
     "telemetry/bench.csv",
     "seame-docker/scripts/sim_flight_test.sh",
     "seame-docker/ros2_ws/src/drone_sim_sensors/test/test_estimator.py",
-    "seame-docker/ros2_ws/src/drone_sim_sensors/drone_sim_sensors/flow_check.py",
     "seame-docker/ros2_ws/src/drone_bringup/models/grass_ground/materials/textures/grass.jpg",
     "seame-docker/logs/tests/2026-11-16_7b51699/report.md",
     "seame-docker/logs/tests/2026-11-16_16d1b31-dirty/report.md",
@@ -210,11 +216,9 @@
     "docs/Doc-ROS2/SIM_Sensors.md",
     "docs/CI_Tests.md",
     "docs/ELRS_ESP_Interferance.md",
-    "docs/Li-Po_Battery_Tests.md",
     "docs/ELRS_Guide.md",
     "telemetry/inav/captures/README.md",
     "docs/TESTS.md",
-    "docs/See_Me_Flying-MTF-02.md",
     "file:/home/mota/Downloads/See Me Flying - MTF-02.md",
     "telemetry/Groundstation.md",
     "telemetry/README.md",
@@ -224,9 +228,6 @@
     "seame-docker/logs/README.md",
     "seame-docker/SIM_TELEOP.md",
     "seame-docker/ros2_ws/src/drone_fc_bridge/test/data/README.md",
-    "seame-docker/logs/tests/2026-11-10_92117ca/report.md",
-    "seame-docker/logs/tests/2026-11-10_70cdf3d/report.md",
-    "docs/extras/folders-graph.svg",
     "folders-graph.svg",
     "Untitled.canvas"
   ]
