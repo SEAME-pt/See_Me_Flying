@@ -21,6 +21,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-jazzy-usb-cam ros-jazzy-v4l2-camera ros-jazzy-image-transport \
       ros-jazzy-image-view \
       ros-jazzy-cv-bridge \
+      ros-jazzy-camera-calibration \
+      ros-jazzy-vision-msgs \
+      python3-opencv python3-pip \
       ros-jazzy-image-proc \
       ros-jazzy-camera-calibration \
       ros-jazzy-rqt-image-view v4l-utils mesa-utils \
@@ -32,6 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Replace the image's default 'ubuntu' user with one matching your host UID/GID,
 # so files created in the mounted workspace are owned by you, not root.
 RUN userdel -r ubuntu 2>/dev/null || true \
+    && pip install --break-system-packages "onnxruntime==1.20.1" "numpy<2" \
     && groupadd -f -g ${HOST_GID} ${USERNAME} \
     && useradd -m -u ${HOST_UID} -g ${HOST_GID} -s /bin/bash ${USERNAME} \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME}
