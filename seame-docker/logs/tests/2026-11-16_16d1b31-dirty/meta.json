@@ -1,0 +1,25 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-16T19:39:03+00:00",
+  "host": "Matheus",
+  "commit": "16d1b31a0a0f8dfbebf393abf15a79298d115d37",
+  "commit_short": "16d1b31",
+  "commit_subject": "Merge pull request #230 from SEAME-pt/mota494-patch-2",
+  "branch": "malves-b_CV",
+  "uncommitted_code": [
+    "seame-docker/ros2_ws/src/drone_bringup/launch/sim.launch.py",
+    "seame-docker/ros2_ws/src/drone_bringup/test/test_launch_files.py",
+    "seame-docker/ros2_ws/src/drone_bringup/test/test_worlds.py",
+    "seame-docker/ros2_ws/src/drone_bringup/worlds/outdoor_field.sdf",
+    "seame-docker/ros2_ws/src/drone_bringup/worlds/room_world.sdf",
+    "seame-docker/ros2_ws/src/drone_bringup/config/gui/follow.config",
+    "seame-docker/ros2_ws/src/drone_bringup/config/gui/fpv.config"
+  ],
+  "uncommitted_other": [
+    "docs/Doc-ROS2/Drone-SIM-Stack.md",
+    "seame-docker/scripts/sim_joy.sh",
+    "seame-docker/scripts/sim_keyboard.sh",
+    "seame-docker/start.sh"
+  ]
+}

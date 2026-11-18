@@ -45,6 +45,7 @@ PACKAGE_DIR = Path(__file__).resolve().parents[1]
 WORLDS_DIR = PACKAGE_DIR / 'worlds'
 MODELS_DIR = PACKAGE_DIR / 'models'
 BRIDGE = PACKAGE_DIR / 'config' / 'gz_bridge.yaml'
+FPV_GUI = PACKAGE_DIR / 'config' / 'gui' / 'fpv.config'
 LAUNCH_FILE = PACKAGE_DIR / 'launch' / 'sim.launch.py'
 
 # Gazebo names an <include> that has no <name> after the model inside it. For
@@ -269,6 +270,22 @@ def test_models_it_uses_exist(world):
             if not (world.path.parent / uri).exists():
                 missing.append(uri)
     assert not missing, f'{world.path.name}: not found: {missing}'
+
+
+def test_drone_has_the_fpv_camera(world, bridge):
+    # Ours only: Gazebo's default world has no camera on the drone (camera:=fpv
+    # shows nothing there).
+    if world.path.parent != WORLDS_DIR:
+        pytest.skip("Gazebo's own world: no FPV camera")
+    element, _ = the_drone(world, bridge)
+    cameras = [s for s in element.iter('sensor') if s.get('name') == 'fpv_camera']
+    assert len(cameras) == 1, f'{world.path.name}: the drone has no fpv_camera sensor'
+    # A GUI config has several top-level elements: wrap them to read it as XML.
+    gui = FPV_GUI.read_text().split('?>', 1)[-1]
+    shown = text(ElementTree.fromstring(f'<gui>{gui}</gui>'), 'plugin/topic')
+    assert norm(text(cameras[0], 'topic', '')) == norm(shown), (
+        f'{world.path.name}: fpv_camera publishes on {text(cameras[0], "topic")}, '
+        f'the camera:=fpv window shows {shown}')
 
 
 def model_dirs():

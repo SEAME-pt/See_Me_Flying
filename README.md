@@ -43,17 +43,62 @@ On the Raspberry Pi or any machine running ROS outside Docker, add `export ROS_D
 
 ## Architecture
 
-```
-                         ┌──────────────── Ground station (ROS 2 Jazzy, domain 6) ───────────────┐
- setpoint_pub / radio_teleop / keyboard ──► /fc/setpoint_velocity ──► fc_bridge ──┬─► sim backend ──► ros_gz_bridge ──► Gazebo (X3)
-                         watchdog (listens only) ◄────────────────────────────────┘
-                                                                                  └─► inav backend (planned) ── MSP over TCP/UDP
-                                                                                                │
-                                                                                     Wi-Fi (AP "SeeMeFlying")
-                                                                                                │
- Drone:  ESP-12 (MicroPython, UART⇄TCP bridge) ── UART ── OddityRC F7 (INAV 9.1.1) ── ESCs/motors
-         ThoneFlow-3901U optical flow ── UART ──┘          ELRS receiver ◄── RadioMaster Pocket (arming, failsafe)
-         Caddx Ratel 2 ── VTX 5.8 GHz ──────────────────► UVC receiver ──► usb_cam ──► /image_raw
+## System architecture
+
+```mermaid
+flowchart LR
+    subgraph GS["Ground station (ROS 2 Jazzy, domain 6)"]
+        setpoint_pub["setpoint_pub"]
+        radio_teleop["radio_teleop"]
+        keyboard["keyboard"]
+        sp(["/fc/setpoint_velocity"])
+        fc_bridge["fc_bridge"]
+        watchdog["watchdog<br/>(listens only)"]
+        sim["sim backend"]
+        rgz["ros_gz_bridge"]
+        gz["Gazebo (X3)"]
+        inav["inav backend<br/>(planned)"]
+        uvc["UVC receiver"]
+        usb_cam["usb_cam"]
+        img(["/image_raw"])
+    end
+
+    wifi{{"Wi-Fi AP: SeeMeFlying"}}
+    pocket["RadioMaster Pocket<br/>(arming, failsafe)"]
+
+    subgraph DRONE["Drone"]
+        esp["ESP-12<br/>MicroPython, UART-TCP bridge"]
+        fc["OddityRC F7<br/>INAV 9.1.1"]
+        esc["ESCs / motors"]
+        flow["ThoneFlow-3901U<br/>optical flow"]
+        elrs["ELRS receiver"]
+        cam["Caddx Ratel 2"]
+        vtx["VTX 5.8 GHz"]
+    end
+
+    %% Command path
+    setpoint_pub --> sp
+    radio_teleop --> sp
+    keyboard --> sp
+    sp --> fc_bridge
+    fc_bridge -.-> watchdog
+
+    %% Sim backend
+    fc_bridge --> sim --> rgz --> gz
+
+    %% Real hardware backend (planned)
+    fc_bridge -.-> inav
+    inav -.->|"MSP over TCP/UDP"| wifi
+    wifi <--> esp
+    esp <-->|UART| fc
+    flow -->|UART| fc
+    fc --> esc
+
+    %% RC link
+    pocket -->|ELRS| elrs --> fc
+
+    %% Video
+    cam --> vtx -.->|5.8 GHz| uvc --> usb_cam --> img
 ```
 
 Key design rules:
