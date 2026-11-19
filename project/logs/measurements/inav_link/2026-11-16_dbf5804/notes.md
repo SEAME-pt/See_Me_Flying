@@ -34,10 +34,10 @@ All match: the conversion needs no fix.
 
 ## The bag
 
-`bag/` (MCAP, 474 KB), the six `fc/*` topics while the drone was tilted and turned by hand. It plays back with `fc_bridge` stopped:
+`bag/` (MCAP, 474 KB), the six `fc/*` topics while the drone was tilted and turned by hand. It plays back with `fc_bridge` stopped, inside the container (`make shell`):
 
 ```bash
-ros2 bag play logs/measurements/inav_link/2026-11-16_dbf5804/bag
+ros2 bag play ~/project/logs/measurements/inav_link/2026-11-16_dbf5804/bag
 ```
 
 Not checked: battery voltage against a multimeter.

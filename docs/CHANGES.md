@@ -1,3 +1,6 @@
+---
+title: What Changed When copy-nando Became main
+---
 # What changed: copy-nando becomes main
 
 This branch replaces the old `main`. The ROS code is the same code you wrote,
@@ -12,7 +15,7 @@ make build                            # once: the Dockerfile changed
 make help                             # every command
 ```
 
-`Makefile_usage.md` explains each command and the usual problems.
+The [root README](../README.md#using-the-makefile) explains each command and the usual problems (it replaced `Makefile_usage.md`).
 
 ## 1. New layout
 
@@ -88,7 +91,9 @@ Everything committed after 13 November on any branch was checked file by file.
 **Not brought in, on purpose:**
 - `MSPBackend` (`telemetry/Backend/`) is still on its own branch.
 - The documentation (`docs/`, READMEs, `GUIDE.md`, `PLAN.md`, `SIM_TELEOP.md`)
-  stays on the `docs` branch and will be reorganized later.
+  stayed on the `docs` branch. It was reorganized on `docs_update` (Nov 19)
+  into `docs/`, `project/*/README.md` and `sprints/`; the
+  [root README](../README.md#documentation-map) links every page.
 
 ## 5. Removed
 
@@ -96,7 +101,9 @@ Everything committed after 13 November on any branch was checked file by file.
 |---|---|
 | `start.sh`, `smoke_test.sh` | the Makefile |
 | `setpoint_pub` and `source:=circle` (drone_basics_py) | Sprint 1 demo, replaced by the mission (`demo:=true` flies a square) |
-| `docs/`, `seame-docker/*.md`, `Sprint 2 Planning.pptx` | docs will be rewritten; the old ones are on the `docs` branch |
+| `docs/`, `seame-docker/*.md`, `Sprint 2 Planning.pptx` | rewritten on `docs_update`; the old ones are on the `docs` branch |
 | `roomodel/` | the same mesh lives in `drone_bringup/models/room/` |
 
+# Tags
 
+#resources

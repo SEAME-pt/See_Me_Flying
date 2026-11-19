@@ -1,65 +1,87 @@
 ---
-title: ESP12 Setup
+title: ESP12 Setup and Telemetry
 ---
-# Setting up INAV'S telemetry
+# ESP12 setup and INAV telemetry
+
+The ESP12 (ESP8266) on the drone runs **esp-link**, a transparent bridge: it opens its own Wi-Fi access point and passes every byte between a TCP client on port 23 and the flight controller's UART1, with no MSP parsing on the ESP. Why esp-link and not MicroPython, and how fast the link is: [Wi-Fi latency tests](../../docs/Telemetry_test.md).
+
+## Files in this folder
+
+| File | What it is |
+| --- | --- |
+| `inav_telemetry.py` | Polls INAV over MSP and prints every value listed below |
+| `latency_test.py` | MSP round-trip times; `make wifi-rtt` runs it and keeps the result in `project/logs/` |
+| `msp_inventory.py` | Captures raw MSP replies (`capture`) or measures their rates (`rate`) |
+| `receiver_crsf_ping.py` | Asks a CRSF/ELRS receiver for its name and version through INAV's serial passthrough ([ELRS guide](../../docs/ELRS_Guide.md)) |
+| `tests/` | MSP framing, decoders and the drone recordings (pytest; run by `make test` and CI) |
+| [`inav/`](inav/README.md) | INAV firmware choices, MSP captures (`msp/captures/`) and rate runs (`msp/rates/`) |
+| [`msp_dashboard/`](msp_dashboard/README.md) | C++ terminal dashboard, and `msp_gateway`, the single owner of the link |
 
 ## ESP12
 
-This step has to be done before wiring the ESP12 to the flight controller, it can be done with the ESP12 already soldered but it's way more work.
+This step has to be done before wiring the ESP12 to the flight controller. It can be done with the ESP12 already soldered, but it's much more work.
 
-### Pre requisites
+### Prerequisites
 
 #### 1 - Installing dependencies
 
 Arch:
 
 ```bash
-sudo pacman -S python-pipx
 sudo pacman -S esptool
-pipx install mpremote
-pipx ensurepath
-
-sudo usermod -aG uucp $USER
+sudo usermod -aG uucp $USER    # serial port access; log out and in again
 ```
+
+On Debian or Ubuntu the serial group is `dialout` instead of `uucp`. (`mpremote` was only needed for MicroPython, which the drone no longer runs.)
 
 #### 2 - Download and flash esp-link
 
-Head to `https://github.com/jeelabs/esp-link` and download the latest stable build.
+Head to `https://github.com/jeelabs/esp-link` and download the stable release we use, 3.2.47.
 
-Go to the folder and plug your ESP12 and check your PC recognizes it with `lsusb` and `ls /dev/tty*` a /dev/ttyUSB0 should be present.
+Go to the folder, plug in your ESP12 and check that your PC recognizes it with `lsusb` and `ls /dev/tty*`: a `/dev/ttyUSB0` should be present.
 
 **Now use esptool**:
 
 ```bash
-esptool erase-flash
-esptool --port /dev/ttyUSB0 --baud 460800 write-flash --flash-mode dio --flash-size 4MB \ 0x00000 boot_v1.*.bin \ 0x01000 user1.bin \ 0x3FC000 esp_init_data_default.bin \ 0x3FE000 blank.bin
+esptool --port /dev/ttyUSB0 erase-flash
+esptool --port /dev/ttyUSB0 --baud 460800 write-flash --flash-mode dio --flash-size 4MB \
+  0x00000 boot_v1.*.bin \
+  0x01000 user1.bin \
+  0x3FC000 esp_init_data_default.bin \
+  0x3FE000 blank.bin
 ```
 
-###### Check if the flash was done correctly
+##### Check that the flash worked
 
-After flashing the esp, unplug and plug to your computer and after some time a network called `ESP_XXXXXXX` should appear, connect to it and go to `http://192.168.4.1` and there the settings can change
+After flashing, unplug the ESP and plug it back in. After some time a network called `ESP_XXXXXXX` should appear: connect to it and go to `http://192.168.4.1`, where the settings can be changed.
 
-###### Settings
+##### Settings
 
-µC Console page: set the baud rate to 115200
-Pin Assignment page: RST, ISP and LED pins disabled
+- µC Console page: baud rate 115200, the same as INAV's MSP port on UART1.
+- Pin Assignment page: RST, ISP and LED pins disabled.
+- Wi-Fi: AP mode, with our SSID and password (see [How to connect to the drone's Wi-Fi](#how-to-connect-to-the-drones-wi-fi)).
 
-That's all the settings we've changed, there were some tests ran with the ESP on Soft-AP mode but overall delay was around 40ms slower so we decided to keep it on the AP mode alone.
+That's all we changed. We also tested the ESP joined to the lab's Wi-Fi (station mode), but it was slower ([results](../../docs/Telemetry_test.md#testing-results)), so the drone's ESP stays in AP mode.
 
 ## Running the script
 
-First, download the `inav_telemtry.py`, turn on the drone using the battery pack and connect to it's wifi SSID, after that you can go ahead and run the script.
-
-The script has flags that the user can check using:
+Turn on the drone using the battery pack, connect to its Wi-Fi, then from the repo root:
 
 ```bash
-python3 inav_telemetry.py --help
+python3 project/telemetry/inav_telemetry.py --port 23                     # readable output, 5 Hz
+python3 project/telemetry/inav_telemetry.py --port 23 --info --rate 2     # JSON lines
+python3 project/telemetry/inav_telemetry.py --port 23 --log flight.jsonl  # also save to a file
+python3 project/telemetry/inav_telemetry.py --help                        # every flag
 ```
 
-## Values that appear when using the script:
+> [!IMPORTANT]
+> Always pass `--port 23`. The script still defaults to 5760, the port of the old MicroPython bridge, and won't connect to esp-link without it. The same goes for `latency_test.py`.
 
+The [MSP dashboard](msp_dashboard/README.md) shows the same values as a live table, and the ROS stack reads them with `fc_bridge`'s `inav` backend ([ROS 2 stack](../ros2/README.md#fc_bridge)).
 
-## Sent once at startup
+## Values that appear when using the script
+
+### Sent once at startup
 
 |Name|Meaning|Unit / range|
 |---|---|---|
@@ -70,13 +92,13 @@ python3 inav_telemetry.py --help
 |`info.board_info`|Short identifier of the flight controller board|4 characters|
 |`info.craft_name`|Craft name set in INAV's Configuration tab|text, empty if not set|
 
-## Every cycle
+### Every cycle
 
 |Name|Meaning|Unit / range|
 |---|---|---|
 |`t`|Time this cycle was read, as a Unix timestamp|seconds|
 
-### Attitude (`attitude`)
+#### Attitude (`attitude`)
 
 |Name|Meaning|Unit / range|
 |---|---|---|
@@ -84,14 +106,14 @@ python3 inav_telemetry.py --help
 |`attitude.pitch_deg`|Pitch angle, tilt nose up or down|degrees, 0.1° resolution|
 |`attitude.heading_deg`|Heading, the direction the nose points|degrees, 0–359, 0 = north|
 
-### Altitude (`altitude`)
+#### Altitude (`altitude`)
 
 |Name|Meaning|Unit / range|
 |---|---|---|
 |`altitude.alt_m`|Estimated altitude relative to where the flight controller zeroed it (usually at arming)|meters|
 |`altitude.vario_ms`|Vertical speed, positive when climbing|m/s|
 
-### GPS (`gps`)
+#### GPS (`gps`)
 
 |Name|Meaning|Unit / range|
 |---|---|---|
@@ -104,14 +126,14 @@ python3 inav_telemetry.py --help
 |`gps.course_deg`|Direction of travel over the ground (not where the nose points)|degrees, 0–359.9|
 |`gps.hdop`|Horizontal dilution of precision: lower is more accurate, under about 1.5 is good|number|
 
-### Home (`gps_home`)
+#### Home (`gps_home`)
 
 |Name|Meaning|Unit / range|
 |---|---|---|
 |`gps_home.home_dist_m`|Distance to the home point set at arming|meters|
 |`gps_home.home_dir_deg`|Direction to the home point|degrees|
 
-### Battery and signal (`analog`)
+#### Battery and signal (`analog`)
 
 |Name|Meaning|Unit / range|
 |---|---|---|
@@ -120,7 +142,7 @@ python3 inav_telemetry.py --help
 |`analog.rssi_pct`|Radio receiver signal strength|percent, 0–100|
 |`analog.current_a`|Current draw|amps, 0.01 A resolution. Reads 0 without a current sensor|
 
-### Raw sensors (`imu_raw`)
+#### Raw sensors (`imu_raw`)
 
 |Name|Meaning|Unit / range|
 |---|---|---|
@@ -128,7 +150,7 @@ python3 inav_telemetry.py --help
 |`imu_raw.gyro[1]` … `[3]`|Gyroscope X, Y, Z (rotation rate)|raw sensor units|
 |`imu_raw.mag[1]` … `[3]`|Magnetometer (compass) X, Y, Z|raw sensor units, 0 without a compass|
 
-### Radio, motors, servos
+#### Radio, motors, servos
 
 |Name|Meaning|Unit / range|
 |---|---|---|
@@ -136,7 +158,7 @@ python3 inav_telemetry.py --help
 |`motors[n]`|Output sent to motor n|µs, about 1000 (stopped) to 2000 (full). Unused outputs read 0|
 |`servos[n]`|Output sent to servo n (control surfaces on planes)|µs, about 1000–2000, 1500 = center|
 
-### Status (`status`, `status_ex`, `inav_status`)
+#### Status (`status`, `status_ex`, `inav_status`)
 
 These three overlap. `inav_status` is the most complete, so you can remove the other two from `LIVE` in the script to save bandwidth.
 
@@ -156,7 +178,7 @@ These three overlap. `inav_status` is the most complete, so you can remove the o
 |`was_ever_armed`|`status_ex`, `inav_status`|Whether it has been armed since power-up|True / False|
 |`arming_blockers[n]`|`status_ex`, `inav_status`|Reasons arming is currently blocked (e.g. `rc_link`, `not_level`, `arm_switch`, `navigation_unsafe`). `status_ex` only carries the first 16 flags, so use `inav_status`|list, `none` if nothing blocks arming|
 
-### Detailed battery (`inav_analog`)
+#### Detailed battery (`inav_analog`)
 
 |Name|Meaning|Unit / range|
 |---|---|---|
@@ -173,9 +195,9 @@ These three overlap. `inav_status` is the most complete, so you can remove the o
 |`inav_analog.uses_capacity_thresholds`|Whether warnings use capacity instead of voltage|True / False|
 |`inav_analog.rssi_pct`|Radio signal strength|percent, 0–100|
 
-# How to connect to drone's wi-fi
+# How to connect to the drone's Wi-Fi
 
-By default esp-link will be an open networw.
+By default esp-link creates an open network.
 
 Our network was set with:
 
@@ -184,11 +206,12 @@ SSID: seemeflying
 Password: 123456789
 ```
 
+Keep the drone's ESP to **one client**: a second one caused link dropouts on Nov 18 ([motor music runs](../logs/measurements/motor_music/README.md)). If several tools need the drone, run [`msp_gateway`](msp_dashboard/README.md#msp_gateway-one-owner-for-the-msp-link) as the only one connected.
 
 # Tests
 
-Throughout tests were made with a bunch of different setups on the ESP and all are documented on the [test log](../../docs/Telemetry_test.md) file.
+Tests were made with a bunch of different setups on the ESP, and all are documented in the [Wi-Fi latency tests](../../docs/Telemetry_test.md). The MSP framing and decoders are unit-tested in `tests/` (`make test`, and CI job `telemetry-python`).
 
 # Tags
 
-#guides 
+#guides

@@ -1,18 +1,25 @@
-**Battery Tests**
+---
+title: Li-Po Battery Tests
+---
+# Li-Po battery tests
 
 In order to measure the difference in readings among the **INAV** configurator in the Status tab, the **charger** (SkyRC B6 Neo 200W DC) and the **multimeter** reading, done with one needle in each connector, and reading one pin at a time. Test \#1 and \#2 were done to ascertain a necessity to change the virtual battery scale, `vbat_scale` in INAV, from its 1100 default value. It is a percent correction that can be adjusted by comparing readings from other sources:
 
-**VBAT Scale 1100**  
-Test	INAV		Charger	Multimeter	Average (non INAV)	1100 × Av ÷ INAV  
-1	16.41 V	16.43 V	16.49 V	16.46 V		≈ 1103  
-2	16.39 V	16.42 V	16.46 V	16.44 V		≈ 1103
+**VBAT scale 1100**
+
+| Test | INAV | Charger | Multimeter | Average (non INAV) | 1100 × Av ÷ INAV |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 16.41 V | 16.43 V | 16.49 V | 16.46 V | ≈ 1103 |
+| 2 | 16.39 V | 16.42 V | 16.46 V | 16.44 V | ≈ 1103 |
 
 Given the similarity in differences, set vbat\_scale \= 1103, was tested to minimize the already small discrepancy between readings on different machines.
 
-**VBAT Scale 1103**  
-Test	INAV		Charger	Multimeter	Average (non INAV)	  
-3	16.28 V	16.26 V	16.29 V	16.27.5 V			  
-4	16.85 V	16.81 V	16.87 V	16.84 V			
+**VBAT scale 1103**
+
+| Test | INAV | Charger | Multimeter | Average (non INAV) |
+| --- | --- | --- | --- | --- |
+| 3 | 16.28 V | 16.26 V | 16.29 V | 16.275 V |
+| 4 | 16.85 V | 16.81 V | 16.87 V | 16.84 V |
 
 The battery reading calibration was done so it sits in the middle of the multimeter and charger readings, and it seems to have come about as close as the precision of the various instruments will allow.  
 The cells are apparently well-balanced too, as their voltage never strays far from each other.  

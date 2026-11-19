@@ -1,3 +1,6 @@
+---
+title: MSP Dashboard and Gateway
+---
 # msp_dashboard + msp_gateway
 
 Live INAV telemetry over MSP, shown as a terminal table. Labels are drawn once
@@ -27,8 +30,10 @@ Raspberry Pi OS / Ubuntu 24.04). No other dependencies.
 Keys: `q` quit, `r` redraw, `:` type a command, `space` stop all motors.
 Resizing the terminal re-lays the table out.
 
-The default port is **23**, esp-link's serial bridge port. The Python script
-defaulted to 5760, which was the MicroPython bridge's port.
+The default port is **23**, esp-link's serial bridge port. The Python scripts
+(`inav_telemetry.py`, `latency_test.py`) still default to 5760, the old
+MicroPython bridge's port: pass them `--port 23`. ESP setup:
+[ESP12 setup](../README.md).
 
 ## Sending commands (motor test)
 
@@ -293,3 +298,7 @@ These are the same assumptions as `inav_telemetry.py`:
 - Accelerometer is scaled as 1 g = 512, and gyro is in °/s.
 - `MSP_NAV_STATUS` mode/state/error names follow INAV's `navigation.h`.
 - `MSP_SET_MOTOR` is 8 × uint16 (motors 1-8), applied only while disarmed.
+
+# Tags
+
+#tools

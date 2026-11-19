@@ -1,22 +1,29 @@
+---
+title: Wanhao Duplicator 12/230
+---
+# Wanhao Duplicator 12/230
 
-The Wanhao duplicator 12/230 is the 3D printer available in the SEA:ME office and these are it's most important specs:
+The Wanhao Duplicator 12/230 is the 3D printer available in the SEA:ME office, and these are its most important specs:
 
-| Bed and height dimensions | 230 x 230 x 240mm                                             |
+| Spec                      | Value                                                         |
 | ------------------------- | ------------------------------------------------------------- |
-| Print accuracy            | 0.08mm-0.29mm                                                 |
-| Print speed               | Recommended is 60mm/s but max is 400mm/s                      |
-| Travel speed              | Recommended is 5000mm/s, max 10000mm/s                        |
-| Nozzle diameter           | 4mm                                                           |
+| Bed and height dimensions | 230 x 230 x 240 mm                                            |
+| Print accuracy            | 0.08–0.29 mm                                                  |
+| Print speed               | Recommended 60 mm/s, max 400 mm/s                             |
+| Travel speed              | Recommended 5000 mm/s, max 10000 mm/s                         |
+| Nozzle diameter           | 0.4 mm                                                        |
 | Extrusion type            | Bowden                                                        |
-| Max extrusion temperature | 240C, 260C for first layer                                    |
-| Max bed temperature       | 70C                                                           |
+| Max extrusion temperature | 240 °C, 260 °C for the first layer                            |
+| Max bed temperature       | 70 °C                                                         |
 | Software                  | Cura Wanhao Edition, compatible with every open source option |
-| Z Position Accuracy       | 0.004mm                                                       |
-| X-Y Position accuracy     | 0.012mm                                                       |
-| Filament Diameter         | 1.75mm                                                        |
+| Z position accuracy       | 0.004 mm                                                      |
+| X-Y position accuracy     | 0.012 mm                                                      |
+| Filament diameter         | 1.75 mm                                                       |
 
-The version that we had available was specifically the one with dual extrusion, making it possible to use two colors in the same print.
+The version available to us is the one with dual extrusion, making it possible to use two colours in the same print.
+
+The mounts we printed with it (ESP12, PMW3901), and the PrusaSlicer profiles we used, are in [`project/hardware/3d-print/`](../project/hardware/3d-print/); the story behind them is in the [hardware overview](../project/hardware/README.md#mounts).
 
 # Tags
 
- #tools
+#tools

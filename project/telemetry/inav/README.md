@@ -1,4 +1,9 @@
-The drone now runs **INAV 9.1.1** on a custom **`ODDITYRCF7AIO`** target, with its board alignment and accelerometer calibration verified on the bench.
+---
+title: INAV Firmware Choices
+---
+# INAV firmware choices
+
+The drone now runs **INAV 9.1.0** (configured with INAV Configurator 9.1.1) on a custom **`ODDITYRCF7AIO`** target, with its board alignment and accelerometer calibration verified on the bench.
 
 **Reasoning of choices of Embedded Operating System:**
 
@@ -6,7 +11,7 @@ The drone now runs **INAV 9.1.1** on a custom **`ODDITYRCF7AIO`** target, with i
 
 **Betaflight** was a possible choice, but one that we eventually decided against. Ultimately, it has a different focus, best on manually piloted drones. It lacks support for the ThoneFlow-3901U optical flow sensor, and for Optical flow position hold, mandating that all of the information regarding it be fully handled off-drone.
 
-**Inav** bears greater similarities to the usage of PSX4, that we’ll use for flight simulation, diminishing the sim-to-reality gap compared to Betaflight.  
+**INAV** bears greater similarities to the usage of PX4, that we’ll use for flight simulation, diminishing the sim-to-reality gap compared to Betaflight.  
 It boasts onboard barometer altitude hold, controlled emergency landing on radio loss, and optical flow support, which natively requires a rangefinder, but software workarounds exist. The support for the specific ThoneFlow protocol requires a test, and might require using the WiFi module to translate the data.
 
 No target existed for our specific build, so we took a very similar F7 from Aocorda, **AOCODARCF722AIO**, and changed its info regarding **gyro alignment** (`CW180_DEG` → `CW90_DEG`, a yaw correction of \-90°), **led pins** (LEDs PA4 → PA14 (LED0) & PA13 (LED1)), and the sensor scale (250 → 179\)
@@ -41,6 +46,14 @@ The original **custom INAV target** had a bug regarding the gyro, present only i
 | failsafe\_procedure | DROP, 1.5 s guard | Disarm on radio loss. (Betaflight values, for comparison. Our INAV values: DROP after 0.5 s) | 
 | msp\_override\_failsafe | OFF | Wi-Fi path cannot keep the drone flying on radio loss |
 | vbat\_warning\_cell\_voltage / vbat\_min\_cell\_voltage | 3.50 V / 3.30 V | With 100% sag compensation |
+## Files
+
+- The custom target build and every configuration backup (INAV `diff all` of 26 Oct 2026, the Betaflight 4.5.1 fallback, the accelerometer calibration): [`project/hardware/flight-controller/`](../../hardware/flight-controller/).
+- Later INAV changes, such as MSP RC OVERRIDE on Nov 17: [FC config of Nov 17](../../logs/measurements/inav_rc_override/fc_config_2026-11-17/README.md).
+- `msp/captures/`: real MSP replies recorded from the drone (`flat_still`, `tilted`, `flow_moving`, `radio_off`), saved with `msp_inventory.py capture`. The telemetry tests replay them, and `drone_fc_bridge/test/data/` holds copies for the C++ tests.
+- `msp/rates/`: MSP reply rates measured with `msp_inventory.py rate`.
+- Radio, arming and failsafe setup: [ELRS guide](../../../docs/ELRS_Guide.md). Talking to INAV over Wi-Fi: [ESP12 setup](../README.md).
+
 # Tags
 
 #firmware

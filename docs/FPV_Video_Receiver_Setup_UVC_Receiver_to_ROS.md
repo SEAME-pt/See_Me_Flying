@@ -31,39 +31,33 @@ The laptop's own webcam (`Integrated Camera`) is `/dev/video0` and `/dev/video1`
 
 The container needs three things to open the receiver: the device files, permission from Docker's device cgroup, and membership of the `video` group. Missing any one of them gives a different error (see Troubleshooting).
 
-The relevant part of `docker-compose.yml`:
+`compose.yaml` (repo root) already has all three:
 
 ```yaml
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
-      - ./ros2_ws:/home/dev/ros2_ws
+      - ./project/ros2:/home/dev/ros2_ws
+      - ./project:/home/dev/project
+      - /dev/input:/dev/input
+      - gz-cache:/home/dev/.gz
       - /dev:/dev                    # all device files, so new video numbers appear too
     devices:
       - /dev/dri:/dev/dri            # GPU
     device_cgroup_rules:
-      - 'c 81:* rmw'                 # video4linux: cameras and the UVC receiver
       - 'c 13:* rmw'                 # input: the RadioMaster as a joystick
+      - 'c 81:* rmw'                 # video4linux: cameras and the UVC receiver
     group_add:
-      - video                        # lets the dev user open /dev/video*
+      - "${VIDEO_GID:-44}"           # the host's video group: lets the dev user open /dev/video*
+      - "${RENDER_GID:-993}"
+      - "${INPUT_GID:-994}"
 ```
 
 - `/dev:/dev` makes the device files visible. On its own it is not enough: Docker still refuses to open them.
 - `device_cgroup_rules` allows opening devices by major number: 81 is video, 13 is input. Without it the error is `Operation not permitted`.
-- `group_add: video` matches the device files' group (`root video`, mode `crw-rw----`). Without it the error is `Permission denied`.
-- Cgroup rules apply only when the container is created. After changing them, run `docker compose down && docker compose up -d`; a restart is not enough.
+- `group_add` adds the host's `video` group by number, matching the device files' group (`root video`, mode `crw-rw----`). `make up` reads the number from your host into `.env` as `VIDEO_GID`. Without it the error is `Permission denied`.
+- Cgroup rules apply only when the container is created. After changing them, run `make down && make up`; a restart is not enough.
 
-Packages installed by hand disappear when the container is recreated. Add them to the `Dockerfile`:
-
-```dockerfile
-RUN apt-get update && apt-get install -y \
-    ros-jazzy-joy \
-    ros-jazzy-usb-cam ros-jazzy-image-transport \
-    ros-jazzy-image-transport-plugins ros-jazzy-cv-bridge \
-    ros-jazzy-rqt-image-view v4l-utils mesa-utils \
- && rm -rf /var/lib/apt/lists/*
-```
-
-Rebuild with `docker compose up -d --build`.
+Every package in the table is already in `project/Dockerfile`. Anything installed by hand disappears when the container is recreated: add it to `project/Dockerfile`, then `make build && make up`.
 
 ## Identifying the receiver device
 
@@ -110,7 +104,7 @@ First prove the ground side without the drone, then power the drone and lock the
 
 **Bench safety:** propellers off, VTX antenna attached before plugging in the LiPo, drone stays on the bench. Unplug the LiPo when done; the VTX heats up fast when not flying.
 
-1. Start the camera driver (terminal 1, inside the container):
+1. Start the camera driver (terminal 1, inside the container: `make shell`):
 
    ```bash
    ros2 run usb_cam usb_cam_node_exe --ros-args \
@@ -151,11 +145,11 @@ Every row below happened during setup. Check them in this order: device first, t
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| `v4l2-ctl: command not found` after recreating the container | Packages installed by hand were wiped | Reinstall, then add them to the `Dockerfile` |
+| `v4l2-ctl: command not found` | The container runs an old image | `make build && make up` |
 | `v4l2-ctl --list-devices` shows only `Integrated Camera` | Compose mapped the wrong host device (laptop camera) into the container | Mount `/dev:/dev` instead of single `/dev/videoN` entries |
 | `Cannot open device /dev/video0` | No `video0` in the container; `v4l2-ctl` without `-d` tries it | Pass `-d /dev/video2` |
-| `Failed to open /dev/video2: Operation not permitted` | Docker's device cgroup blocks it | Add `device_cgroup_rules: 'c 81:* rmw'`, then `down` and `up -d` |
-| `Permission denied` on `/dev/videoN` | User not in the `video` group | Add `group_add: video`; check with `groups` |
+| `Failed to open /dev/video2: Operation not permitted` | Docker's device cgroup blocks it | Check `device_cgroup_rules: 'c 81:* rmw'` in `compose.yaml`, then `make down && make up` |
+| `Permission denied` on `/dev/videoN` | User not in the host's `video` group | `make up` (rewrites `VIDEO_GID` in `.env`), then `make down && make up`; check with `groups` |
 | `topic [/image_raw] does not appear to be published yet` | `usb_cam` was not running | Start `usb_cam_node_exe` first, in its own terminal |
 | rqt window empty or grey | No topic selected | Choose `/image_raw` in the dropdown; press refresh |
 | rqt shows blue, black or snow | No drone signal: drone off or channel mismatch | Power the drone; long-press the receiver button to scan |
@@ -170,9 +164,8 @@ The video reaches ROS at the right rate, but nothing is measured end to end, sav
 | Issue | What can go wrong | Fix |
 | --- | --- | --- |
 | Latency not measured | The camera-to-ground hop is unknown in the latency budget | Stopwatch test: phone stopwatch in front of the camera next to the rqt screen, photo of both, 3–5 runs, note average and worst |
-| VTX channel not recorded | The receiver found it by scan; with two drones in the lab, it may lock onto the wrong one | Read `get vtx` in the INAV CLI, agree one channel per drone with the team, write it here |
+| VTX channel not settled | The [ELRS guide](./ELRS_Guide.md#vtx) records band A ch1 (5865 MHz), [Video Transmission](./Video_Transmission.md) R1 (5658 MHz); with two drones in the lab, the scan may lock onto the wrong one | Read `get vtx` in the INAV CLI, agree one channel per drone with the team, write it in both pages |
 | Device number can change | `video_device:=/dev/video2` points at the wrong device after a re-plug | Check with the `/sys` loop each session, or use the stable path in `/dev/v4l/by-id/` |
-| Packages not in the image | Lost on every container recreation | Add them to the `Dockerfile` (Container setup) |
 | No camera calibration | Fisheye distortion breaks any geometry (distances, positions) | Calibrate with `camera_calibration`, store as `default_cam.yaml` |
 | Started by hand | Easy to forget parameters | Add a camera node to a launch file in `drone_bringup`, parameters in YAML |
 | Raw video is about 20.7 MB/s | Large bags; heavy for the Raspberry Pi 5 or a network link | Record short bags, or the compressed topic from `image_transport` |

@@ -18,11 +18,5 @@ project/logs/measurements/motor_music/_archive/
 project/logs/measurements/motor_music/*/bag/
 project/logs/measurements/motor_music/*/*.wav
 
-# Motor music: songs stay local (ringtones of other people's music)
-seame-docker/scripts/motor_music/songs/
-seame-docker/logs/measurements/motor_music/*/song.rtttl
-seame-docker/logs/measurements/motor_music/_archive/
-seame-docker/logs/measurements/motor_music/*/bag/
-seame-docker/logs/measurements/motor_music/*/*.wav
-
-.obsidian
+# Obsidian: share the vault settings, not each person's open tabs
+.obsidian/workspace.json

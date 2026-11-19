@@ -1,112 +1,136 @@
 ---
 title: Hardware Overview
 ---
-The hardware given to us is very straightforward, a Pilotix Brook 2.5" fully equiped and ready to fly. Some supporting tools were also given to us, a RadioMaster Pocket controller and some modules, namely, a PMW 3901 sensor and an ESP12-E WiFi module.
+# Hardware overview
 
-## The Drone
+The hardware given to us is very straightforward: a Pilotix Brook 2.5" fully equipped and ready to fly. Some supporting tools were also given to us: a RadioMaster Pocket controller and some modules, namely a PMW3901 sensor and an ESP12-E Wi-Fi module.
 
-The Pilotix Brook 2.5" is actually the name of the kit, the frame and the propeller guards, everything else is customizable so we had to discover what our drone came equipped with.
+## The drone
 
-After a lot of research this is a list of parts and what they do.
+The Pilotix Brook 2.5" is actually the name of the kit, the frame and the propeller guards; everything else is customizable, so we had to discover what our drone came equipped with.
 
-### OddityRC F7 40
+After a lot of research, this is the list of parts and what they do.
 
-This is the flight controller, every drone needs one, it's like the motherboard of the computer, everything is solder on to it, it has a total of 5 UART, 2 of them came already filled, one for the video system and the other for the ELRS receiver.
+### OddityRC F7 40A AIO
 
-This specific board came flashed with Betaflight, a great program for FPV not so much for an autonomous drone so we took the liberty to flash it with another compatible software called INAV which can communicate with the UART interfaces and also be used of autonomous flying
+This is the flight controller. Every drone needs one: it's like the motherboard of a computer, and everything is soldered onto it. It has a total of 5 UARTs; 2 of them came already in use, one for the video system and the other for the radio receiver.
 
-### [Video transmission system](docs/Video_Transmission)
+This board came flashed with Betaflight, a great program for FPV but not so much for an autonomous drone, so we flashed it with another compatible firmware, INAV, which can communicate over the UART interfaces and can also fly autonomously. Why INAV: [INAV firmware choices](../telemetry/inav/README.md).
+
+### [Video transmission system](../../docs/Video_Transmission.md)
 
 #### Caddx Ratel 2
 
-A small analog camera with surprisingly good video quality perfect for FPV usage, in our case, it will be used as a big source of information and used to guide the drone and tell him where he can go.
+A small analog camera with surprisingly good video quality, perfect for FPV. In our case it will be a big source of information, used to guide the drone and tell it where it can go ([video into ROS](../../docs/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md)).
 
 #### Ratel 2.0 Cherry Angle MMCX RHCP Antenna
 
 A video transmission antenna that, in normal FPV use, exists so the pilot can see through the camera using a pair of FPV goggles.
 
-#### PandaRC VT5804 Bat Lite 1300mw 5.8Ghz VTX
+#### PandaRC VT5804 Bat Lite 1300mW 5.8GHz VTX
 
-A powerfull video transmitter with more than enough range for our use case
+A powerful video transmitter with more than enough range for our use case. We run it at its lowest power.
 
-### [ELRS Receiver](docs/ELRS_Guide.md)
+### [ELRS receiver](../../docs/ELRS_Guide.md)
 
-The ELRS Reicever that came soldered into our drone is quite the mystery, in most listing for this drone it says "ELRS 2.4GHz" which is true, we know this because we can connect to the drone through ELRS using the RadioMaster Pocket. We couldn't figure out any brand or 
+The receiver that came soldered to our drone was quite the mystery: most listings for this drone say "ELRS 2.4GHz", but we couldn't find a brand or model on it. A CRSF ping script (now `project/telemetry/receiver_crsf_ping.py`) showed it was a TBS Crossfire XF Nano RX V3 running Crossfire firmware, so we replaced it with a BETAFPV Nano RX running ExpressLRS 4.1.0, bound to the RadioMaster Pocket.
 
 ---
 
-> [!NOTE]  
-> Motors used and propellers aren't that important in this project since no great aditional load was added to the drone so we didn't worried about testing on how much weight the drone could handle or fly around with.
+> [!NOTE]
+> Motors and propellers aren't that important in this project, since no great additional load was added to the drone, so we didn't test how much weight the drone could carry.
 
 ---
 ## Additional hardware
 
-### PMW 3901 Sensor
+### PMW3901 sensor
 
-An optical flow sensor that enhances the drone stability without using gps capabilities.
+An optical flow sensor that improves the drone's stability without GPS.
 
-It communicates to the board through UART interface and it has no distance sensor onboard unlike other 3901 sensors
+It communicates with the board through a UART interface (UART4), and unlike other 3901 sensors it has no distance sensor on board.
 
-This sensor has a very small notch on the "camera", that notch points to the back of the drone
+This sensor has a very small notch on the "camera"; that notch points to the back of the drone.
 
-Our model is specifically the Thone ThoneFlow-3901U which is basically the same sensor as the Holybro PMW3901 but it doesn't come presoldered it does not come inside a 3D printed case.
+Our model is specifically the Thone ThoneFlow-3901U, which is basically the same sensor as the Holybro PMW3901, but it doesn't come pre-soldered or inside a 3D-printed case.
 
-### [ESP12-E WiFi](project/telemetry/README)
+### MicoAir MTF-02P (planned)
 
-A compact and low-power device created for IoT applications. It comes with an ESP8266 and an onboard antenna.
+Optical flow and a rangefinder (about 6 m) on one board. The team chose it to remove the PMW3901's biggest limitation, the missing distance sensor. It is not fitted yet (Nov 16), but the simulator already models it ([simulated sensors](../../docs/SIM_Sensors.md)).
 
-It connects to the flight controller through the UARTs and it can use MSP to communicate with a ground computer.
+### [ESP12-E Wi-Fi](../telemetry/README.md)
 
-We flashed ours with MicroPython.
+A compact, low-power device made for IoT applications. It comes with an ESP8266 and an onboard antenna.
+
+It connects to the flight controller through UART1 and passes MSP between INAV and a ground computer over Wi-Fi.
+
+We first flashed ours with MicroPython, then switched to esp-link for much lower latency ([Wi-Fi latency tests](../../docs/Telemetry_test.md)).
 
 ---
 
 ## Mounts
 
-The drone has no mounts for the ESP and PMW so we took the liberty to model some mounts using blender
+The drone has no mounts for the ESP and the PMW, so we modelled some in Blender. The STL files and slicer profiles are in [`3d-print/`](3d-print/).
 
-> [!NOTE]  
-> None of the members had previous experience with 3D modelling and 3D printing so there was a lot of trial and error
+> [!NOTE]
+> None of the members had previous experience with 3D modelling and 3D printing, so there was a lot of trial and error.
 
-The SEA:ME 3D printer is a [Wanhao Duplicator 12-230](./Wanhao_Duplicator_12-230.md) which has a ready to go Cura profile but the team opted in using the PrusaSlicer since there was no easy way to install the Wanhao version on Linux, so tinkering on the profile was necessary for each print.
+The SEA:ME 3D printer is a [Wanhao Duplicator 12/230](../../docs/Wanhao_Duplicator_12-230.md), which has a ready-to-go Cura profile, but the team opted for PrusaSlicer since there was no easy way to install the Wanhao version on Linux, so tinkering with the profile was necessary for each print.
 
-The mount for the PMW module is meant to go on the underside of the drone and screwed with the screws that already come installed on the bottom plate of the drone.
+The mount for the PMW module goes on the underside of the drone and is screwed in with the screws already installed on the drone's bottom plate.
 
-The mount for the ESP12 was tricky since the module is so much bigger than the PMW, these mounts were made to replace the GoPro that came equipped with the drone.
+The mount for the ESP12 was tricky, since the module is much bigger than the PMW; it replaces the GoPro mount the drone came with.
 
 ## Hardware limitations
 
-The drone and modules offered to us are very capable but they all have very clear limitations that we had to deal with during the project.
+The drone and modules offered to us are very capable, but they all have clear limitations that we had to deal with during the project.
 
-### PMW 3901
+### PMW3901
 
-The ThoneFlow-3901U is the most barebones a 3901 module can get, it has no external distance sensor and it comes with no bells and whistles and from the two models that expose the module through an UART interface it's the one that doesn't come with pre-soldered wires.
+The ThoneFlow-3901U is the most barebones a 3901 module can get: it has no external distance sensor and no bells and whistles, and of the two models that expose the module through a UART interface, it's the one without pre-soldered wires.
 
-None of these would be a problem for people that already know how to solder and are accustomed with dealing with such small parts, something that none of us were.
+None of this would be a problem for people who already know how to solder and are used to such small parts, which none of us were.
 
-The biggest hurdle is not having an external distance sensor that would be a really big help.
+The biggest hurdle is not having a distance sensor, which would be a big help. The MTF-02P is the planned answer.
 
 ### Pilotix Brook 2.5"
 
-The drone that was offered to us is an amazing FPV drone kitted out with amazing high RPM motors, carbon fibre frame and a TBS crossfire antenna and a modified version of the OddityRC F7 flashed with BetaFlight.
+The drone offered to us is an amazing FPV drone, kitted out with high-RPM motors, a carbon fibre frame, a TBS Crossfire receiver and a modified version of the OddityRC F7 flashed with Betaflight.
 
-The TBS Crossfire antenna had to be removed and changed out for an ExpressLRS antenna because having a proprietery antenna was a no go for our project.
+The TBS Crossfire receiver had to be removed and replaced with an ExpressLRS one, because a proprietary radio link was a no-go for our project.
 
-BetaFlight is the industry standard when it comes to FPV firmware, but it has absolute no autonomous flight capabilities and it's communications to the UART interfaces isn't ideal so we changed it for INAV
+Betaflight is the industry standard for FPV firmware, but it has no autonomous flight capabilities and its communication over the UART interfaces isn't ideal, so we changed it for INAV.
 
-Battery life was also a constraint that comes with the drone specifications, the high KV motors that the drone uses are amazing for speed and nimble drones but, at full throtle, use up way more battery than a lower KV motor and we don't plan to run the drone on super high speeds so the higher KV count is completely wasted.
+Battery life is also a constraint that comes with the drone's specifications: the high-KV motors are great for fast, nimble drones, but at full throttle they use much more battery than lower-KV motors, and we don't plan to fly at high speeds, so the higher KV is wasted. Battery readings and limits: [Li-Po battery tests](../../docs/Li-Po_Battery_Tests.md).
 
 ## Wiring
 
-The ESP12, ThoneFlow sensor and the ELRS antenna was wired by us and it was all made during the [Sprint 0](./sprints/sprint_0.md)
+We wired the ESP12, the ThoneFlow sensor and the ELRS receiver ourselves, during [Sprint 0](../../sprints/sprint_0.md).
 
-# Groundstation
+| UART | Device | Voltage |
+| --- | --- | --- |
+| UART1 | ESP8266 (MSP) | 5 V |
+| UART3 | VTX (IRC Tramp) | — |
+| UART4 | ThoneFlow | 3.3 V |
+| UART6 | free for add-ons | — |
 
-The ground station is not an actual fixed computer but rather the machine that at any point in time is ready to run everything we need for the drone to fly.
-[There's a more in depth explanation about it inside docs](docs/Groundstation), this file also includes a guide on how to connect and use our raspberry pi.
+![Wiring diagram](wiring/wire_diagram.png)
+
+## Files in this folder
+
+| Folder | What's in it |
+| --- | --- |
+| [`3d-print/`](3d-print/) | Mounts (`esp12.stl`, `pmw3901.stl`, `holder.stl`, `box.stl`) and the PrusaSlicer profiles for the Wanhao |
+| [`flight-controller/`](flight-controller/) | INAV `diff all` of 26 Oct 2026, the original Betaflight 4.5.1 backup, the accelerometer calibration, and the custom `ODDITYRCF7AIO` target build |
+| [`esc/`](esc/) | Bluejay ESC settings and the configurator log |
+| [`radio/`](radio/) | The ELRS 4.1.0 build flashed on the BETAFPV receiver |
+| [`wiring/`](wiring/) | The wiring diagram |
+
+## Ground station
+
+The ground station is not a fixed computer but whichever machine is, at any point in time, ready to run everything we need for the drone to fly. [The ground station page](../../docs/Groundstation.md) explains it in more depth and shows how to connect to and use our Raspberry Pi.
+
+[Sources](../../docs/Sources.md)
 
 # Tags
 
 #hardware
-
-[Sources](./Sources.md)

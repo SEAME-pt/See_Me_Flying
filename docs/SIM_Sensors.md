@@ -1,9 +1,12 @@
+---
+title: Simulated Sensors
+---
 # Simulated sensors
 
 How the Gazebo sim produces the sensor data the real drone will give us. Each
 simulated sensor publishes on the same topic, with the same message type and
 units, as the real one will through INAV and `fc_bridge`. Everything above
-`fc_bridge` (mission, safety, later the estimator) must not be able to tell
+`fc_bridge` (the estimator, mission, safety) must not be able to tell
 sim from real, so code tested in the sim behaves the same on the drone.
 
 Body axes: x forward, y left, z up. Not simulated yet: the IMU (accelerometer
@@ -23,7 +26,8 @@ on one board, solves that problem.
 
 `drone_interfaces/msg/OpticalFlow` mirrors INAV's `MSP2_INAV_OPTICAL_FLOW`
 (quality, flow rate X/Y, body rate X/Y), but in rad/s. INAV 9.1.0 sends the
-rates as whole degrees per second; `fc_bridge` will convert them.
+rates as whole degrees per second; `fc_bridge`'s `inav` backend converts them,
+and in the sim `flow_model` cuts them to whole degrees the same way.
 
 The gyro's rotation over the same moment is needed because tilting the drone
 in place also makes the floor appear to slide, without any movement.
@@ -33,7 +37,7 @@ Subtracting this body rate leaves only the part caused by actually moving.
 
 Forward flight gives negative `flow_rate_y`, and flight to the left gives
 positive `flow_rate_x`. This was checked by flying in the sim, and the unit
-tests in `drone_sim_sensors/test/test_flow_model.py` enforce it, so a wrong
+tests in `drone_sim/test/test_flow_model.py` enforce it, so a wrong
 sign fails CI. 
 
 ### Topics
@@ -42,7 +46,21 @@ sign fails CI.
 | `/sim/ground_truth` | `nav_msgs/Odometry` | The drone's exact position and speed in the sim. Used only to grade tests, comes from Gazebo odometry, bridged (`gz_bridge.yaml`)|
 | `/X3/odom` | `nav_msgs/Odometry` | Internal input of `fc_bridge`, same odometry as above |
 | `fc/range` | `sensor_msgs/Range` | Rangefinder: distance to the floor below. Gotten from `fc_bridge`, from ground truth, tilt-corrected, flat floor |
-| `fc/optical_flow` | `drone_interfaces/OpticalFlow` | Optical flow: how fast the floor appears to slide past the camera. From `flow_model` (`drone_sim_sensors`) |
+| `fc/optical_flow` | `drone_interfaces/OpticalFlow` | Optical flow: how fast the floor appears to slide past the camera. From `flow_model` (`drone_sim`), which reads `/sim/ground_truth` |
+| `fc/odom` | `nav_msgs/Odometry` | The drone's estimated speed and position. From `estimator` (`drone_sim`), built from the three topics above |
+
+### From sensors to `fc/odom`: the estimator
+
+`estimator` (`drone_sim`, logic in `drone_sim/estimator.py`) does what INAV
+does on the real drone: body velocity is flow (minus the body rate) × the
+distance to the floor, height is the rangefinder corrected for tilt, and
+position is integrated from velocity, so it drifts like the real thing. No IMU
+fusion yet. When flow is lost it keeps the last speed for `hold_s` (0.3 s),
+then stops; vertical speed comes from the heights over `vz_window` (0.6 s).
+Because it publishes `fc/odom`, `sim.yaml` sets `fc_bridge`'s `publish_odom`
+to false. `odom_check` compares it with the ground truth (below); the unit
+tests are in `drone_sim/test/test_estimator.py`. Every node and parameter of
+the stack: [ROS 2 stack](../project/ros2/README.md).
 
 ## Measuring simulated sensors vs ground truth
 
@@ -64,15 +82,16 @@ drone too:
   about 1 m per minute at 1 m height, without the flow noticing, unless
   something else (for example the accelerometer, or the estimator) corrects it.
 
-Test Commands:
+Test commands:
 
 ```bash
-# host
-./scripts/stop_sim.sh
+# host, repo root: stop any sim, then start one with no radio (the drone starts armed)
+make sim-stop
+make ws
 docker compose exec -e DISPLAY=$DISPLAY dev bash -c 'cd ~/ros2_ws && source install/setup.bash && ros2 launch drone_bringup sim.launch.py source:=mission radio:=false'
 
-# start.sh -> option 4 shell with 'source install/setup.sh'
-ros2 run drone_sim_sensors flow_check --ros-args -p use_sim_time:=true
+# a second terminal: make shell
+ros2 run drone_sim flow_check --ros-args -p use_sim_time:=true   # or odom_check, for the estimator
 ros2 action send_goal --feedback /mission/takeoff drone_interfaces/action/Takeoff "{height: 1.0}"
 ros2 action send_goal --feedback /mission/goto drone_interfaces/action/Goto "{forward: 4.0, speed: 0.3}"
 ros2 action send_goal /mission/land drone_interfaces/action/Land "{}"
@@ -94,3 +113,7 @@ noise: about two thirds of the readings land within ±σ of the true value.
 | `flow_noise` | 0.01 rad/s (σ) | Placeholder; replace with real bench data |
 | `quantize` | true | INAV, not the sensor: rates are sent as whole degrees per second, cut toward zero |
 | `seed` | -1 | Sim only: below 0 gives different noise every run; a fixed number repeats the same noise |
+
+# Tags
+
+#simulator

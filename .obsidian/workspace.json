@@ -11,10 +11,14 @@
             "id": "4183df5703439912",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "docs/CHANGES.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "CHANGES"
             }
           }
         ]
@@ -155,6 +159,7 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "docs/CHANGES.md",
                 "followCursor": true,
                 "showSearch": false,
                 "searchQuery": ""
@@ -184,9 +189,10 @@
   },
   "active": "4183df5703439912",
   "lastOpenFiles": [
+    "README.md",
+    "docs-update-fixes.patch",
     "docs/Drone-SIM-Stack.md",
     "project/ros2/README.md",
-    "README.md",
     "docs/CHANGES.md",
     "Makefile_usage.md",
     "docs/Wanhao_Duplicator_12-230.md",
@@ -210,7 +216,6 @@
     "seame-docker/scripts/bench_rc_armed.sh",
     "seame-docker/scripts/bench_common.sh",
     "seame-docker/ros2_ws/src/drone_interfaces/msg/RcChannels.msg",
-    "seame-docker/ros2_ws/src/drone_interfaces/msg/MotorOutputs.msg",
     "seame-docker/logs/tests/2026-11-17_facb91a/report.md",
     "seame-docker/logs/tests/2026-11-17_ea76fb5/report.md",
     "seame-docker/logs/tests/2026-11-17_7b525e1/report.md",
@@ -219,7 +224,6 @@
     "seame-docker/logs/measurements/motor_music/README.md",
     "seame-docker/logs/measurements/inav_rc_override/fc_config_2026-11-17/README.md",
     "seame-docker/logs/measurements/inav_rc_override/2026-11-17_c3c73c0/notes.md",
-    "seame-docker/logs/measurements/inav_rc_override/2026-11-17_70e3202/notes.md",
     "seame-docker/ros2_ws/src/drone_bringup/models/grass_ground/materials/textures/grass.jpg",
     "docs/extras/folders-graph.svg",
     "folders-graph.svg",
