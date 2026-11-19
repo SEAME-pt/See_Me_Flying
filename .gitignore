@@ -24,3 +24,5 @@ seame-docker/logs/measurements/motor_music/*/song.rtttl
 seame-docker/logs/measurements/motor_music/_archive/
 seame-docker/logs/measurements/motor_music/*/bag/
 seame-docker/logs/measurements/motor_music/*/*.wav
+
+.obsidian
