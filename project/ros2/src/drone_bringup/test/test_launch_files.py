@@ -28,7 +28,7 @@ from xml.etree import ElementTree
 from ament_index_python.packages import get_package_prefix, get_package_share_directory
 from launch import LaunchContext
 from launch.actions import (DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription,
-                            OpaqueFunction, TimerAction)
+                            OpaqueFunction)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.utilities import perform_substitutions
 from launch_ros.actions import Node
