@@ -1,0 +1,3 @@
+# The Dockerfile copies nothing from project/: send none of it (ros2 build output,
+# logs and hardware files would only slow every image build down).
+*
