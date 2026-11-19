@@ -1,0 +1,8 @@
+# Scrapes metrics_exporter (drone_monitoring), which sim.launch.py starts on
+# port 9105. Keep scrape_interval equal to timeInterval in
+# grafana/datasources/prometheus.yml.
+scrape_configs:
+  - job_name: drone
+    scrape_interval: 1s
+    static_configs:
+      - targets: ['localhost:9105']
