@@ -7,9 +7,9 @@
 # This script runs the rest, like bench_rc_armed.sh: the bag, the bridge, the
 # radio steps, and the laptop mic. No internet needed.
 #
-# Usage, from the repo root, dev container running (make up):
-#   make motor-music MODE=calibrate [INSTALL=/tmp/inav6_bench/install]
-#   make motor-music MODE=play SONG=path/song.rtttl [ARGS="options"] [MAP=path/pitch.json]
+# Usage, on the host in seame-docker/, dev container running:
+#   INSTALL=/tmp/inav6_bench/install scripts/motor_music/sing.sh calibrate
+#   INSTALL=/tmp/inav6_bench/install scripts/motor_music/sing.sh play SONG.rtttl [options]
 # play options go to sing.py: --part all, --stretch F (longer notes, 1.2),
 # --base T, --zero Z (relative), and with
 # a map --octave N, --nudge N (semitones).
@@ -32,11 +32,11 @@ case "$MODE" in
     calibrate) shift ;;
     play)
         SONG="${2:-}"
-        [ -f "$SONG" ] || { echo "Error: play needs an RTTTL file"; exit 2; }
+        [ -f "$SONG" ] || { echo "❌ play needs an RTTTL file"; exit 2; }
         shift 2
         MAP_ARG=""
         if [ -n "${MAP:-}" ]; then
-            [ -f "$MAP" ] || { echo "Error: No pitch map at $MAP"; exit 2; }
+            [ -f "$MAP" ] || { echo "❌ No pitch map at $MAP"; exit 2; }
             MAP_ARG="--map $MAP"
         fi
         python3 "$HERE/sing.py" play "$SONG" $MAP_ARG --dry-run "$@" || exit 2
@@ -84,7 +84,7 @@ bench_stop() {
     stop_bag
     stop_rec
     bench_save
-    echo "WARNING: If the drone is still armed: DISARM on the radio."
+    echo "⚠️  If the drone is still armed: DISARM on the radio."
 }
 trap 'bench_stop; exit 130' INT
 
@@ -103,7 +103,7 @@ sleep 4
 wait_link "connected (expect armed False, throttle 1000)"
 
 echo
-read -r -p "> Look at all four motors. Type 'props off' if there is no propeller on any: " reply
+read -r -p "👉 Look at all four motors. Type 'props off' if there is no propeller on any: " reply
 if [ "$reply" != "props off" ]; then
     echo "Not confirmed: stopping."
     bench_stop
@@ -125,7 +125,7 @@ echo "{\"start_epoch\": $(date +%s.%N)}" > "$RUN/recording.json"
 sleep 0.7
 mark "go"
 in_dev "touch $TMP/go"
-echo "   playing..."
+echo "   🎵 ..."
 for _ in $(seq 1 120); do
     in_dev "test -f $TMP/done" && break
     sleep 0.5
@@ -145,7 +145,7 @@ if [ "$MODE" = calibrate ]; then
     docker compose cp "$RUN/recording.json" "dev:$TMP/recording.json" > /dev/null 2>&1
     echo
     echo "Pitch of each throttle step:"
-    in_dev "cd $TMP && python3 analyse.py $TMP" || echo "Error: analysis failed: tell Claude"
+    in_dev "cd $TMP && python3 analyse.py $TMP" || echo "❌ analysis failed: tell Claude"
 fi
 
 bench_stop

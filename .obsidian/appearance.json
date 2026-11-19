@@ -1,3 +1,4 @@
 {
-  "showRibbon": true
+  "showRibbon": true,
+  "cssTheme": "Typewriter"
 }

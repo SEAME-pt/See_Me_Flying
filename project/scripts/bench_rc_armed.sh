@@ -9,8 +9,13 @@
 # logs into logs/measurements/inav_rc_override/<date>_<commit>/. No internet
 # needed: start it, then join the drone's Wi-Fi when it says so.
 #
+<<<<<<< HEAD:project/scripts/bench_rc_armed.sh
 # Usage, from the repo root, dev container running (make up):
 #   make bench-armed INSTALL=/tmp/inav6_bench/install
+=======
+# Usage, on the host in seame-docker/, dev container running:
+#   INSTALL=/tmp/inav6_bench/install ./scripts/bench_rc_armed.sh
+>>>>>>> origin/main:seame-docker/scripts/bench_rc_armed.sh
 #
 # Throttle is raw power here (ANGLE, no altitude hold): the setpoint's z maps
 # to the throttle stick, -0.3 m/s (max_speed_z) = 1000 = idle, 0 = 1500 =
@@ -33,7 +38,11 @@ bench_stop() {
     stop_feed
     stop_bag
     bench_save
+<<<<<<< HEAD:project/scripts/bench_rc_armed.sh
     echo "WARNING: If the drone is still armed: DISARM on the radio."
+=======
+    echo "⚠️  If the drone is still armed: DISARM on the radio."
+>>>>>>> origin/main:seame-docker/scripts/bench_rc_armed.sh
 }
 trap 'bench_stop; exit 130' INT
 
@@ -51,7 +60,11 @@ sleep 4
 wait_link "connected (expect armed False, rc_sent True)"
 
 echo
+<<<<<<< HEAD:project/scripts/bench_rc_armed.sh
 read -r -p "> Look at all four motors. Type 'props off' if there is no propeller on any: " reply
+=======
+read -r -p "👉 Look at all four motors. Type 'props off' if there is no propeller on any: " reply
+>>>>>>> origin/main:seame-docker/scripts/bench_rc_armed.sh
 if [ "$reply" != "props off" ]; then
     echo "Not confirmed: stopping."
     bench_stop
@@ -109,7 +122,11 @@ look "5 disarmed (expect armed False, override_active False)"
 
 # 6. Optional: the radio goes off with the override on.
 echo
+<<<<<<< HEAD:project/scripts/bench_rc_armed.sh
 read -r -p "> Run the radio-off failsafe test (armed, SA on, idle, then radio off)? [y/N] " reply
+=======
+read -r -p "👉 Run the radio-off failsafe test (armed, SA on, idle, then radio off)? [y/N] " reply
+>>>>>>> origin/main:seame-docker/scripts/bench_rc_armed.sh
 if [ "$reply" = "y" ]; then
     mark "step 6: failsafe test"
     ask "Throttle low, SA OFF: ARM on the radio"
@@ -121,7 +138,11 @@ if [ "$reply" = "y" ]; then
     look "6 radio off (do the motors stop? armed?)"
     stop_bridge   # the frames stop too: nothing of ROS left
     echo
+<<<<<<< HEAD:project/scripts/bench_rc_armed.sh
     echo "WARNING: If the motors still spin: PULL THE BATTERY now."
+=======
+    echo "⚠️  If the motors still spin: PULL THE BATTERY now."
+>>>>>>> origin/main:seame-docker/scripts/bench_rc_armed.sh
     ask "Put the arm switch OFF and SA OFF, then turn the radio back on"
     start_bridge false
     sleep 4

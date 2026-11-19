@@ -9,9 +9,15 @@
 # (a timestamped line per step), the bridge's log and each step's readout.
 # Needs no internet: start it, then join the drone's Wi-Fi when it says so.
 #
+<<<<<<< HEAD:project/scripts/bench_rc_override.sh
 # Usage, from the repo root, dev container running (make up):
 #   make bench-rc
 #   make bench-rc INSTALL=/tmp/inav6_bench/install   # another build
+=======
+# Usage, on the host in seame-docker/, dev container running:
+#   ./scripts/bench_rc_override.sh
+#   INSTALL=/tmp/inav6_bench/install ./scripts/bench_rc_override.sh   # another build
+>>>>>>> origin/main:seame-docker/scripts/bench_rc_override.sh
 #
 # Safety: the drone must stay disarmed. The script stops everything if
 # fc/status ever reports armed. ROS can't arm it: only the four stick

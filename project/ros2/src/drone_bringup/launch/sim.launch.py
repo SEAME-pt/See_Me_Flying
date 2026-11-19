@@ -31,6 +31,13 @@ FOLLOW_DRONE = ('until gz service -s /gui/follow --reqtype gz.msgs.StringMsg '
                 '--reptype gz.msgs.Boolean --timeout 1000 --req \'data: "x3"\' '
                 '| grep -q true; do sleep 1; done')
 
+# camera:=follow. The window loads before the drone is in its scene, so its config
+# cannot start following (offset and smoothing do come from follow.config).
+# Ask the window to follow x3 (the drone in every world) once it answers.
+FOLLOW_DRONE = ('until gz service -s /gui/follow --reqtype gz.msgs.StringMsg '
+                '--reptype gz.msgs.Boolean --timeout 1000 --req \'data: "x3"\' '
+                '| grep -q true; do sleep 1; done')
+
 
 def gz_servers_in_my_partition():
     """Return the PIDs of Gazebo processes already running in this shell's GZ_PARTITION."""

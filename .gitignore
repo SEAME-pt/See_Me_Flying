@@ -6,6 +6,7 @@ log/
 .env
 __pycache__/
 *.pyc
+<<<<<<< HEAD
 .pytest_cache/
 # `make sim-test`: the flight's rosbag and every node's log stay on your disk only
 # (big); the rest of the run folder (meta, result, logs, xUnit) is committed.
@@ -17,3 +18,12 @@ project/logs/measurements/motor_music/*/song.rtttl
 project/logs/measurements/motor_music/_archive/
 project/logs/measurements/motor_music/*/bag/
 project/logs/measurements/motor_music/*/*.wav
+=======
+
+# Motor music: songs stay local (ringtones of other people's music)
+seame-docker/scripts/motor_music/songs/
+seame-docker/logs/measurements/motor_music/*/song.rtttl
+seame-docker/logs/measurements/motor_music/_archive/
+seame-docker/logs/measurements/motor_music/*/bag/
+seame-docker/logs/measurements/motor_music/*/*.wav
+>>>>>>> origin/main

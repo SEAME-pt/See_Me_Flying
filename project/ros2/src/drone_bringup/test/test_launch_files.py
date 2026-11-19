@@ -28,7 +28,11 @@ from xml.etree import ElementTree
 from ament_index_python.packages import get_package_prefix, get_package_share_directory
 from launch import LaunchContext
 from launch.actions import (DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription,
+<<<<<<< HEAD:project/ros2/src/drone_bringup/test/test_launch_files.py
                             OpaqueFunction)
+=======
+                            OpaqueFunction, TimerAction)
+>>>>>>> origin/main:seame-docker/ros2_ws/src/drone_bringup/test/test_launch_files.py
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.utilities import perform_substitutions
 from launch_ros.actions import Node
@@ -168,8 +172,13 @@ def remaps(node):
 def test_default_is_the_sim_with_the_radio_and_the_mission():
     actions = launch()
     assert set(started(actions)) == {
+<<<<<<< HEAD:project/ros2/src/drone_bringup/test/test_launch_files.py
         'parameter_bridge', 'flow_model', 'estimator', 'fc_bridge', 'watchdog',
         'safety_manager', 'metrics_exporter', 'mission', 'joy_node', 'radio_teleop'}
+=======
+        'parameter_bridge', 'flow_model', 'estimator', 'fc_bridge', 'safety_manager',
+        'mission', 'joy_node', 'radio_teleop'}
+>>>>>>> origin/main:seame-docker/ros2_ws/src/drone_bringup/test/test_launch_files.py
     assert len(gazebo(actions)) == 2      # server and window
 
 
