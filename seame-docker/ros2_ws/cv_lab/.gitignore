@@ -1,0 +1,6 @@
+build/
+out/
+third_party/
+models/*.pt
+models/*.onnx
+data/*.avi
