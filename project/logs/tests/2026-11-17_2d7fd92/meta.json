@@ -1,0 +1,14 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-17T13:26:37+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "2d7fd92219b5490108bb42aa0346f94c2241566f",
+  "commit_short": "2d7fd92",
+  "commit_subject": "INAV-6 step B: velocity setpoint to stick mapping",
+  "branch": "inav-6",
+  "uncommitted_code": [],
+  "uncommitted_other": [
+    "seame-docker/logs/measurements/inav_rc_override/fc_config_2026-11-17/README.md"
+  ]
+}

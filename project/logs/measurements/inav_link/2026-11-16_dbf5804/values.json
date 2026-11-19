@@ -1,0 +1,12 @@
+{
+  "attitude_hz": "9.97",
+  "odom_hz": "9.97",
+  "flow_hz": "9.94",
+  "battery_hz": "1.99",
+  "status_hz": "0.99",
+  "range_msgs": "0",
+  "bag_s": "43.3",
+  "bag_msgs": "1421",
+  "dead_detect_s": "0.75",
+  "recovery_s": "4.5"
+}

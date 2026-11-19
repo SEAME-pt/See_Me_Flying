@@ -1,0 +1,40 @@
+1794925152.412871243 bag start
+1794925152.559821879 fc_bridge start, rc_override true
+1794925158.680664291 LOOK connected: fc/rc roll 1503 pitch 1500 yaw 1498 throttle 989 ch7(SA) 1000 | override_active False rc_sent True link_ok True armed False
+1794925158.689642428 step 1: SA off, radio sticks
+1794925174.682946285 LOOK 1 SA off, pitch stick up (expect pitch ~2000, override_active False): fc/rc roll 1503 pitch 1500 yaw 1498 throttle 989 ch7(SA) 1000 | override_active False rc_sent True link_ok True armed False
+1794925185.748186050 step 2: SA on
+1794925196.680125862 LOOK 2 SA on, no setpoint (expect 1500 x4, override_active True): fc/rc roll 1500 pitch 1500 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925210.682326890 LOOK 2 SA on, radio pitch up (expect pitch still 1500: radio ignored): fc/rc roll 1500 pitch 1500 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925215.767125314 setpoint {linear: {x: 0.25}} for 8 s
+1794925221.697769487 LOOK 2 forward (expect pitch 1750, the rest 1500): fc/rc roll 1500 pitch 1750 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925226.719177141 setpoint {linear: {y: 0.25}} for 8 s
+1794925231.668545533 LOOK 2 left (expect roll 1250, the rest 1500): fc/rc roll 1250 pitch 1500 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925236.691024194 setpoint {linear: {z: 0.15}} for 8 s
+1794925241.662879669 LOOK 2 up (expect throttle 1750, the rest 1500): fc/rc roll 1500 pitch 1500 yaw 1500 throttle 1750 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925246.681699780 setpoint {angular: {z: 0.5}} for 8 s
+1794925253.678505318 LOOK 2 yaw_left (expect yaw 1250, the rest 1500): fc/rc roll 1500 pitch 1500 yaw 1250 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925258.692352964 step 3: setpoint timeout
+1794925258.698937596 setpoint {linear: {x: 0.25}} for 8 s
+1794925263.685250434 LOOK 3 forward before the stop (expect pitch 1750): fc/rc roll 1500 pitch 1750 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925271.655366878 LOOK 3 after the stop (expect 1500 x4): fc/rc roll 1500 pitch 1500 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925271.666351050 step 4: bridge stops while sending pitch 1750
+1794925271.674201435 setpoint {linear: {x: 0.25}} for 30 s
+1794925274.819141869 fc_bridge stop
+1794925276.465065595 fc_bridge start, rc_override false
+1794925284.532924284 LOOK 4 listen-only bridge (expect pitch 1500: back to the radio): fc/rc roll 1503 pitch 1500 yaw 1498 throttle 989 ch7(SA) 2000 | override_active True rc_sent False link_ok True armed False
+1794925285.154376440 fc_bridge stop
+1794925286.767999902 fc_bridge start, rc_override true
+1794925290.896207644 step 5: Wi-Fi drop
+1794925290.911579267 setpoint {linear: {x: 0.25}} for 600 s
+1794925295.833128334 LOOK 5 before the drop (expect pitch 1750): fc/rc roll 1500 pitch 1750 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925295.844081223 step 5: Wi-Fi off
+1794925322.335460474 step 5: Wi-Fi back
+1794925329.826753869 LOOK 5 after reconnecting (expect pitch 1750 again): fc/rc roll 1500 pitch 1750 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925329.836951558 step 6: radio off, SA on
+1794925345.835435033 LOOK 6 radio off (note: does pitch stay 1750? override_active?): fc/rc roll 1500 pitch 1750 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925350.803038651 LOOK 6 radio off, 5 s later: fc/rc roll 1500 pitch 1750 yaw 1500 throttle 1500 ch7(SA) 2000 | override_active True rc_sent True link_ok True armed False
+1794925360.334815215 step 7: radio on, SA off
+1794925363.827931016 LOOK 7 SA off (expect radio values, override_active False): fc/rc roll 1502 pitch 1500 yaw 1500 throttle 989 ch7(SA) 1000 | override_active False rc_sent True link_ok True armed False
+1794925364.449778947 fc_bridge stop
+1794925366.064234829 bag stop

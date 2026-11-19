@@ -1,0 +1,13 @@
+{
+  "kind": "measurements",
+  "name": "motor_music",
+  "date": "2026-11-17T16:45:34+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "ab84ee960c8be8d03cf900df65221ced81211956",
+  "commit_short": "ab84ee9",
+  "commit_subject": "Bench scripts wait for the FC to answer before going on",
+  "branch": "motor-music",
+  "uncommitted_code": [],
+  "uncommitted_other": [],
+  "note": "motor music calibrate through ROS (fc/setpoint_velocity, fc_bridge rc_override), PROPS OFF, armed from the radio, laptop on the drone AP, install /tmp/inav6_bench/install"
+}

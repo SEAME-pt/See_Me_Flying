@@ -1,0 +1,20 @@
+[
+ {"label": "C6", "value": 1208, "start_epoch": 1795013576.963, "end_epoch": 1795013578.249},
+ {"label": "D6", "value": 1237, "start_epoch": 1795013578.249, "end_epoch": 1795013579.535},
+ {"label": "G5", "value": 1150, "start_epoch": 1795013579.535, "end_epoch": 1795013580.178},
+ {"label": "G6", "value": 1324, "start_epoch": 1795013580.178, "end_epoch": 1795013581.463},
+ {"label": "F6", "value": 1286, "start_epoch": 1795013581.463, "end_epoch": 1795013581.785},
+ {"label": "E6", "value": 1269, "start_epoch": 1795013581.785, "end_epoch": 1795013582.106},
+ {"label": "D6", "value": 1237, "start_epoch": 1795013582.106, "end_epoch": 1795013583.392},
+ {"label": "E6", "value": 1269, "start_epoch": 1795013583.392, "end_epoch": 1795013583.713},
+ {"label": "F6", "value": 1286, "start_epoch": 1795013583.713, "end_epoch": 1795013584.035},
+ {"label": "E6", "value": 1269, "start_epoch": 1795013584.035, "end_epoch": 1795013585.321},
+ {"label": "D6", "value": 1237, "start_epoch": 1795013585.321, "end_epoch": 1795013585.642},
+ {"label": "C6", "value": 1208, "start_epoch": 1795013585.642, "end_epoch": 1795013585.963},
+ {"label": "B5", "value": 1195, "start_epoch": 1795013585.963, "end_epoch": 1795013586.606},
+ {"label": "C6", "value": 1208, "start_epoch": 1795013586.606, "end_epoch": 1795013587.892},
+ {"label": "B5", "value": 1195, "start_epoch": 1795013587.892, "end_epoch": 1795013588.535},
+ {"label": "A5", "value": 1171, "start_epoch": 1795013588.535, "end_epoch": 1795013589.821},
+ {"label": "G5", "value": 1150, "start_epoch": 1795013589.821, "end_epoch": 1795013591.106},
+ {"label": "pause", "value": 1000, "start_epoch": 1795013591.106, "end_epoch": 1795013591.749}
+]

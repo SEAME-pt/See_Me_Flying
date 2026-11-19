@@ -1,0 +1,10 @@
+# Tells Grafana to load every dashboard JSON in this folder (drone.json).
+# Edits made in the UI are not saved back here: export the JSON and replace the file.
+apiVersion: 1
+
+providers:
+  - name: drone
+    type: file
+    disableDeletion: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
