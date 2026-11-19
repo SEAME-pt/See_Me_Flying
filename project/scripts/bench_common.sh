@@ -14,48 +14,28 @@
 
 set -euo pipefail
 
-<<<<<<< HEAD:project/scripts/bench_common.sh
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPTS_DIR/../.." && pwd)"   # the repo root: compose.yaml; logs go to project/logs/
-=======
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
->>>>>>> origin/main:seame-docker/scripts/bench_common.sh
 cd "$PROJECT_DIR"
 INSTALL="${INSTALL:-/home/dev/ros2_ws/install}"   # inside the container
 MSP_HOST="${MSP_HOST:-192.168.4.1}"
 MSP_PORT="${MSP_PORT:-23}"
 
 if [ -z "$(docker compose ps -q --status running dev)" ]; then
-<<<<<<< HEAD:project/scripts/bench_common.sh
     echo "Error: The dev container isn't running. Start it: make up"
     exit 2
 fi
 if ! docker compose exec -T dev test -f "$INSTALL/setup.bash" < /dev/null; then
     echo "Error: No build at $INSTALL in the container (set INSTALL=...)"
-=======
-    echo "❌ The dev container isn't running. Start it: docker compose up -d"
-    exit 2
-fi
-if ! docker compose exec -T dev test -f "$INSTALL/setup.bash" < /dev/null; then
-    echo "❌ No build at $INSTALL in the container (set INSTALL=...)"
->>>>>>> origin/main:seame-docker/scripts/bench_common.sh
     exit 2
 fi
 
 RUN=$(BENCH_NAME="${BENCH_NAME:-inav_rc_override}" BENCH_NOTE="$BENCH_NOTE, install $INSTALL" python3 -c "import os, sys; \
-<<<<<<< HEAD:project/scripts/bench_common.sh
 sys.path.insert(0, '$SCRIPTS_DIR'); from logbook import new_run; \
 print(new_run('measurements', os.environ['BENCH_NAME'], {'note': os.environ['BENCH_NOTE']}))")
 TMP="/tmp/inav6_rc_$(date +%s)"
 EVENTS="$RUN/events.log"
 echo "Results in ${RUN#"$PROJECT_DIR"/}"
-=======
-sys.path.insert(0, 'scripts'); from logbook import new_run; \
-print(new_run('measurements', os.environ['BENCH_NAME'], {'note': os.environ['BENCH_NOTE']}))")
-TMP="/tmp/inav6_rc_$(date +%s)"
-EVENTS="$RUN/events.log"
-echo "📁 ${RUN#"$PROJECT_DIR"/}"
->>>>>>> origin/main:seame-docker/scripts/bench_common.sh
 
 in_dev() {   # a command in the container, with ROS and the build sourced
     # stdin from /dev/null: docker would otherwise eat the Enter meant for ask.
@@ -73,11 +53,7 @@ mark() {
 }
 ask() {   # what to do, then wait for Enter
     echo
-<<<<<<< HEAD:project/scripts/bench_common.sh
     echo "> $*"
-=======
-    echo "👉 $*"
->>>>>>> origin/main:seame-docker/scripts/bench_common.sh
     read -r -p "   Enter when done... " _
 }
 
@@ -130,11 +106,7 @@ bench_save() {
     # The helper scripts and go/done flags are copies or empty: not results.
     (cd "$RUN" && rm -rf -- *.py __pycache__ go done)
     echo
-<<<<<<< HEAD:project/scripts/bench_common.sh
     echo "Saved in ${RUN#"$PROJECT_DIR"/}: bag/, events.log, bridge.log, bag.log"
-=======
-    echo "✅ Saved in ${RUN#"$PROJECT_DIR"/}: bag/, events.log, bridge.log, bag.log"
->>>>>>> origin/main:seame-docker/scripts/bench_common.sh
 }
 
 # Prints fc/rc, fc/motors and fc/status on one line. With LOOK_ARMED_OK unset,
@@ -143,11 +115,7 @@ look() {   # $1: label
     local out
     out=$(in_dev "python3 $TMP/look.py ${LOOK_ARMED_OK:-}" 2>&1) || {
         echo "$out"
-<<<<<<< HEAD:project/scripts/bench_common.sh
         echo "STOP: armed, stopping."
-=======
-        echo "🛑 Armed: stopping."
->>>>>>> origin/main:seame-docker/scripts/bench_common.sh
         bench_stop
         exit 1
     }
@@ -165,17 +133,10 @@ wait_link() {   # $1: label
             look "$1"
             return 0
         fi
-<<<<<<< HEAD:project/scripts/bench_common.sh
         echo "   waiting for the FC to answer through esp-link..."
     done
     echo "$(date +%s.%N) LOOK $1: $out" >> "$EVENTS"
     echo "STOP: The ESP answers but INAV doesn't (or the laptop isn't on the drone's Wi-Fi):"
-=======
-        echo "   ⏳ waiting for the FC to answer through esp-link..."
-    done
-    echo "$(date +%s.%N) LOOK $1: $out" >> "$EVENTS"
-    echo "🛑 The ESP answers but INAV doesn't (or the laptop isn't on the drone's Wi-Fi):"
->>>>>>> origin/main:seame-docker/scripts/bench_common.sh
     echo "   power-cycle the drone (battery out, in, keep it still) and run again."
     bench_stop
     exit 1

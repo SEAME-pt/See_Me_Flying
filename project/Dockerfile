@@ -25,10 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-jazzy-vision-msgs \
       python3-opencv python3-pip \
       ros-jazzy-image-proc \
-<<<<<<< HEAD:project/Dockerfile
-=======
       ros-jazzy-camera-calibration \
->>>>>>> origin/main:seame-docker/Dockerfile
       ros-jazzy-rqt-image-view v4l-utils mesa-utils \
       ros-jazzy-tf2-tools \
       ros-jazzy-ament-mypy \
