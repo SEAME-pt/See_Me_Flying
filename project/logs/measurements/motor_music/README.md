@@ -1,6 +1,6 @@
 # Motor music runs
 
-`scripts/motor_music/sing.sh`: the motors play a melody through ROS (`fc/setpoint_velocity` → fc_bridge `rc_override` → INAV), props off. Only the runs worth keeping are here, with their events, step times and metadata; bags and recordings stay on the laptop that ran them. The laptop mic records no real sound, so there is no audio of any run.
+`project/scripts/motor_music/sing.sh` (`make motor-music`): the motors play a melody through ROS (`fc/setpoint_velocity` → fc_bridge `rc_override` → INAV), props off. Only the runs worth keeping are here, with their events, step times and metadata; bags and recordings stay on the laptop that ran them. The laptop mic records no real sound, so there is no audio of any run.
 
 | Run | What it shows |
 |---|---|
