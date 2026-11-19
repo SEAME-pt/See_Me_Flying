@@ -29,6 +29,7 @@ recording on the host uses the same clock).
 import argparse
 import json
 import os
+import signal
 import sys
 import time
 
@@ -131,7 +132,12 @@ def perform(plan, tmp):
     import rclpy
     from geometry_msgs.msg import TwistStamped
 
-    rclpy.init()
+    from rclpy.signals import SignalHandlerOptions
+
+    rclpy.init(signal_handler_options=SignalHandlerOptions.NO)   # Ctrl-C: ours to handle
+    # Even if the shell that started us ignores SIGINT (a background job does).
+    signal.signal(signal.SIGINT, signal.default_int_handler)
+    signal.signal(signal.SIGTERM, signal.default_int_handler)
     node = rclpy.create_node('motor_music')
     pub = node.create_publisher(TwistStamped, '/fc/setpoint_velocity', 10)
 
