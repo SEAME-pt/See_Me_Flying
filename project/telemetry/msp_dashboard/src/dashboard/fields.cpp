@@ -178,6 +178,7 @@ std::vector<Section> sections() {
         {"Vertical speed", from(&Telemetry::altitude, [](const Altitude& a, const Telemetry&) { return value(fmt("%+8.2f m/s", a.vario_ms)); })},
         {"Rangefinder", from(&Telemetry::rangefinder, [](const Rangefinder& r, const Telemetry&) {
              if (r.valid()) return value(fmt("%8.2f m", r.distance_m()));
+             if (r.raw_cm == 0) return value("no rangefinder running", style::kWarn);
              if (r.raw_cm == -1) return value("out of range", style::kWarn);
              return value(fmt("no reading (%d)", r.raw_cm), style::kWarn);
          })},
@@ -213,7 +214,7 @@ std::vector<Section> sections() {
         {"Current", from(&Telemetry::analog, [](const InavAnalog& a, const Telemetry&) { return value(fmt("%6.2f A", a.current_a)); })},
         {"Power", from(&Telemetry::analog, [](const InavAnalog& a, const Telemetry&) { return value(fmt("%6.1f W", a.power_w)); })},
         {"Used", from(&Telemetry::analog, [](const InavAnalog& a, const Telemetry&) {
-             return value(fmt("%u mAh  ·  %.2f Wh", a.mah_drawn, a.mwh_drawn / 1000.0));
+             return value(fmt("%d mAh  ·  %.2f Wh", a.mah_drawn, a.mwh_drawn / 1000.0));
          })},
         {"Charge left", from(&Telemetry::analog, [battery_style](const InavAnalog& a, const Telemetry&) {
              if (!a.uses_capacity_thresholds) return value(fmt("%3d %%", a.battery_pct), battery_style(a));

@@ -5,11 +5,19 @@ Run project/telemetry/latency_test.py and keep the result in project/logs/measur
     make wifi-rtt NOTE="bench, AP mode, radio on" ARGS="-n 1000 --interval 0.05"
     python3 project/scripts/measure_wifi_rtt.py --note "bench, AP mode, radio on" -n 1000 --interval 0.05
 
-Runs on the host (the laptop on the drone's Wi-Fi), not in the container.
+Runs on the host, not in the container: either a laptop on the drone's Wi-Fi, or
+the Raspberry Pi with the USB bridge (D1 Mini) plugged in:
+
+    # Pi, straight through the USB bridge (stop msp_gateway first)
+    python3 project/scripts/measure_wifi_rtt.py --note "Pi, USB bridge, bench" --serial /dev/ttyUSB0
+    # Pi, through msp_gateway (it keeps running)
+    python3 project/scripts/measure_wifi_rtt.py --note "Pi, via gateway, bench" --host 127.0.0.1 --port 5760
 
 --note is required: the conditions (where, ESP mode, radio, anything unusual). Every
-other flag goes to latency_test.py unchanged (--host, --port, -n, --interval,
---timeout, --quickack); see python3 project/telemetry/latency_test.py --help.
+other flag goes to latency_test.py unchanged (--serial, --baud, --host, --port, -n,
+--interval, --timeout, --quickack); see python3 project/telemetry/latency_test.py --help.
+meta.json also records which machine ran it and whether it went over serial or TCP,
+so runs from the Pi and from a laptop can be told apart later.
 
 The run folder gets meta.json, samples.csv (latency_test.py's per-sample CSV) and
 values.json (the summary), and history.csv gets one line. latency_test.py itself is
@@ -21,6 +29,7 @@ import datetime
 import os
 import shutil
 import signal
+import socket
 import statistics
 import subprocess
 import sys
@@ -48,7 +57,10 @@ def summarize(samples_csv):
     duration = (datetime.datetime.strptime(rows[-1]['time'], stamp)
                 - datetime.datetime.strptime(rows[0]['time'], stamp)).total_seconds()
     values = {
-        'host': rows[0]['host'],
+        # latency_test.py calls this column "target" (a device or host:port);
+        # older versions called it "host". The key stays "host" so history.csv
+        # keeps the same columns.
+        'host': rows[0].get('target') or rows[0].get('host', ''),
         'duration_s': round(duration, 1),
         'rate_hz': round((len(rows) - 1) / duration, 1) if duration > 0 else None,
         'sent': len(rows), 'answered': len(rtts), 'lost': lost,
@@ -76,8 +88,11 @@ def main():
     if '--csv' in passthrough:
         parser.error('--csv is set by this script (samples.csv in the run folder)')
 
+    serial = any(a == '--serial' or a.startswith('--serial=') for a in passthrough)
     run = new_run('measurements', 'wifi_rtt',
-                  {'note': args.note, 'latency_test_args': passthrough})
+                  {'note': args.note, 'latency_test_args': passthrough,
+                   'machine': socket.gethostname(),
+                   'link': 'serial (USB bridge)' if serial else 'tcp'})
     samples = os.path.join(run, 'samples.csv')
 
     # Ctrl-C must reach latency_test.py (it stops early and still saves its CSV),

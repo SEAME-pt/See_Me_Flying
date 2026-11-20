@@ -300,14 +300,14 @@ Commit the run folder and `history.csv` with the code it tested. How to read the
 > **Props off** for the bench runs. They are interactive: they tell you what to do with the radio.
 
 ```bash
-make wifi-rtt NOTE="bench, AP mode" ARGS="--port 23"   # Wi-Fi round trip to the FC
+make wifi-rtt NOTE="bench, AP mode"      # Wi-Fi round trip to the FC
 make bench-rc                            # ROS sticks through MSP RC OVERRIDE, unarmed
 make bench-armed                         # armed, ROS drives the motors
 make motor-music MODE=calibrate          # the motors play a song
 make motor-music MODE=play SONG=path/song.rtttl
 ```
 
-`wifi-rtt` needs `ARGS="--port 23"` because `latency_test.py` still defaults to 5760, the old MicroPython bridge's port. The bench targets take `INSTALL=<path>` to run another build. Results go to `project/logs/measurements/`.
+`wifi-rtt` talks to esp-link (192.168.4.1, port 23) by default; on the Raspberry Pi, pass `ARGS="--serial /dev/ttyUSB0"` ([telemetry README](project/telemetry/README.md#latency_testpy)). The bench targets take `INSTALL=<path>` to run another build. Results go to `project/logs/measurements/`.
 
 ### Other commands
 

@@ -60,10 +60,11 @@ Anything measured over time: Wi-Fi round-trip time and drops (STK-5), command ra
 **Wi-Fi round trip (`wifi_rtt`)**, with the laptop on the drone's network:
 
 ```bash
-make wifi-rtt NOTE="bench, AP mode, radio on" ARGS="--port 23 -n 1000 --interval 0.05"
+make wifi-rtt NOTE="bench, AP mode, radio on" ARGS="-n 1000 --interval 0.05"
+make wifi-rtt NOTE="Pi, USB bridge, bench" ARGS="--serial /dev/ttyUSB0"    # on the Raspberry Pi
 ```
 
-It runs [`project/telemetry/latency_test.py`](../telemetry/latency_test.py) (any of its flags pass through in `ARGS`; `--port 23` is needed for esp-link, since the script still defaults to 5760) and keeps its per-sample CSV as `samples.csv`. `values.json` and `history.csv` hold: `host`, `duration_s`, `rate_hz` (the real request rate; `--interval` is the pause between samples, so it's lower than 1/interval), `sent`, `answered`, `lost`, `lost_pct`, `late`, `corrupted`, `min_ms`, `median_ms`, `p90_ms`, `p99_ms`, `max_ms`, `jitter_ms`, plus the flags used and the note. Ctrl-C stops early and still records the run; a run that never connected records nothing. Earlier results: [Wi-Fi latency tests](../../docs/Telemetry_test.md).
+It runs [`project/telemetry/latency_test.py`](../telemetry/latency_test.py) (any of its flags pass through in `ARGS`; it talks to esp-link at 192.168.4.1:23 by default) and keeps its per-sample CSV as `samples.csv`. `meta.json` also records the machine that ran it and whether it went over serial or TCP. `values.json` and `history.csv` hold: `host` (the serial device, or `address:port`), `duration_s`, `rate_hz` (the real request rate; `--interval` is the pause between samples, so it's lower than 1/interval), `sent`, `answered`, `lost`, `lost_pct`, `late`, `corrupted`, `min_ms`, `median_ms`, `p90_ms`, `p99_ms`, `max_ms`, `jitter_ms`, plus the flags used and the note. Ctrl-C stops early and still records the run; a run that never connected records nothing. Earlier results: [Wi-Fi latency tests](../../docs/Telemetry_test.md).
 
 **From a measuring script** (Python, run from the repo root), the way `run_tests.sh` does it:
 

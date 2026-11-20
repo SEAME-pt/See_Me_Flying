@@ -30,10 +30,9 @@ Raspberry Pi OS / Ubuntu 24.04). No other dependencies.
 Keys: `q` quit, `r` redraw, `:` type a command, `space` stop all motors.
 Resizing the terminal re-lays the table out.
 
-The default port is **23**, esp-link's serial bridge port. The Python scripts
-(`inav_telemetry.py`, `latency_test.py`) still default to 5760, the old
-MicroPython bridge's port: pass them `--port 23`. ESP setup:
-[ESP12 setup](../README.md).
+The default port is **23**, esp-link's serial bridge port. `inav_telemetry.py`
+defaults to 5760, which is `msp_gateway`'s port: pass it `--port 23` to talk to
+esp-link directly. ESP setup and the other scripts: [telemetry README](../README.md).
 
 ## Sending commands (motor test)
 
