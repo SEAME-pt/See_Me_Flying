@@ -76,7 +76,8 @@ struct InavStatus {
 
 struct InavAnalog {
     double voltage_v, current_a, power_w;
-    uint32_t mah_drawn, mwh_drawn, remaining_capacity;
+    int32_t mah_drawn, mwh_drawn;     // int32 in INAV, like power
+    uint32_t remaining_capacity;
     int battery_pct, cell_count, battery_state;   // state: 0 ok .. 3 not present
     bool full_when_plugged_in, uses_capacity_thresholds;
     double rssi_pct;
@@ -88,8 +89,8 @@ struct OpticalFlow {
 };
 
 struct Rangefinder {
-    int32_t raw_cm;                    // -1 out of range, other negatives = no reading
-    bool valid() const { return raw_cm >= 0; }
+    int32_t raw_cm;                    // 0 = no rangefinder running, -1 = out of range
+    bool valid() const { return raw_cm > 0; }
     double distance_m() const { return raw_cm / 100.0; }
 };
 

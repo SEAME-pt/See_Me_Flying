@@ -161,9 +161,9 @@ InavAnalog decode_inav_analog(const Payload& p) {  // MSP2_INAV_ANALOG (0x2002)
     const uint8_t flags = r.get<uint8_t>();
     a.voltage_v = r.get<uint16_t>() / 100.0;
     a.current_a = r.get<int16_t>() / 100.0;
-    a.power_w = r.get<uint32_t>() / 100.0;
-    a.mah_drawn = r.get<uint32_t>();
-    a.mwh_drawn = r.get<uint32_t>();
+    a.power_w = r.get<int32_t>() / 100.0;   // power, mAh and mWh are int32 in INAV
+    a.mah_drawn = r.get<int32_t>();
+    a.mwh_drawn = r.get<int32_t>();
     a.remaining_capacity = r.get<uint32_t>();
     a.battery_pct = r.get<uint8_t>();
     a.rssi_pct = r.get<uint16_t>() / 1023.0 * 100.0;
@@ -252,8 +252,11 @@ std::vector<std::string> sensor_names(uint16_t bits) {
 
 std::vector<std::string> arming_blockers(uint32_t flags) {
     // INAV armingFlag_e (runtime_config.h), same table as inav_telemetry.py.
+    // Only INAV's ARMING_DISABLED_ALL_FLAGS block arming: bits 6-16 and 18-30.
+    // Bits 2-5 are state (armed, was ever armed, simulator HITL/SITL) and
+    // 0, 1, 17, 31 are unused, so none of those is reported.
     static const std::map<int, std::string> kBits = {
-        {4, "simulator HITL"}, {5, "simulator SITL"}, {6, "geozone"},
+        {6, "geozone"},
         {7, "failsafe"}, {8, "not level"}, {9, "calibrating"},
         {10, "system overloaded"}, {11, "nav unsafe"}, {12, "compass not calibrated"},
         {13, "acc not calibrated"}, {14, "arm switch"}, {15, "hardware failure"},
@@ -264,8 +267,8 @@ std::vector<std::string> arming_blockers(uint32_t flags) {
         {30, "landing detected"},
     };
     std::vector<std::string> out;
-    for (int i = 0; i < 32; ++i) {
-        if (i == 2 || i == 3 || !(flags >> i & 1)) continue;  // armed / was ever armed
+    for (int i = 6; i <= 30; ++i) {
+        if (i == 17 || !(flags >> i & 1)) continue;
         out.push_back(lookup(kBits, i, "flag bit"));
     }
     return out;
