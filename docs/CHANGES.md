@@ -1,6 +1,3 @@
----
-title: What Changed When copy-nando Became main
----
 # What changed: copy-nando becomes main
 
 This branch replaces the old `main`. The ROS code is the same code you wrote,
