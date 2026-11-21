@@ -24,3 +24,6 @@ seame-docker/logs/measurements/motor_music/*/song.rtttl
 seame-docker/logs/measurements/motor_music/_archive/
 seame-docker/logs/measurements/motor_music/*/bag/
 seame-docker/logs/measurements/motor_music/*/*.wav
+
+# AI models: big downloads, stay local (see drone_sim/depth.py for where to get them)
+project/models/*.onnx

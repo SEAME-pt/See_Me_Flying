@@ -28,6 +28,8 @@ setup(
             'flow_check = drone_sim.flow_check:main',
             'odom_check = drone_sim.odom_check:main',
             'estimator = drone_sim.estimator_node:main',
+            'camera_view = drone_sim.camera_view:main',
+            'depth_view = drone_sim.depth_view:main',
         ],
     },
 )
