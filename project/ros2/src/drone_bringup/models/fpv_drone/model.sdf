@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- Visual only, to look at the mesh on its own. The worlds do not include this
+     model: they put meshes/drone.obj on the X3 (see the experimental:params
+     there), with the same pose as below. -->
+<sdf version="1.9">
+  <model name="fpv_drone">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <!-- drone.obj comes from Blender: Y up, front towards -Z, about
+             (5.68, 2.20, -2.41) from the origin. This pose turns it to Gazebo's
+             Z up / front +X, centres it and puts its lowest point at z = -0.053,
+             the bottom of the X3 (the X3's link is 0.053 m above its feet). -->
+        <pose>-2.4088 5.6831 -2.2525 1.5707963 0 -1.5707963</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/drone.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>

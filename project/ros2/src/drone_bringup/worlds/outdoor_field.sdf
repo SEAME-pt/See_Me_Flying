@@ -639,12 +639,28 @@
         name="gz::sim::systems::OdometryPublisher">
         <dimensions>3</dimensions>
       </plugin>
-      <!-- FPV camera, for sim.launch.py camera:=fpv. The X3 comes from Fuel, so it
-           is added here: front edge of the body, between the front rotors, tilted
-           20 deg up (negative pitch = up), 120 deg wide. -->
+      <!-- The X3 comes from Fuel; these change it in place. It keeps flying as the
+           X3 (links, joints, rotors and plugins untouched), but looks like our
+           drone: its own meshes are removed and models/fpv_drone's mesh is put
+           on its body (pose explained in models/fpv_drone/model.sdf).
+           FPV camera, for sim.launch.py camera:=fpv: where the mesh has its
+           lens, tilted 20 deg up (negative pitch = up), 120 deg wide. -->
       <experimental:params>
+        <visual element_id="X3/base_link::X3/base_link_inertia_visual" action="remove"/>
+        <visual element_id="X3/rotor_0::X3/rotor_0_visual" action="remove"/>
+        <visual element_id="X3/rotor_1::X3/rotor_1_visual" action="remove"/>
+        <visual element_id="X3/rotor_2::X3/rotor_2_visual" action="remove"/>
+        <visual element_id="X3/rotor_3::X3/rotor_3_visual" action="remove"/>
+        <visual element_id="X3/base_link" action="add" name="fpv_drone_visual">
+          <pose>-2.4088 5.6831 -2.2525 1.5707963 0 -1.5707963</pose>
+          <geometry>
+            <mesh>
+              <uri>model://fpv_drone/meshes/drone.obj</uri>
+            </mesh>
+          </geometry>
+        </visual>
         <sensor element_id="X3/base_link" action="add" name="fpv_camera" type="camera">
-          <pose>0.24 0 0.03 0 -0.35 0</pose>
+          <pose>0.13 0 0.015 0 -0.35 0</pose>
           <update_rate>30</update_rate>
           <topic>fpv/image</topic>
           <camera>
