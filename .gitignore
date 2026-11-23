@@ -20,3 +20,6 @@ project/logs/measurements/motor_music/*/*.wav
 
 # Obsidian: share the vault settings, not each person's open tabs
 .obsidian/workspace.json
+
+# msp_bench.py CSVs when run without --logbook or --out
+results/
