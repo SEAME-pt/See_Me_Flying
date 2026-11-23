@@ -32,17 +32,18 @@ In setup B the Pi is the only client of the drone's ESP. Everything else connect
 | the Pi itself, gateway running | B | `--host 127.0.0.1 --port 5760` |
 | the Pi itself, gateway stopped | B | `--serial /dev/ttyUSB0` (only the tools that support it) |
 
-The scripts' default ports differ, so pass `--port` explicitly. `inav_telemetry.py` defaults to 5760 (the gateway), while `latency_test.py` and the dashboard default to 23 (esp-link).
+The scripts' default ports differ, so pass the address explicitly. `inav_telemetry.py` defaults to 5760 (the gateway), while `latency_test.py`, `msp_bench.py` and the dashboard default to 23 (esp-link). `msp_bench.py` takes the address as one flag: `--tcp 192.168.4.1:23`, `--tcp <pi-address>:5760` or `--serial /dev/ttyUSB0`.
 
 ## Which tool for what
 
 | I want to… | Use |
 | --- | --- |
+| check the whole drone before a session (sensors, link, arming), or measure sensor noise and link delay for the sim | [`msp_bench.py`](#msp_benchpy) |
 | watch the drone live, or run a motor test (props off) | [`msp_dashboard`](msp_dashboard/README.md) |
 | let several programs use the drone at once, and log every MSP frame | [`msp_gateway`](msp_dashboard/README.md#msp_gateway-one-owner-for-the-msp-link) |
 | record decoded telemetry as JSON lines, or feed it to a script | [`inav_telemetry.py`](#inav_telemetrypy) |
-| check how fast and reliable the link is | [`latency_test.py`](#latency_testpy) (`make wifi-rtt` to keep the result) |
-| record new drone captures for the tests, or measure per-message rates | [`msp_inventory.py`](#msp_inventorypy) |
+| check how fast and reliable the link is | [`msp_bench.py`](#msp_benchpy) for the full picture under load, [`latency_test.py`](#latency_testpy) to record one link number in the logbook (`make wifi-rtt`) |
+| record new drone captures for the tests | [`msp_inventory.py`](#msp_inventorypy) |
 | identify the ELRS receiver | [`receiver_crsf_ping.py`](#receiver_crsf_pingpy) |
 | test the MSP code without the drone | [`tests/`](#tests) and `msp_dashboard/tools/fake_fc.py` |
 
@@ -50,11 +51,12 @@ The scripts' default ports differ, so pass `--port` explicitly. `inav_telemetry.
 
 | File | What it is |
 | --- | --- |
+| `msp_bench.py` | Unified bench test: sensor status, sensor values and noise over 10 s, link latency under heavy MSP load. Colored summary on screen, one CSV per run |
 | `inav_telemetry.py` | Polls INAV and prints decoded values (readable or JSON lines). Also the Python reference decoders the tests check |
 | `latency_test.py` | MSP round-trip times, over TCP or the Pi's USB serial bridge |
-| `msp_inventory.py` | Captures raw MSP replies (`capture`) or measures their rates (`rate`) |
+| `msp_inventory.py` | Captures raw MSP replies of every message (`capture`), for the tests |
 | `receiver_crsf_ping.py` | One-off tool: asks a CRSF/ELRS receiver for its name and version through INAV's serial passthrough |
-| `tests/` | MSP framing, decoders and the drone recordings (pytest; `make test` and CI) |
+| `tests/` | MSP framing, decoders, the drone recordings and `msp_bench.py` (pytest; `make test` and CI) |
 | [`inav/`](inav/README.md) | INAV firmware choices, MSP captures (`msp/captures/`) and rate runs (`msp/rates/`) |
 | [`msp_dashboard/`](msp_dashboard/README.md) | C++ terminal dashboard, `msp_gateway`, the Pi's USB bridge firmware and a fake FC for testing |
 
@@ -118,6 +120,96 @@ Password: 123456789
 ```
 
 In setup B, only the Pi's USB bridge joins this network. Its SSID and password are set at the top of [`pi_bridge.ino`](msp_dashboard/firmware/pi_bridge/pi_bridge.ino).
+
+---
+
+## `msp_bench.py`
+
+One command that checks everything we used to test separately: which sensors INAV sees, what they read while the drone sits still, and how the MSP link behaves when it is pushed hard. It prints a colored summary and writes one CSV per run, with the same columns on every machine, so runs from the Pi and from laptops can be pasted together and compared. Only the Python standard library is needed (plus `pyserial` for `--serial`).
+
+**Before running it:** props off, drone still on a level surface, battery plugged in. Nothing else may be talking to the link (stop `msp_gateway` for `--serial`, close the dashboard and INAV Configurator). The load tests are skipped on their own if the drone is armed.
+
+```bash
+# setup A: laptop on the drone's Wi-Fi
+python3 project/telemetry/msp_bench.py --tcp 192.168.4.1:23
+
+# setup B, on the Pi: straight through the USB bridge (stop msp_gateway first)
+python3 project/telemetry/msp_bench.py --serial /dev/ttyUSB0
+
+# quick pre-flight check: about 15 s, only checks and problems on screen
+python3 project/telemetry/msp_bench.py --serial /dev/ttyUSB0 --quick --brief
+
+# numbers for the sim (ROS-8): a longer still run, plus every sample
+python3 project/telemetry/msp_bench.py --serial /dev/ttyUSB0 --duration 120 --raw raw.csv
+
+# once the MTF-02 is fitted, flow and rangefinder must be OK too
+python3 project/telemetry/msp_bench.py --tcp 192.168.4.1:23 --expect gyro,acc,opflow,rangefinder
+```
+
+Through the gateway (`--tcp <pi-address>:5760`) works too, but then the latency part measures the gateway's queue as well as the link.
+
+### What it tests
+
+| Section | What it checks |
+| --- | --- |
+| Flight controller | INAV version, board, craft name, armed or not, and what blocks arming. Blockers that are normal on the bench (`RC_LINK`, `NO_PREARM`, `ARM_SWITCH`, …) are only noted; anything else (`NOT_LEVEL`, `ACCELEROMETER_NOT_CALIBRATED`, `HARDWARE_FAILURE`, …) fails |
+| Sensor status | Health of gyro, acc, mag, baro, GPS, rangefinder, pitot and opflow, read at the start and again at the end, so a sensor that drops out during the run fails. `--expect` says which must be OK (default `gyro,acc`) |
+| Sample rate | How often each MSP message could be read in the 10 s. Rangefinder and flow are skipped while INAV reports them missing, because it answers with zeros then |
+| Sensor values | Median, std (the noise), min and max of every value while still: IMU, attitude, altitude, battery, RC channels, INAV's position estimate, ELRS link stats, loop time, CPU load |
+| Checks | Gyro bias, accelerometer norm (≈ 1 g), tilt at rest, yaw drift, altitude and position-estimate drift, new I2C errors, cell voltage |
+| Link latency | Round trip for five messages one at a time (the link delay for the sim), then 1, 2, 4, 8 and 16 requests in flight for 5 s each (heavy MSP traffic), then 64 requests at once (buffer overflow) |
+| Link health | CRC errors, bytes that weren't MSP, error replies |
+
+`max_clean_throughput` is the most replies per second the link gave with zero loss: the whole MSP budget the gateway and ROS have to share.
+
+### Reading the output
+
+| Mark | Meaning |
+| --- | --- |
+| red `✖ FAIL` | Needs fixing before flying: FC not answering, armed, an expected sensor missing, a serious arming blocker, calibration out of tolerance, new I2C errors, low battery, lost replies with one request in flight, link dropped |
+| green `✔ PASS` | An important check that passed |
+| faded yellow `• note` | Something failed or looks off but needs no action: bench arming blockers, old I2C errors from boot, the Wi-Fi latency tail, loss at high in-flight counts, the link needing a few seconds after the port opens |
+| no mark | Information only |
+
+The run ends with a box listing what needs attention and what was only noted. Only red marks fail the run.
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | no FAIL (notes allowed) |
+| `1` | at least one FAIL |
+| `2` | could not talk to the flight controller |
+
+### Flags
+
+| Flag | Default | Meaning |
+| --- | --- | --- |
+| `--tcp HOST[:PORT]` | `192.168.4.1:23` | esp-link, or the gateway on port 5760 |
+| `--serial DEV`, `--baud` | none, `115200` | the Pi's USB bridge instead of TCP |
+| `--connect-wait` | `8` | seconds to keep asking at the start: opening the port reboots the D1 Mini, which then rejoins the drone's Wi-Fi |
+| `--duration` | `10` | seconds of sensor sampling |
+| `--expect` | `gyro,acc` | sensors that must be OK |
+| `--rtt-count` | `200` | sequential requests per message in the latency test |
+| `--rtt-warn-ms` | `20` | note if the p95 round trip is above this |
+| `--load-windows`, `--load-duration` | `1,2,4,8,16`, `5` | requests kept in flight, and seconds for each |
+| `--burst` | `64` | requests sent at once (`0` skips it) |
+| `--skip` | | `sensors` and/or `latency` |
+| `--quick` | | short run, about 15 s |
+| `--brief` | | hide the sensor table, show checks and problems only |
+| `--color` | `auto` | `always`, `never`; `auto` turns colors off when the output isn't a terminal, and so does the `NO_COLOR` variable |
+| `--out FILE` | `results/msp_bench_<host>_<date>_<time>.csv` | where the CSV goes |
+| `--raw FILE` | | also write every single sample (for fitting noise and delay models) |
+
+### The CSV
+
+One row per measurement: `run_id, timestamp_utc, host, link, section, item, value, unit, status, n, mean, std, min, max, p05, p95, p99, notes`. `status` is `PASS`, `FAIL`, `WARN` (the faded-yellow notes) or `INFO`. For a measured value, `value` is the median and the other columns hold its statistics. To compare runs, open several in LibreOffice Calc and build a pivot table with `item` as rows and `run_id` or `host` as columns (Data > Pivot Table).
+
+### Limits to keep in mind
+
+- MSP sends gyro rates in whole °/s and heading in whole degrees, so gyro noise reads as 0 here. Use a blackbox log for the real gyro noise.
+- About 100 replies per second is the ceiling we measured, with or without more requests in flight. Sending many at once loses replies, so the gateway keeps only a few in flight.
+- Drift numbers from a 10 s run are mostly noise. Use `--duration 120` or more before putting them in the sim.
+
+To try it without the drone: `python3 msp_dashboard/tools/fake_fc.py --port 5760 --no-arm`, then `--tcp 127.0.0.1:5760`. The fake FC tilts and moves, so a few checks fail on purpose.
 
 ---
 
@@ -283,7 +375,7 @@ Uncomment a line in `LIVE` to poll it again. Their decoders are kept and tested.
 
 ## `latency_test.py`
 
-Measures how long the flight controller takes to answer. Each sample sends one small MSP request and times the reply. At the end it prints min, median, percentiles, jitter, lost and late replies, and every sample goes into a CSV (ready for Google Sheets: File > Import > Upload). Ctrl-C stops early and still prints the summary. It uses only the Python standard library, so nothing needs installing.
+Measures how long the flight controller takes to answer. For a full check under load, use [`msp_bench.py`](#msp_benchpy); this script stays because `make wifi-rtt` records its result in the logbook. Each sample sends one small MSP request and times the reply. At the end it prints min, median, percentiles, jitter, lost and late replies, and every sample goes into a CSV (ready for Google Sheets: File > Import > Upload). Ctrl-C stops early and still prints the summary. It uses only the Python standard library, so nothing needs installing.
 
 ```bash
 # setup A: laptop on the drone's Wi-Fi (esp-link, 192.168.4.1:23 by default)
@@ -327,20 +419,16 @@ Every flag in `ARGS` goes to `latency_test.py` unchanged. Each run gets a folder
 
 ## `msp_inventory.py`
 
-Two jobs, both talking to esp-link directly (setup A; the port is fixed at 23 in the script, so stop anything else using the drone first):
+Records raw replies of every message, talking to esp-link directly (setup A; the port is fixed at 23 in the script, so stop anything else using the drone first):
 
 ```bash
 # Record N raw replies of every message into inav/msp/captures/<state>.jsonl
 python3 project/telemetry/msp_inventory.py capture 192.168.4.1 flat_still
-
-# Measure how fast each message can be polled alone, then the whole set together
-python3 project/telemetry/msp_inventory.py rate 192.168.4.1 --seconds 10
-python3 project/telemetry/msp_inventory.py rate 192.168.4.1 --gap 10   # 10 ms between requests
 ```
 
 **`capture`** makes the recordings the [tests](#tests) replay (`flat_still`, `tilted`, `flow_moving`, `radio_off` so far). Put the drone in the state the name describes before running it. If you redo a capture, also copy it into `project/ros2/src/drone_fc_bridge/test/data/`: `test_capture_copies.py` fails until both copies match, and prints the `cp` command.
 
-**`rate`** answers a different question from `latency_test.py`. `latency_test.py` asks "is the link healthy?" using tiny requests. `rate` asks "how fast can we poll the real telemetry messages?", per message and as the full set the dashboard and ROS use. Past runs are in `inav/msp/rates/`.
+Its old `rate` mode (how fast each message can be polled) was replaced by [`msp_bench.py`](#msp_benchpy), which measures the same per message and under load. The old runs stay in `inav/msp/rates/` for comparison.
 
 ---
 
@@ -390,12 +478,13 @@ python3 -m pytest project/telemetry -v
 | `test_decoders.py` | Every decoder with hand-made payloads: units, scaling, bit fields |
 | `test_captures.py` | The decoders on the real drone recordings in `inav/msp/captures/` |
 | `test_capture_copies.py` | The copies of those recordings in `project/ros2` match the originals |
+| `test_msp_bench.py` | `msp_bench.py`'s decoders give the same values as `inav_telemetry.py` on every recording, its framing, and a short full run against `fake_fc.py` that must write a valid CSV |
 
 More on what is and isn't covered: [CI tests](../../docs/CI_Tests.md).
 
 ### Three decoders, one truth
 
-INAV's messages are decoded in three places: `inav_telemetry.py` (Python), `msp_dashboard/src/msp/messages.cpp` (dashboard and gateway), and `drone_fc_bridge/src/inav_decode.cpp` (ROS). The recordings in `inav/msp/captures/` are the shared reference. If INAV is upgraded or a decoder changes, fix it in all three and check them against the recordings: the Python tests and the ROS gtests do this automatically, while the dashboard was checked by hand against the same files on Nov 20.
+INAV's messages are decoded in three places: `inav_telemetry.py` (Python), `msp_dashboard/src/msp/messages.cpp` (dashboard and gateway), and `drone_fc_bridge/src/inav_decode.cpp` (ROS). The recordings in `inav/msp/captures/` are the shared reference. If INAV is upgraded or a decoder changes, fix it in all three and check them against the recordings: the Python tests and the ROS gtests do this automatically, while the dashboard was checked by hand against the same files on Nov 20. `msp_bench.py` has its own small decoders so it runs on any machine; `test_msp_bench.py` fails if they ever disagree with `inav_telemetry.py`.
 
 # Tags
 

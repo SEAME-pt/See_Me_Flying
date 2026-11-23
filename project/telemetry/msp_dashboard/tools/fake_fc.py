@@ -63,8 +63,12 @@ def reply(cmd, t):
     if cmd == 4:
         name = b"ODDITYRCF7AIO"
         return b"ODF7" + struct.pack("<HBBB", 0, 2, 1, len(name)) + name
+    if cmd == 5:                                   # MSP_BUILD_INFO: date, time, git rev
+        return b"Nov 23 2026" + b"12:00:00" + b"fakefc0"
     if cmd == 10:
         return b"Brook"
+    if cmd == 151:                                 # MSP_SENSOR_STATUS: healthy, gyro, acc, mag, baro, gps, rf, pitot, flow
+        return bytes([1, 1, 1, 0, 1, 0, 1, 0, 1])  # 1 = OK, 0 = not configured
     if cmd == 116:
         return BOXES.encode()
     if cmd == 108:
