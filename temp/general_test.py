@@ -84,6 +84,34 @@ CMD_NAMES = {
 SENSOR_NAMES = ["gyro", "acc", "mag", "baro", "gps", "rangefinder", "pitot", "opflow"]
 HW_STATUS = {0: "NONE", 1: "OK", 2: "UNAVAILABLE", 3: "UNHEALTHY"}
 ARMED_BIT = 1 << 2  # INAV armingFlag ARMED
+ARMING_BLOCKERS = {  # INAV armingFlag_e, bit -> name
+    7: "FAILSAFE_SYSTEM", 8: "NOT_LEVEL", 9: "SENSORS_CALIBRATING",
+    10: "SYSTEM_OVERLOADED", 11: "NAVIGATION_UNSAFE", 12: "COMPASS_NOT_CALIBRATED",
+    13: "ACCELEROMETER_NOT_CALIBRATED", 14: "ARM_SWITCH", 15: "HARDWARE_FAILURE",
+    16: "BOXFAILSAFE", 17: "BOXKILLSWITCH", 18: "RC_LINK", 19: "THROTTLE", 20: "CLI",
+    21: "CMS_MENU", 22: "OSD_MENU", 23: "ROLLPITCH_NOT_CENTERED", 24: "SERVO_AUTOTRIM",
+    25: "OOM", 26: "INVALID_SETTING", 27: "PWM_OUTPUT_ERROR", 28: "NO_PREARM",
+    29: "DSHOT_BEEPER", 30: "LANDING_DETECTED",
+}
+ 
+ 
+# blockers that are normal on the bench (radio off, no arm switch): shown faded
+BENCH_OK_BLOCKERS = {"RC_LINK", "NO_PREARM", "ARM_SWITCH", "THROTTLE", "FAILSAFE_SYSTEM",
+                     "BOXFAILSAFE", "ROLLPITCH_NOT_CENTERED", "CLI", "CMS_MENU", "OSD_MENU",
+                     "NAVIGATION_UNSAFE", "LANDING_DETECTED", "DSHOT_BEEPER"}
+ 
+ 
+def arming_blockers(flags):
+    return [n for b, n in ARMING_BLOCKERS.items() if flags & (1 << b)]
+ 
+ 
+def blocker_status(names):
+    if not names:
+        return "PASS", ""
+    serious = [n for n in names if n not in BENCH_OK_BLOCKERS]
+    if serious:
+        return "FAIL", "must fix before flight: " + " ".join(serious)
+    return "WARN", "normal on the bench (radio off / no arm switch)"
  
  
 # --------------------------------------------------------------------------- #
@@ -181,15 +209,21 @@ class TcpLink:
  
  
 class SerialLink:
-    def __init__(self, port: str, baud: int):
+    def __init__(self, port: str, baud: int, settle: float = 0.2):
         try:
             import serial  # type: ignore
         except ImportError:
             sys.exit("pyserial is missing: pip install pyserial  "
                      "(Pi OS: sudo apt install python3-serial)")
         self.name = f"serial://{port}@{baud}"
-        self.ser = serial.Serial(port, baud, timeout=0.002)
-        time.sleep(0.2)
+        # Open without asserting DTR/RTS: on ESP8266 boards (D1 Mini, NodeMCU)
+        # those lines are wired to RESET/GPIO0 and opening the port reboots the ESP.
+        self.ser = serial.Serial()
+        self.ser.port, self.ser.baudrate, self.ser.timeout = port, baud, 0.002
+        self.ser.dtr = False
+        self.ser.rts = False
+        self.ser.open()
+        time.sleep(settle)
         self.ser.reset_input_buffer()
  
     def write(self, data: bytes) -> None:
@@ -229,6 +263,7 @@ class MspClient:
         self.tx_bytes = 0
         self.rx_bytes = 0
         self.error_frames = 0
+        self.raw_rx = bytearray()  # first bytes received, for diagnosis
  
     def send(self, cmd: int, payload: bytes = b"") -> None:
         frame = encode_v2(cmd, payload)
@@ -245,6 +280,8 @@ class MspClient:
         if not data:
             return []
         self.rx_bytes += len(data)
+        if len(self.raw_rx) < 256:
+            self.raw_rx += data[: 256 - len(self.raw_rx)]
         frames = self.parser.feed(data)
         self.error_frames += sum(f.error for f in frames)
         return frames
@@ -452,19 +489,199 @@ class Report:
             for sec, item, t, v in self.raw:
                 w.writerow([self.run_id, self.host, self.link, sec, item, f"{t:.6f}", _fmt(v)])
  
-    def print_summary(self):
-        icon = {"PASS": "ok  ", "WARN": "WARN", "FAIL": "FAIL", "INFO": "    "}
-        last = None
-        for r in self.rows:
-            if r["section"] != last:
-                print(f"\n== {r['section']} ==")
-                last = r["section"]
-            extra = f"  std={r['std']}" if r["std"] else ""
-            extra += f"  p95={r['p95']}" if r["p95"] and r["section"] == "latency" else ""
-            note = f"  ({r['notes']})" if r["notes"] else ""
-            print(f" {icon.get(r['status'], r['status'])} {r['item']:<28} "
-                  f"{r['value']!s:>12} {r['unit']:<7}{extra}{note}")
-        print(f"\nOverall: {self.worst}")
+    def print_summary(self, ui, brief=False):
+        Printer(ui).report(self, brief)
+ 
+ 
+# --------------------------------------------------------------------------- #
+# Terminal output
+# --------------------------------------------------------------------------- #
+class UI:
+    """ANSI colors. red = needs attention, green = important pass,
+    faded yellow = failed/warned but no action needed."""
+ 
+    def __init__(self, mode="auto"):
+        if mode == "always":
+            self.on = True
+        elif mode == "never" or os.environ.get("NO_COLOR"):
+            self.on = False
+        else:
+            self.on = sys.stdout.isatty()
+        if self.on and os.name == "nt":
+            os.system("")  # enables ANSI escape codes on Windows 10+
+        enc = (getattr(sys.stdout, "encoding", "") or "").lower()
+        uni = "utf" in enc
+        self.ok, self.bad, self.dot, self.rule = (("✔", "✖", "•", "─") if uni else ("+", "x", "-", "-"))
+ 
+    def _c(self, code, t):
+        return f"\033[{code}m{t}\033[0m" if self.on else t
+ 
+    def red(self, t): return self._c("1;31", t)
+    def green(self, t): return self._c("32", t)
+    def faded(self, t): return self._c("38;5;144", t)  # muted yellow
+    def bold(self, t): return self._c("1", t)
+    def dim(self, t): return self._c("2", t)
+    def cyan(self, t): return self._c("36", t)
+ 
+    def step(self, text):
+        print(self.dim(f"  › {text}"), flush=True)
+ 
+ 
+SECTION_TITLES = {
+    "info": "Flight controller", "sensor_status": "Sensor status",
+    "sensor_rate": "Sample rate per MSP command", "sensors": "Sensor values",
+    "derived": "Checks", "latency": "Link latency & heavy MSP load",
+    "link": "Link health", "diagnose": "Diagnosis", "run": "Run",
+}
+ 
+ 
+def nice(v):
+    """Readable number formatting for the terminal (CSV keeps full precision)."""
+    try:
+        x = float(v)
+    except (TypeError, ValueError):
+        return str(v)
+    if math.isnan(x):
+        return "-"
+    if x.is_integer() and abs(x) < 1e9:
+        return str(int(x))
+    if abs(x) >= 1e4:
+        return f"{x:.0f}"
+    return f"{x:.4g}"
+ 
+ 
+class Printer:
+    W = 74
+ 
+    def __init__(self, ui):
+        self.ui = ui
+ 
+    def title(self, text):
+        u = self.ui
+        print("\n" + u.bold(u.cyan(f"{u.rule * 2} {text} ")) + u.cyan(u.rule * max(0, self.W - len(text) - 4)))
+ 
+    def badge(self, status):
+        u = self.ui
+        if status == "PASS":
+            return u.green(f"{u.ok} PASS")
+        if status == "FAIL":
+            return u.red(f"{u.bad} FAIL")
+        if status == "WARN":
+            return u.faded(f"{u.dot} note")
+        return "      "
+ 
+    def line(self, r, value_w=14):
+        u = self.ui
+        item, val, unit, note = r["item"], nice(r["value"]), r["unit"], r["notes"]
+        text = f"{item:<28}{val:>{value_w}} {unit:<8}"
+        if r["status"] == "FAIL":
+            text = u.red(text)
+            note = u.red(note)
+        elif r["status"] == "WARN":
+            text, note = u.faded(text), u.faded(note)
+        else:
+            note = u.dim(note)
+        print(f"  {self.badge(r['status'])}  {text} {note}".rstrip())
+ 
+    def header(self, rep):
+        u = self.ui
+        env = {r["item"]: r["value"] for r in rep.rows if r["section"] == "env"}
+        info = {r["item"]: r for r in rep.rows if r["section"] == "info"}
+        print(u.bold(f"MSP bench  ·  run {rep.run_id}"))
+        print(u.dim(f"{rep.host} ({env.get('machine', '?')}, Python {env.get('python', '?')})  ·  {rep.link}"))
+        if "fc_variant" in info:
+            fc = (f"{info['fc_variant']['value']} {info.get('fc_version', {}).get('value', '')}  ·  "
+                  f"board {info.get('board_id', {}).get('value', '?')}  ·  "
+                  f"{info.get('craft_name', {}).get('value', '')}  ·  "
+                  f"MSP {info.get('msp_api', {}).get('value', '?')}")
+            print(u.dim(fc))
+ 
+    def sensors_table(self, rows):
+        u = self.ui
+        print(u.dim(f"  {'value':<22}{'median':>11}{'std (noise)':>13}{'min':>10}{'max':>10}  unit"))
+        for r in rows:
+            name = f"{r['item']:<22}"
+            nums = f"{nice(r['value']):>11}{nice(r['std']):>13}{nice(r['min']):>10}{nice(r['max']):>10}"
+            print(f"  {name}{u.bold(nums[:11])}{nums[11:]}  {u.dim(r['unit'])}")
+ 
+    def latency_table(self, rows):
+        u = self.ui
+        stat_rows = [r for r in rows if r["p95"]]
+        other = [r for r in rows if not r["p95"]]
+        if stat_rows:
+            print(u.dim(f"  {'':6}  {'test':<24}{'median':>9}{'p95':>9}{'p99':>9}{'max':>9}  ms   notes"))
+            for r in stat_rows:
+                nums = f"{nice(r['value']):>9}{nice(r['p95']):>9}{nice(r['p99']):>9}{nice(r['max']):>9}"
+                text = f"{r['item']:<24}{nums}"
+                note = r["notes"]
+                if r["status"] == "FAIL":
+                    text, note = u.red(text), u.red(note)
+                elif r["status"] == "WARN":
+                    text, note = u.faded(text), u.faded(note)
+                else:
+                    note = u.dim(note)
+                print(f"  {self.badge(r['status'])}  {text}       {note}")
+        if other:
+            print()
+            for r in other:
+                self.line(r)
+ 
+    def report(self, rep, brief=False):
+        u = self.ui
+        print()
+        self.header(rep)
+        order, by_sec = [], defaultdict(list)
+        for r in rep.rows:
+            if r["section"] == "env":
+                continue
+            if r["section"] not in by_sec:
+                order.append(r["section"])
+            by_sec[r["section"]].append(r)
+        for sec in order:
+            rows = by_sec[sec]
+            if sec == "info":
+                rows = [r for r in rows if r["item"] in ("armed", "arming_blockers", "msp_api",
+                                                        "first_reply_after_s")
+                        and (r["item"] != "msp_api" or r["status"] != "INFO")]
+            if brief and sec in ("sensors", "sensor_rate"):
+                rows = [r for r in rows if r["status"] not in ("INFO", "PASS")]
+            if not rows:
+                continue
+            title = SECTION_TITLES.get(sec, sec)
+            if sec == "sensors" and rows[0]["notes"].startswith("median over"):
+                title += f" ({rows[0]['notes'].split(';')[0]}, drone still)"
+            self.title(title)
+            if sec == "sensors" and not brief:
+                self.sensors_table(rows)
+            elif sec == "latency":
+                self.latency_table(rows)
+            else:
+                for r in rows:
+                    self.line(r)
+        self.summary(rep)
+ 
+    def summary(self, rep):
+        u = self.ui
+        fails = [r for r in rep.rows if r["status"] == "FAIL"]
+        warns = [r for r in rep.rows if r["status"] == "WARN"]
+        passes = [r for r in rep.rows if r["status"] == "PASS"]
+        verdict = "FAIL" if fails else "PASS"  # notes never fail a run
+        head = u.red if fails else u.green
+        print("\n" + head(u.rule * self.W))
+        print(head(u.bold(f"  RESULT: {verdict}")) +
+              f"   {u.red(str(len(fails)) + ' need attention') if fails else '0 need attention'}"
+              f"  ·  {u.faded(str(len(warns)) + ' noted')}  ·  {u.green(str(len(passes)) + ' passed')}")
+        if fails:
+            print(u.red("\n  Needs attention:"))
+            for r in fails:
+                print(u.red(f"    {u.bad} {r['item']}: {nice(r['value'])} {r['unit']}".rstrip()
+                            + (f"  - {r['notes']}" if r["notes"] else "")))
+        if warns:
+            print(u.faded("\n  Noted, no action needed:"))
+            for r in warns:
+                print(u.faded(f"    {u.dot} {r['item']}: {nice(r['value'])} {r['unit']}".rstrip()
+                              + (f"  - {r['notes']}" if r["notes"] else "")))
+        print(head(u.rule * self.W))
  
  
 # --------------------------------------------------------------------------- #
@@ -484,17 +701,27 @@ def env_rows(rep, args):
     rep.add("env", "args", " ".join(sys.argv[1:]) or "(defaults)")
  
  
-def test_info(c, rep, timeout):
+def test_info(c, rep, timeout, connect_wait=0.0):
     def get(cmd):
         try:
             return c.request(cmd, timeout=timeout)[0]
         except (MspTimeout, MspError):
             return None
  
-    p = get(MSP_API_VERSION)
+    p, tries, t_start = None, 0, time.perf_counter()
+    while True:
+        tries += 1
+        p = get(MSP_API_VERSION)
+        if p is not None or time.perf_counter() - t_start >= connect_wait:
+            break
+        c.drain(0.05, 0.3)
+    if p is not None and tries > 1:
+        rep.add("info", "first_reply_after_s", time.perf_counter() - t_start, "s", "WARN",
+                f"{tries} tries; link was not ready at open (ESP rebooting / Wi-Fi joining?)")
     if p is None or len(p) < 3:
         rep.add("info", "msp_api", "no reply", status="FAIL",
-                notes="check link, baud, MSP enabled on the UART, gateway stopped")
+                notes=f"{tries} tries over {time.perf_counter() - t_start:.1f}s")
+        diagnose_no_reply(c, rep)
         return False
     rep.add("info", "msp_api", f"{p[1]}.{p[2]}", notes=f"protocol {p[0]}")
     if (p := get(MSP_FC_VARIANT)):
@@ -509,6 +736,26 @@ def test_info(c, rep, timeout):
     if (p := get(MSP_NAME)) is not None:
         rep.add("info", "craft_name", p.decode(errors="replace") or "(empty)")
     return True
+ 
+ 
+def diagnose_no_reply(c, rep):
+    p = c.parser
+    rx, garbage = c.rx_bytes, p.garbage_bytes
+    sample = bytes(c.raw_rx[:48])
+    rep.add("diagnose", "rx_bytes", rx, "B")
+    rep.add("diagnose", "garbage_bytes", garbage, "B")
+    rep.add("diagnose", "crc_errors", p.crc_errors)
+    if sample:
+        rep.add("diagnose", "first_rx_bytes", sample.hex(" "),
+                notes=repr(sample.decode("ascii", errors="replace"))[:80])
+    if rx == 0:
+        hint = ("nothing came back: bridge not forwarding (Pi ESP not linked to drone AP?), "
+                "another process holds the port, or FC UART not set to MSP")
+    elif "$M" in sample.decode("latin1") or "$X" in sample.decode("latin1"):
+        hint = "MSP-looking bytes but no valid reply: CRC/baud problem or replies to another client"
+    else:
+        hint = "non-MSP bytes: wrong baud, ESP boot log, CLI mode, or bridge firmware chatter"
+    rep.add("diagnose", "hint", hint, status="FAIL")
  
  
 def read_armed(c, timeout):
@@ -551,10 +798,18 @@ def test_sensor_status(c, rep, expect, timeout):
     return st
  
  
-def test_sensors(c, rep, duration, timeout):
+NEEDS_SENSOR = {MSP_SONAR_ALTITUDE: "rangefinder", MSP2_INAV_OPTICAL_FLOW: "opflow"}
+ 
+ 
+def test_sensors(c, rep, duration, timeout, status=None):
     # probe which commands this firmware/config answers
     active = []
     for cmd, dec in SENSOR_CMDS:
+        need = NEEDS_SENSOR.get(cmd)
+        if need and status and status.get(need) != "OK":
+            rep.add("sensor_rate", CMD_NAMES[cmd], "skipped",
+                    notes=f"{need} is {status.get(need)} (FC replies with zeros)")
+            continue
         try:
             p, _ = c.request(cmd, timeout=timeout)
             dec(p)
@@ -595,8 +850,10 @@ def test_sensors(c, rep, duration, timeout):
     for metric, tv in samples.items():
         vals = [v for _, v in tv]
         s = summarize(vals)
-        rep.add("sensors", metric, s["median"], unit_of(metric), stats=s,
-                notes=f"median over {elapsed:.1f}s")
+        note = f"median over {elapsed:.1f}s"
+        if metric.startswith("gyro_") or metric == "yaw_deg":
+            note += "; MSP gives 1 deg/s (gyro) / 1 deg (yaw) steps, use blackbox for real noise"
+        rep.add("sensors", metric, s["median"], unit_of(metric), stats=s, notes=note)
         rep.raw.extend(("sensors", metric, t, v) for t, v in tv)
     return samples, elapsed
  
@@ -607,12 +864,12 @@ def derived_checks(rep, samples, args):
  
     if (m := med("acc_norm_g")) is not None:
         ok = abs(m - 1.0) <= args.acc_tol
-        rep.add("derived", "acc_norm_error_g", m - 1.0, "g", "PASS" if ok else "WARN",
+        rep.add("derived", "acc_norm_error_g", m - 1.0, "g", "PASS" if ok else "FAIL",
                 "" if ok else "drone moving or accelerometer not calibrated")
     for ax in "xyz":
         if (m := med(f"gyro_{ax}_dps")) is not None:
             ok = abs(m) <= args.gyro_bias_tol
-            rep.add("derived", f"gyro_bias_{ax}_dps", m, "deg/s", "PASS" if ok else "WARN",
+            rep.add("derived", f"gyro_bias_{ax}_dps", m, "deg/s", "PASS" if ok else "FAIL",
                     "" if ok else "drone moving or gyro needs calibration")
     if samples.get("roll_deg") and samples.get("pitch_deg"):
         rep.add("derived", "level_tilt_deg",
@@ -630,8 +887,12 @@ def derived_checks(rep, samples, args):
                     notes="altitude drift at rest")
     if samples.get("i2c_errors"):
         d = samples["i2c_errors"][-1][1] - samples["i2c_errors"][0][1]
-        rep.add("derived", "i2c_errors_delta", d, "", "PASS" if d == 0 else "WARN",
+        rep.add("derived", "i2c_errors_delta", d, "", "PASS" if d == 0 else "FAIL",
                 "new I2C errors during the run" if d else "")
+        total = samples["i2c_errors"][-1][1]
+        if total and not d:
+            rep.add("derived", "i2c_errors_since_boot", total, "", "WARN",
+                    "old errors from boot (sensor probing), none during this run")
     if samples.get("rangefinder_valid"):
         pct = 100 * statistics.fmean(v for _, v in samples["rangefinder_valid"])
         expected = "rangefinder" in args.expect
@@ -644,8 +905,11 @@ def derived_checks(rep, samples, args):
         rep.add("derived", "flow_quality_good_pct", good, "%",
                 notes=f"quality >= {args.flow_quality_min}; depends on surface texture/light")
     if (m := med("cell_v")) is not None:
-        rep.add("derived", "cell_voltage_v", m, "V", "PASS" if m >= 3.5 else "WARN",
-                "" if m >= 3.5 else "low or USB-powered")
+        if med("vbat_v") is not None and med("vbat_v") < 3.0:
+            rep.add("derived", "cell_voltage_v", "no battery", "", "WARN", "USB-powered")
+        else:
+            rep.add("derived", "cell_voltage_v", m, "V", "PASS" if m >= 3.5 else "FAIL",
+                    "" if m >= 3.5 else "battery low, charge before flight tests")
     if (m := med("cycle_time_us")) is not None:
         rep.add("derived", "fc_loop_hz", 1e6 / m if m else math.nan, "Hz")
  
@@ -773,9 +1037,13 @@ def parse_args():
     link.add_argument("--tcp", default=None, help="HOST[:PORT] (esp-link), default 192.168.4.1:23")
     link.add_argument("--serial", default=None, help="serial port, e.g. /dev/ttyUSB0, /dev/ttyACM0, COM5")
     ap.add_argument("--baud", type=int, default=115200)
+    ap.add_argument("--settle", type=float, default=0.2,
+                    help="seconds to wait after opening a serial port (raise if the bridge rebooted)")
+    ap.add_argument("--connect-wait", type=float, default=8.0,
+                    help="keep retrying the first MSP request this long (bridge boot / Wi-Fi join)")
     ap.add_argument("--duration", type=float, default=10.0, help="sensor sampling seconds")
-    ap.add_argument("--expect", default="gyro,acc,opflow",
-                    help="sensors that must be OK (add rangefinder once the MTF-02P is in)")
+    ap.add_argument("--expect", default="gyro,acc",
+                    help="sensors that must be OK (add opflow,rangefinder once the MTF-02P is in)")
     ap.add_argument("--timeout", type=float, default=0.5, help="per-request timeout (s)")
     ap.add_argument("--rtt-count", type=int, default=200, help="sequential requests per command")
     ap.add_argument("--rtt-warn-ms", type=float, default=20.0, help="WARN if p95 RTT above this")
@@ -788,6 +1056,10 @@ def parse_args():
     ap.add_argument("--skip", default="", help="comma list: sensors,latency")
     ap.add_argument("--allow-armed", action="store_true", help="run load tests even if armed")
     ap.add_argument("--quick", action="store_true", help="short run (~15 s)")
+    ap.add_argument("--color", choices=["auto", "always", "never"], default="auto",
+                    help="colored output (auto = only on a terminal; NO_COLOR env disables)")
+    ap.add_argument("--brief", action="store_true",
+                    help="hide the per-value sensor table, show checks and problems only")
     ap.add_argument("--out", default=None, help="CSV path (default results/msp_bench_<host>_<time>.csv)")
     ap.add_argument("--raw", default=None, help="also write every sample to this CSV")
     a = ap.parse_args()
@@ -802,7 +1074,7 @@ def parse_args():
  
 def open_link(a):
     if a.serial:
-        return SerialLink(a.serial, a.baud)
+        return SerialLink(a.serial, a.baud, a.settle)
     host, _, port = (a.tcp or "192.168.4.1:23").partition(":")
     return TcpLink(host, int(port or 23))
  
@@ -819,27 +1091,34 @@ def main():
         print(f"Could not open link: {e}", file=sys.stderr)
         return 2
  
+    ui = UI(a.color)
     c = MspClient(link)
     rep = Report(uuid.uuid4().hex[:8], host, link.name)
     code = 0
-    print(f"run {rep.run_id} on {host} via {link.name}")
+    print(ui.bold(f"MSP bench") + ui.dim(f"  run {rep.run_id} on {host} via {link.name}"))
+    ui.step("connecting to the flight controller")
     try:
         env_rows(rep, a)
         c.drain()
-        if not test_info(c, rep, a.timeout):
+        if not test_info(c, rep, a.timeout, a.connect_wait):
             code = 2
             return code
         armed, flags = read_armed(c, a.timeout)
-        rep.add("info", "armed", "unknown" if armed is None else int(armed),
-                status="WARN" if armed else "INFO",
-                notes=f"arming_flags=0x{flags:08x}" if flags is not None else "")
+        rep.add("info", "armed", "unknown" if armed is None else ("YES" if armed else "no"),
+                status="FAIL" if armed else "INFO",
+                notes=("props off! " if armed else "") +
+                      (f"arming_flags=0x{flags:08x}" if flags is not None else ""))
+        if flags is not None:
+            names = arming_blockers(flags)
+            bst, bnote = blocker_status(names)
+            rep.add("info", "arming_blockers", " ".join(names) or "none", status=bst, notes=bnote)
  
-        print("sensor status ...")
+        ui.step("reading sensor status")
         st0 = test_sensor_status(c, rep, a.expect, a.timeout)
  
         if "sensors" not in a.skip:
-            print(f"sampling sensors for {a.duration:.0f}s (keep the drone still) ...")
-            samples, _ = test_sensors(c, rep, a.duration, a.timeout)
+            ui.step(f"sampling sensors for {a.duration:.0f} s - keep the drone still")
+            samples, _ = test_sensors(c, rep, a.duration, a.timeout, st0)
             derived_checks(rep, samples, a)
             if st0:
                 try:
@@ -856,9 +1135,10 @@ def main():
                 rep.add("latency", "skipped", "armed", status="WARN",
                         notes="disarm or pass --allow-armed")
             else:
-                print("latency: sequential ...")
+                ui.step(f"latency: {a.rtt_count} sequential requests x 5 commands")
                 latency_sequential(c, rep, a.rtt_count, a.timeout, a.rtt_warn_ms)
-                print("latency: heavy load ...")
+                ui.step(f"latency: heavy load, windows {a.load_windows}, "
+                        f"{a.load_duration:.0f} s each")
                 latency_load(c, rep, a.load_windows, a.load_duration, max(a.timeout, 1.0))
                 if a.burst:
                     latency_burst(c, rep, a.burst, max(a.timeout, 1.0))
@@ -872,8 +1152,8 @@ def main():
         rep.write(out)
         if a.raw:
             rep.write_raw(a.raw)
-        rep.print_summary()
-        print(f"\nCSV: {out}" + (f"\nraw: {a.raw}" if a.raw else ""))
+        rep.print_summary(ui, a.brief)
+        print(ui.dim(f"  CSV: {out}" + (f"\n  raw: {a.raw}" if a.raw else "")))
     if code == 0 and rep.worst == "FAIL":
         code = 1
     return code
