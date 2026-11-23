@@ -32,7 +32,7 @@ In setup B the Pi is the only client of the drone's ESP. Everything else connect
 | the Pi itself, gateway running | B | `--host 127.0.0.1 --port 5760` |
 | the Pi itself, gateway stopped | B | `--serial /dev/ttyUSB0` (only the tools that support it) |
 
-The scripts' default ports differ, so pass the address explicitly. `inav_telemetry.py` defaults to 5760 (the gateway), while `latency_test.py`, `msp_bench.py` and the dashboard default to 23 (esp-link). `msp_bench.py` takes the address as one flag: `--tcp 192.168.4.1:23`, `--tcp <pi-address>:5760` or `--serial /dev/ttyUSB0`.
+The scripts' default ports differ, so pass the address explicitly. `inav_telemetry.py` defaults to 5760 (the gateway), while `msp_bench.py` and the dashboard default to 23 (esp-link). `msp_bench.py` takes the address as one flag: `--tcp 192.168.4.1:23`, `--tcp <pi-address>:5760` or `--serial /dev/ttyUSB0`.
 
 ## Which tool for what
 
@@ -42,8 +42,9 @@ The scripts' default ports differ, so pass the address explicitly. `inav_telemet
 | watch the drone live, or run a motor test (props off) | [`msp_dashboard`](msp_dashboard/README.md) |
 | let several programs use the drone at once, and log every MSP frame | [`msp_gateway`](msp_dashboard/README.md#msp_gateway-one-owner-for-the-msp-link) |
 | record decoded telemetry as JSON lines, or feed it to a script | [`inav_telemetry.py`](#inav_telemetrypy) |
-| check how fast and reliable the link is | [`msp_bench.py`](#msp_benchpy) for the full picture under load, [`latency_test.py`](#latency_testpy) to record one link number in the logbook (`make wifi-rtt`) |
-| record new drone captures for the tests | [`msp_inventory.py`](#msp_inventorypy) |
+| check how fast and reliable the link is | [`msp_bench.py`](#msp_benchpy); `make wifi-rtt` for the round trip alone, kept in the logbook |
+| keep a run in the project's logbook | `make bench NOTE=...` or `make wifi-rtt NOTE=...` ([logbook](#keeping-the-result-the-logbook)) |
+| record new drone captures for the tests | `make capture STATE=...` ([captures](#recording-captures-for-the-tests)) |
 | identify the ELRS receiver | [`receiver_crsf_ping.py`](#receiver_crsf_pingpy) |
 | test the MSP code without the drone | [`tests/`](#tests) and `msp_dashboard/tools/fake_fc.py` |
 
@@ -51,16 +52,14 @@ The scripts' default ports differ, so pass the address explicitly. `inav_telemet
 
 | File | What it is |
 | --- | --- |
-| `msp_bench.py` | Unified bench test: sensor status, sensor values and noise over 10 s, link latency under heavy MSP load. Colored summary on screen, one CSV per run |
+| `msp_bench.py` | The bench test for the real drone: sensor status, sensor values and noise, link latency under heavy MSP load. Also keeps runs in the logbook (`make bench`, `make wifi-rtt`) and records the captures for the tests (`make capture`) |
 | `inav_telemetry.py` | Polls INAV and prints decoded values (readable or JSON lines). Also the Python reference decoders the tests check |
-| `latency_test.py` | MSP round-trip times, over TCP or the Pi's USB serial bridge |
-| `msp_inventory.py` | Captures raw MSP replies of every message (`capture`), for the tests |
 | `receiver_crsf_ping.py` | One-off tool: asks a CRSF/ELRS receiver for its name and version through INAV's serial passthrough |
 | `tests/` | MSP framing, decoders, the drone recordings and `msp_bench.py` (pytest; `make test` and CI) |
 | [`inav/`](inav/README.md) | INAV firmware choices, MSP captures (`msp/captures/`) and rate runs (`msp/rates/`) |
 | [`msp_dashboard/`](msp_dashboard/README.md) | C++ terminal dashboard, `msp_gateway`, the Pi's USB bridge firmware and a fake FC for testing |
 
-The scripts that keep results in `project/logs/` live in `project/scripts/`: `measure_wifi_rtt.py` (behind `make wifi-rtt`) wraps `latency_test.py`.
+`msp_bench.py` replaced three older tools on Nov 23: `latency_test.py` and `measure_wifi_rtt.py` (now `make wifi-rtt`) and `msp_inventory.py` (now `make capture`).
 
 ---
 
@@ -185,19 +184,49 @@ The run ends with a box listing what needs attention and what was only noted. On
 | --- | --- | --- |
 | `--tcp HOST[:PORT]` | `192.168.4.1:23` | esp-link, or the gateway on port 5760 |
 | `--serial DEV`, `--baud` | none, `115200` | the Pi's USB bridge instead of TCP |
-| `--connect-wait` | `8` | seconds to keep asking at the start: opening the port reboots the D1 Mini, which then rejoins the drone's Wi-Fi |
+| `--connect-wait` | `15` | seconds to keep asking at the start: opening the port reboots the D1 Mini, which then rejoins the drone's Wi-Fi |
+| `--force` | | open the serial port even though another program has it open (normally it refuses and names the program, usually `msp_gateway`) |
+| `--timeout` | `0.5` | seconds before a reply counts as lost |
 | `--duration` | `10` | seconds of sensor sampling |
 | `--expect` | `gyro,acc` | sensors that must be OK |
 | `--rtt-count` | `200` | sequential requests per message in the latency test |
+| `--rtt-commands` | `API_VERSION,ATTITUDE,RAW_IMU,INAV_ANALOG,INAV_STATUS` | which messages the sequential test uses |
+| `--rtt-interval` | `0` | pause between sequential requests, in seconds |
 | `--rtt-warn-ms` | `20` | note if the p95 round trip is above this |
 | `--load-windows`, `--load-duration` | `1,2,4,8,16`, `5` | requests kept in flight, and seconds for each |
 | `--burst` | `64` | requests sent at once (`0` skips it) |
-| `--skip` | | `sensors` and/or `latency` |
+| `--skip` | | `sensors`, `latency` (all of it) and/or `load` (load and burst, keeps the sequential test) |
 | `--quick` | | short run, about 15 s |
 | `--brief` | | hide the sensor table, show checks and problems only |
 | `--color` | `auto` | `always`, `never`; `auto` turns colors off when the output isn't a terminal, and so does the `NO_COLOR` variable |
-| `--out FILE` | `results/msp_bench_<host>_<date>_<time>.csv` | where the CSV goes |
+| `--out FILE` | `results/msp_bench_<host>_<date>_<time>.csv` | where the CSV goes (with `--logbook`, only the run folder unless `--out` is given) |
 | `--raw FILE` | | also write every single sample (for fitting noise and delay models) |
+| `--logbook NOTE`, `--logbook-name` | , `msp_bench` | keep the run in `project/logs/measurements/<name>/` ([below](#keeping-the-result-the-logbook)) |
+| `--capture STATE`, `--capture-count` | , `20` | record a capture instead of running the bench ([below](#recording-captures-for-the-tests)) |
+| `--capture-dir`, `--no-copy` | `inav/msp/captures/` | where the capture goes; don't refresh the copies in `project/ros2` |
+
+### Keeping the result: the logbook
+
+`--logbook "conditions"` keeps the run in [`project/logs/measurements/`](../logs/README.md), like every other measurement: a dated folder with `bench.csv`, `samples.csv` (every single sample), `values.json` and `meta.json` (the note, the machine, the link, the flags), plus one line in `history.csv` to follow the drone over time. The make targets need the note:
+
+```bash
+make bench NOTE="bench, AP mode, radio off"                              # everything, folder msp_bench/
+make bench NOTE="Pi, USB bridge, bench" ARGS="--serial /dev/ttyUSB0"     # on the Pi
+make wifi-rtt NOTE="cage, AP mode, radio on" ARGS="--rtt-count 500"      # round trip only, folder wifi_rtt/
+```
+
+`make wifi-rtt` is what `latency_test.py` measured: one small request at a time, 50 ms apart, 2 s before a reply counts as lost, no sensors and no load test. Its `history.csv` keeps the same columns as before (`median_ms`, `p90_ms`, `p99_ms`, `lost_pct`, `late`, `jitter_ms`, …), so old and new lines compare. Every flag in `ARGS` goes to `msp_bench.py`. A run that never reached the flight controller records nothing; Ctrl-C stops early and still records what was measured.
+
+### Recording captures for the tests
+
+The [tests](#tests) replay real replies from the drone, recorded in `inav/msp/captures/<state>.jsonl` (`flat_still`, `tilted`, `flow_moving`, `radio_off` so far). To record one again, put the drone in that state and run:
+
+```bash
+make capture STATE=tilted                                    # laptop on the drone's Wi-Fi
+make capture STATE=tilted ARGS="--serial /dev/ttyUSB0"       # on the Pi
+```
+
+It asks every message 20 times (`--capture-count`) and writes the file in the same format as before, then overwrites the copies with the same name in `project/ros2/src/drone_fc_bridge/test/data/`, so the Python and C++ tests keep testing the same data (`--no-copy` to leave them). A new state name gets no copy: add it to `test_capture_copies.py` and copy it by hand if the C++ tests should use it. Replies that arrive damaged are counted as timeouts, not kept as `ok: false`.
 
 ### The CSV
 
@@ -373,65 +402,6 @@ Uncomment a line in `LIVE` to poll it again. Their decoders are kept and tested.
 
 ---
 
-## `latency_test.py`
-
-Measures how long the flight controller takes to answer. For a full check under load, use [`msp_bench.py`](#msp_benchpy); this script stays because `make wifi-rtt` records its result in the logbook. Each sample sends one small MSP request and times the reply. At the end it prints min, median, percentiles, jitter, lost and late replies, and every sample goes into a CSV (ready for Google Sheets: File > Import > Upload). Ctrl-C stops early and still prints the summary. It uses only the Python standard library, so nothing needs installing.
-
-```bash
-# setup A: laptop on the drone's Wi-Fi (esp-link, 192.168.4.1:23 by default)
-python3 project/telemetry/latency_test.py
-python3 project/telemetry/latency_test.py -n 1000 --interval 0.05
-
-# setup B, on the Pi: straight through the USB bridge (stop msp_gateway first)
-python3 project/telemetry/latency_test.py --serial /dev/ttyUSB0
-
-# setup B, on the Pi: through the gateway (it keeps running)
-python3 project/telemetry/latency_test.py --host 127.0.0.1 --port 5760
-```
-
-| Flag | Default | Meaning |
-| --- | --- | --- |
-| `--serial DEV` | | use the USB bridge instead of TCP (`/dev/ttyUSB0`, or the stable name in `/dev/serial/by-id/`) |
-| `--baud` | `115200` | serial speed, the same as in `pi_bridge.ino` |
-| `--host`, `--port` | `192.168.4.1`, `23` | TCP target when `--serial` isn't used |
-| `-n`, `--count` | `200` | number of samples |
-| `--interval` | `0.05` | pause between samples, in seconds |
-| `--timeout` | `2.0` | seconds before a reply counts as lost |
-| `--quickack` | off | TCP only: acknowledge every reply at once instead of delaying ACKs |
-| `--csv FILE` | `latency_<target>_<date>-<time>.csv` | where the per-sample results go |
-
-**Comparing the two Pi runs** tells you where time goes. The serial run measures the bare chain (USB → D1 Mini → Wi-Fi → esp-link → FC); the gateway run adds the gateway. If both are slow, the Wi-Fi hop is the problem. If only the gateway run is slow, look at the Pi side.
-
-With `--serial`, it refuses to open the port while another program (usually the gateway) has it open, since both would steal each other's replies. It also waits up to 15 s for the first answer before counting, because opening the port can reset the D1 Mini.
-
-### Keeping the result: `make wifi-rtt`
-
-`latency_test.py` shows a number now. To **record** it in the project's logbook, run it through [`measure_wifi_rtt.py`](../scripts/measure_wifi_rtt.py), which needs a note describing the conditions:
-
-```bash
-make wifi-rtt NOTE="bench, AP mode, radio on" ARGS="-n 1000 --interval 0.05"   # laptop, setup A
-make wifi-rtt NOTE="Pi, USB bridge, bench" ARGS="--serial /dev/ttyUSB0"        # on the Pi
-```
-
-Every flag in `ARGS` goes to `latency_test.py` unchanged. Each run gets a folder in `project/logs/measurements/wifi_rtt/` (`meta.json` with the note, the machine and serial or TCP; `samples.csv`; `values.json`), plus one line in `history.csv` to compare runs over time. Details: [logs README](../logs/README.md).
-
----
-
-## `msp_inventory.py`
-
-Records raw replies of every message, talking to esp-link directly (setup A; the port is fixed at 23 in the script, so stop anything else using the drone first):
-
-```bash
-# Record N raw replies of every message into inav/msp/captures/<state>.jsonl
-python3 project/telemetry/msp_inventory.py capture 192.168.4.1 flat_still
-```
-
-**`capture`** makes the recordings the [tests](#tests) replay (`flat_still`, `tilted`, `flow_moving`, `radio_off` so far). Put the drone in the state the name describes before running it. If you redo a capture, also copy it into `project/ros2/src/drone_fc_bridge/test/data/`: `test_capture_copies.py` fails until both copies match, and prints the `cp` command.
-
-Its old `rate` mode (how fast each message can be polled) was replaced by [`msp_bench.py`](#msp_benchpy), which measures the same per message and under load. The old runs stay in `inav/msp/rates/` for comparison.
-
----
-
 ## `receiver_crsf_ping.py`
 
 A one-off tool, kept for reference. It asks the CRSF/ELRS receiver soldered to the drone for its name and firmware version, which is how we identified the unmarked receiver ([ELRS guide](../../docs/ELRS_Guide.md), [hardware](../hardware/README.md)). It works over USB through INAV's serial passthrough, not over Wi-Fi, and only reads.
@@ -478,7 +448,7 @@ python3 -m pytest project/telemetry -v
 | `test_decoders.py` | Every decoder with hand-made payloads: units, scaling, bit fields |
 | `test_captures.py` | The decoders on the real drone recordings in `inav/msp/captures/` |
 | `test_capture_copies.py` | The copies of those recordings in `project/ros2` match the originals |
-| `test_msp_bench.py` | `msp_bench.py`'s decoders give the same values as `inav_telemetry.py` on every recording, its framing, and a short full run against `fake_fc.py` that must write a valid CSV |
+| `test_msp_bench.py` | `msp_bench.py`'s decoders give the same values as `inav_telemetry.py` on every recording; its framing; full runs against `fake_fc.py`: the CSV, a logbook folder whose `history.csv` keeps the `wifi_rtt` columns, a capture that replays like the real ones, the copies refresh; and that a serial port in use is refused |
 
 More on what is and isn't covered: [CI tests](../../docs/CI_Tests.md).
 

@@ -237,7 +237,7 @@ Run everything from the repo root. `make` (or `make help`) lists all commands. N
 | `make sim-keyboard`, `make sim-joy` | Build, then Gazebo with the keyboard or the RadioMaster; both ask for the camera |
 | `make test`, `make sim-test` | All tests like CI / the headless Gazebo flight test; results in `project/logs/` |
 | `make monitor` | Grafana dashboard on http://localhost:3000 |
-| `make wifi-rtt`, `make bench-rc`, `make bench-armed`, `make motor-music` | Real drone, props off |
+| `make bench`, `make wifi-rtt`, `make capture`, `make bench-rc`, `make bench-armed`, `make motor-music` | Real drone, props off |
 
 ### Start
 
@@ -300,14 +300,16 @@ Commit the run folder and `history.csv` with the code it tested. How to read the
 > **Props off** for the bench runs. They are interactive: they tell you what to do with the radio.
 
 ```bash
-make wifi-rtt NOTE="bench, AP mode"      # Wi-Fi round trip to the FC
+make bench NOTE="bench, AP mode"         # full check: sensors, noise, link under load
+make wifi-rtt NOTE="bench, AP mode"      # Wi-Fi round trip to the FC only
+make capture STATE=flat_still            # record MSP replies for the tests
 make bench-rc                            # ROS sticks through MSP RC OVERRIDE, unarmed
 make bench-armed                         # armed, ROS drives the motors
 make motor-music MODE=calibrate          # the motors play a song
 make motor-music MODE=play SONG=path/song.rtttl
 ```
 
-`wifi-rtt` talks to esp-link (192.168.4.1, port 23) by default; on the Raspberry Pi, pass `ARGS="--serial /dev/ttyUSB0"` ([telemetry README](project/telemetry/README.md#latency_testpy)). The bench targets take `INSTALL=<path>` to run another build. Results go to `project/logs/measurements/`.
+`bench`, `wifi-rtt` and `capture` all run `msp_bench.py` and talk to esp-link (192.168.4.1, port 23) by default; on the Raspberry Pi, pass `ARGS="--serial /dev/ttyUSB0"` ([telemetry README](project/telemetry/README.md#msp_benchpy)). The bench targets take `INSTALL=<path>` to run another build. Results go to `project/logs/measurements/`.
 
 ### Other commands
 

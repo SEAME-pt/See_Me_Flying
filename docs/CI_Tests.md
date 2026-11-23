@@ -14,7 +14,8 @@ Written against `main` on 2026-11-09 (commit `87c48fc`). Paths, package names an
 | Item | Status |
 | --- | --- |
 | A1 MSP framing, A2 decoders, A3 capture replay | Done: `project/telemetry/tests/` (`test_msp_frame.py`, `test_decoders.py`, `test_captures.py`) |
-| A4 poll loop, A5 INAV SITL, A6 live bench check | Open. The `inav` backend has its own bench runs: `make bench-rc`, `make bench-armed` |
+| A4 poll loop, A5 INAV SITL | Open. The `inav` backend has its own bench runs: `make bench-rc`, `make bench-armed` |
+| A6 live bench check | Done (Nov 23): `project/telemetry/msp_bench.py`, `make bench` |
 | A7, A8 | Done |
 | B1 config consistency | Done: `drone_bringup/test/test_config.py` |
 | B2 fc_bridge with `sim.yaml`, B3 parameter safety | Open. `test_stack.py` runs fc_bridge with `sim.yaml`, but nothing checks the MTF-02P limits |
@@ -286,7 +287,7 @@ Each block lists where the test goes, what it checks, and what it would catch. T
 
 **Catches:** a broken checksum or parser, which would silently corrupt every telemetry value.
 
-> `latency_test.py` has its own copy of `crc8_dvb_s2` and `build_frame`. Either move both copies into one shared `msp.py` that both scripts import, or add a test that both copies give identical bytes.
+> `latency_test.py` had its own copy of `crc8_dvb_s2` and `build_frame`; it was replaced by `msp_bench.py` on Nov 23. `msp_bench.py` keeps its own small copy so it runs anywhere, and `tests/test_msp_bench.py` checks its frames and decoders against `inav_telemetry.py` and the recordings.
 
 ### A2. Decoders with hand-made payloads: `project/telemetry/tests/test_decoders.py` (done)
 
@@ -309,7 +310,7 @@ Build each payload with `struct.pack` and check the decoded values and units:
 
 ### A3. Replay of real drone captures: `project/telemetry/tests/test_captures.py` (done)
 
-The captures are real MSP replies from the drone, recorded with `msp_inventory.py capture` for testing the decoders, now in `project/telemetry/inav/msp/captures/*.jsonl` (they came from the INAV-4 branch). The plan was:
+The captures are real MSP replies from the drone, recorded with `msp_inventory.py capture` (now `msp_bench.py --capture`, `make capture STATE=...`) for testing the decoders, now in `project/telemetry/inav/msp/captures/*.jsonl` (they came from the INAV-4 branch). The plan was:
 
 | Test | Capture | Checks |
 | --- | --- | --- |
@@ -347,9 +348,9 @@ Job outline:
 
 **Catches:** MSP protocol changes after an INAV upgrade, messages your code polls that the firmware no longer supports, and a broken TCP client. This is as close to the real flight controller as CI can get without the drone.
 
-### A6. Real drone check (manual, not CI)
+### A6. Real drone check (manual, not CI) (done)
 
-The real flight controller can't be reached from GitHub's machines. Turn the bench checks into a script, `project/telemetry/bench_check.py`, that connects to the drone and runs the A3 checks live, and log its result with `project/scripts/logbook.py`. Run it before each flight session. `project/telemetry/msp_inventory.py` is already most of the way there.
+The real flight controller can't be reached from GitHub's machines, so the bench checks are a script run by hand: [`project/telemetry/msp_bench.py`](../project/telemetry/README.md#msp_benchpy) connects to the drone, checks sensors, arming blockers, sensor noise and the link under load, and logs its result with `project/scripts/logbook.py` (`make bench NOTE=...`). Run it before each flight session. CI runs it against `fake_fc.py` (`tests/test_msp_bench.py`).
 
 ### A7. The Python decoders where fc_bridge's C++ decoders disagree (done)
 

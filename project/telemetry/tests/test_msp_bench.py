@@ -4,9 +4,14 @@
    real reply in inav/msp/captures/, so the bench does not become a fourth
    decoder that silently disagrees ("Three decoders, one truth" in the README).
 2. Its MSP v2 framing and parser.
-3. A short end-to-end run against msp_dashboard/tools/fake_fc.py that writes a CSV.
+3. Short end-to-end runs against msp_dashboard/tools/fake_fc.py: the bench CSV, the
+   logbook run folder and history.csv (was measure_wifi_rtt.py), and --capture
+   (was msp_inventory.py), whose recording must replay like the real ones.
+4. The check that refuses a serial port another program already has open.
 """
 import csv
+import json
+import os
 import socket
 import subprocess
 import sys
@@ -25,7 +30,6 @@ FAKE_FC = HERE / "msp_dashboard" / "tools" / "fake_fc.py"
 
 def captured(cmd):
     """Payloads of every good reply to `cmd` in all recordings."""
-    import json
     out = []
     for path in sorted(CAPTURES.glob("*.jsonl")):
         for line in path.read_text().splitlines()[1:]:
@@ -174,3 +178,73 @@ def test_bench_run_writes_csv(fake_fc, tmp_path):
     assert info["armed"] == "no"
     assert raw.exists() and raw.stat().st_size > 0
     assert "RESULT" in run.stdout
+
+
+def test_logbook_run_keeps_the_wifi_rtt_columns(fake_fc, tmp_path, monkeypatch):
+    sys.path.insert(0, str(b.SCRIPTS_DIR))
+    import logbook
+    monkeypatch.setattr(logbook, "LOGS", str(tmp_path))
+    code = b.main(["--tcp", f"127.0.0.1:{fake_fc}", "--skip", "sensors,load", "--rtt-commands", "API_VERSION",
+                   "--rtt-count", "20", "--connect-wait", "2", "--color", "never",
+                   "--logbook", "pytest, fake FC", "--logbook-name", "wifi_rtt"])
+    assert code in (0, 1)
+    (run,) = (tmp_path / "measurements" / "wifi_rtt").glob("20*")
+    assert {"meta.json", "bench.csv", "samples.csv", "values.json"} <= {p.name for p in run.iterdir()}
+    meta = json.loads((run / "meta.json").read_text())
+    assert meta["note"] == "pytest, fake FC" and meta["link"].startswith("tcp://")
+    with open(tmp_path / "measurements" / "wifi_rtt" / "history.csv", newline="") as f:
+        (row,) = list(csv.DictReader(f))
+    # the columns measure_wifi_rtt.py wrote, so the old history stays comparable
+    for key in ("host", "duration_s", "rate_hz", "sent", "answered", "lost", "lost_pct", "late",
+                "corrupted", "min_ms", "median_ms", "p90_ms", "p99_ms", "max_ms", "jitter_ms", "note"):
+        assert key in row, key
+    assert row["sent"] == "20" and row["lost"] == "0" and row["note"] == "pytest, fake FC"
+
+
+def test_capture_replays_like_the_real_recordings(fake_fc, tmp_path):
+    code = b.main(["--tcp", f"127.0.0.1:{fake_fc}", "--capture", "bench_test", "--capture-count", "3",
+                   "--capture-dir", str(tmp_path), "--no-copy", "--connect-wait", "2", "--color", "never",
+                   "--out", str(tmp_path / "bench.csv")])
+    assert code in (0, 1)
+    lines = (tmp_path / "bench_test.jsonl").read_text().splitlines()
+    header, records = json.loads(lines[0]), [json.loads(line) for line in lines[1:]]
+    assert header["state"] == "bench_test" and header["setup"]["fc"] == "INAV 9.1.0"
+    assert len(records) == 3 * len(b.CAPTURE_MSGS)
+    assert [r["name"] for r in records[::3]] == [name for name, _ in b.CAPTURE_MSGS]
+    good = [r for r in records if r.get("ok")]
+    assert good, "no good replies recorded"
+    for r in good:
+        cmd, payload = reply(r["hex"])
+        assert cmd == r["cmd"]
+    att = [reply(r["hex"])[1] for r in good if r["name"] == "MSP_ATTITUDE"]
+    assert att and all(-180 <= t.d_attitude(p)["roll_deg"] <= 180 for p in att)
+    # fake_fc answers MSP2_INAV_GET_LINK_STATS with an error reply: kept as ok false
+    assert all(r.get("ok") is False for r in records if r["name"] == "MSP2_INAV_GET_LINK_STATS")
+
+
+def test_capture_refreshes_copies_with_the_same_name(tmp_path):
+    src = tmp_path / "new.jsonl"
+    src.write_text("new\n")
+    ros = tmp_path / "project" / "ros2" / "src"
+    (ros / "pkg" / "test" / "data").mkdir(parents=True)
+    copy = ros / "pkg" / "test" / "data" / "new.jsonl"
+    copy.write_text("old\n")
+    rep = b.Report("x", "h", "l")
+    assert b.refresh_capture_copies(rep, src, ros) == [copy]
+    assert copy.read_text() == "new\n"
+
+
+@pytest.mark.skipif(not os.path.isdir("/proc"), reason="reads /proc (Linux)")
+def test_busy_serial_port_is_detected(tmp_path):
+    port = tmp_path / "fake_tty"
+    port.write_text("")
+    holder = subprocess.Popen([sys.executable, "-c",
+                               f"f = open({str(port)!r}); import time; time.sleep(30)"])
+    try:
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline and not b.processes_using(str(port)):
+            time.sleep(0.05)
+        assert holder.pid in [pid for pid, _ in b.processes_using(str(port))]
+    finally:
+        holder.kill()
+        holder.wait()

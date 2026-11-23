@@ -18,14 +18,14 @@ project/logs/
 │   ├── history.csv
 │   └── <date>_<commit>/                     meta.json, result.json, flight.log, flight.xml, build.log
 └── measurements/
-    └── <n>/                                 e.g. wifi_rtt, inav_link, inav_rc_override, motor_music
+    └── <n>/                                 e.g. msp_bench, wifi_rtt, inav_link, inav_rc_override, motor_music
         ├── history.csv                      one line per measurement
         └── <date>_<commit>/
             ├── meta.json
             └── values.json                  (plus whatever the measuring tool saves, and notes.md)
 ```
 
-The tools that write here live in `project/scripts/`: `logbook.py` (run folders and history), `run_tests.sh`, `sim_flight_test.sh`, `measure_wifi_rtt.py` and the bench scripts.
+The tools that write here: in `project/scripts/`, `logbook.py` (run folders and history), `run_tests.sh`, `sim_flight_test.sh` and the bench scripts; and [`project/telemetry/msp_bench.py`](../telemetry/msp_bench.py) with `--logbook` (`make bench`, `make wifi-rtt`).
 
 **`-dirty` in a folder name** means the run included uncommitted changes under `project/ros2/src/` or `project/telemetry/`, so the commit alone doesn't say what ran; `meta.json` and the report list the files. Uncommitted docs are listed but don't make a run dirty.
 
@@ -55,16 +55,19 @@ The headless Gazebo flight test, the same as the nightly CI job, in a throwaway 
 
 ## Measurements
 
-Anything measured over time: Wi-Fi round-trip time and drops (STK-5), command rates (ROS-7.1), the `inav` backend on the real drone (`inav_link`: topic rates, reconnect time, plus the bench notes and a bag), ROS sticks through MSP RC OVERRIDE (`inav_rc_override`, `make bench-rc` and `make bench-armed`), the motors playing a song (`motor_music`, `make motor-music`), and later anything else worth tracking.
+Anything measured over time: the full MSP bench (`msp_bench`), Wi-Fi round-trip time and drops (STK-5), command rates (ROS-7.1), the `inav` backend on the real drone (`inav_link`: topic rates, reconnect time, plus the bench notes and a bag), ROS sticks through MSP RC OVERRIDE (`inav_rc_override`, `make bench-rc` and `make bench-armed`), the motors playing a song (`motor_music`, `make motor-music`), and later anything else worth tracking.
 
-**Wi-Fi round trip (`wifi_rtt`)**, with the laptop on the drone's network:
+**Full bench (`msp_bench`)** and **Wi-Fi round trip (`wifi_rtt`)**, from a laptop on the drone's network or the Pi:
 
 ```bash
-make wifi-rtt NOTE="bench, AP mode, radio on" ARGS="-n 1000 --interval 0.05"
-make wifi-rtt NOTE="Pi, USB bridge, bench" ARGS="--serial /dev/ttyUSB0"    # on the Raspberry Pi
+make bench NOTE="bench, AP mode, radio off"                                   # everything, about 45 s
+make wifi-rtt NOTE="bench, AP mode, radio on" ARGS="--rtt-count 1000"          # round trip only
+make wifi-rtt NOTE="Pi, USB bridge, bench" ARGS="--serial /dev/ttyUSB0"        # on the Raspberry Pi
 ```
 
-It runs [`project/telemetry/latency_test.py`](../telemetry/latency_test.py) (any of its flags pass through in `ARGS`; it talks to esp-link at 192.168.4.1:23 by default) and keeps its per-sample CSV as `samples.csv`. `meta.json` also records the machine that ran it and whether it went over serial or TCP. `values.json` and `history.csv` hold: `host` (the serial device, or `address:port`), `duration_s`, `rate_hz` (the real request rate; `--interval` is the pause between samples, so it's lower than 1/interval), `sent`, `answered`, `lost`, `lost_pct`, `late`, `corrupted`, `min_ms`, `median_ms`, `p90_ms`, `p99_ms`, `max_ms`, `jitter_ms`, plus the flags used and the note. Ctrl-C stops early and still records the run; a run that never connected records nothing. Earlier results: [Wi-Fi latency tests](../../docs/Telemetry_test.md).
+Both run [`project/telemetry/msp_bench.py`](../telemetry/msp_bench.py) with `--logbook` (its flags pass through in `ARGS`; it talks to esp-link at 192.168.4.1:23 by default). `wifi-rtt` runs only its sequential round-trip part, the way `latency_test.py` did: 200 small requests 50 ms apart, 2 s before a reply counts as lost.
+
+Each run folder holds `bench.csv` (every result, one row each), `samples.csv` (every single sample), `values.json` and `meta.json` (the note, the machine, the link, the flags). `values.json` and `history.csv` hold the columns `wifi_rtt` always had, so old and new lines compare: `host` (the serial device, or `address:port`), `duration_s`, `rate_hz` (the real request rate, lower than 1/interval), `sent`, `answered`, `lost`, `lost_pct`, `late`, `corrupted`, `min_ms`, `median_ms`, `p90_ms`, `p99_ms`, `max_ms`, `jitter_ms`. They also hold the bench's headline numbers when those parts ran: `result`, `fails`, `notes`, `max_clean_hz`, `burst_received_pct`, `first_reply_s`, `acc_norm_error_g`, `tilt_deg`, `yaw_drift_deg_min`, `baro_drift_cm_min`, `i2c_errors_delta`, `cell_v`, `acc_z_noise_g`, `baro_noise_cm`, `cycle_time_us`, `cpu_load_pct`, plus the flags and the note. Ctrl-C stops early and still records the run; a run that never reached the flight controller records nothing. Runs before Nov 23 were made with `latency_test.py` (rotating three tiny messages instead of one). Earlier results: [Wi-Fi latency tests](../../docs/Telemetry_test.md).
 
 **From a measuring script** (Python, run from the repo root), the way `run_tests.sh` does it:
 

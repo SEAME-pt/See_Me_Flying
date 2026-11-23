@@ -24,6 +24,12 @@ with every individual sample, for fitting noise / delay models in Gazebo.
 
 Exit code: 0 = no FAIL rows, 1 = at least one FAIL, 2 = could not talk to FC.
 
+It also replaces the older tools:
+  --logbook NOTE    keep the run in project/logs/measurements/<name>/ with a line in
+                    history.csv (was measure_wifi_rtt.py + latency_test.py, `make wifi-rtt`)
+  --capture STATE   record raw replies of every message into inav/msp/captures/STATE.jsonl
+                    for the tests, and refresh the copies in project/ros2 (was msp_inventory.py)
+
 IMPORTANT: the link must be free. Stop the MSP gateway on the Pi first
 (esp-link forwards serial data to every TCP client, so two clients mix replies).
 Bench only, props off. Heavy-load tests are skipped automatically if armed.
@@ -34,14 +40,18 @@ Examples
   python3 msp_bench.py --serial /dev/ttyUSB0 --baud 115200
   python3 msp_bench.py --serial COM5 --expect gyro,acc,opflow,rangefinder
   python3 msp_bench.py --quick --raw raw.csv
+  python3 msp_bench.py --serial /dev/ttyUSB0 --logbook "Pi, USB bridge, bench"
+  python3 msp_bench.py --capture flat_still
 """
 from __future__ import annotations
 
 import argparse
 import csv
+import json
 import math
 import os
 import platform
+import shutil
 import socket
 import statistics
 import struct
@@ -51,6 +61,7 @@ import uuid
 from collections import deque, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 
 # --------------------------------------------------------------------------- #
 # MSP command ids (INAV)
@@ -63,9 +74,12 @@ MSP_BUILD_INFO = 5
 MSP_NAME = 10
 MSP_SONAR_ALTITUDE = 58
 MSP_RAW_IMU = 102
+MSP_MOTOR = 104
 MSP_RC = 105
 MSP_ATTITUDE = 108
 MSP_ALTITUDE = 109
+MSP_BOXNAMES = 116
+MSP_NAV_STATUS = 121
 MSP_SENSOR_STATUS = 151
 MSP2_INAV_STATUS = 0x2000
 MSP2_INAV_OPTICAL_FLOW = 0x2001
@@ -82,7 +96,29 @@ CMD_NAMES = {
     MSP_SENSOR_STATUS: "SENSOR_STATUS", MSP2_INAV_STATUS: "INAV_STATUS",
     MSP2_INAV_OPTICAL_FLOW: "INAV_OPTICAL_FLOW", MSP2_INAV_ANALOG: "INAV_ANALOG",
     MSP2_INAV_GET_LINK_STATS: "INAV_LINK_STATS", MSP2_INAV_FULL_LOCAL_POSE: "INAV_LOCAL_POSE",
+    MSP_MOTOR: "MOTOR", MSP_BOXNAMES: "BOXNAMES", MSP_NAV_STATUS: "NAV_STATUS",
 }
+CMD_BY_NAME = {name: cmd for cmd, name in CMD_NAMES.items()}
+
+# --capture: every message, in this order, with the names the recordings use
+# (the same list msp_inventory.py recorded, so old and new captures line up).
+CAPTURE_MSGS = [
+    ("MSP_API_VERSION", MSP_API_VERSION), ("MSP_FC_VARIANT", MSP_FC_VARIANT),
+    ("MSP_FC_VERSION", MSP_FC_VERSION), ("MSP_BOARD_INFO", MSP_BOARD_INFO),
+    ("MSP_NAME", MSP_NAME), ("MSP_BOXNAMES", MSP_BOXNAMES),
+    ("MSP2_INAV_STATUS", MSP2_INAV_STATUS), ("MSP_ATTITUDE", MSP_ATTITUDE),
+    ("MSP_ALTITUDE", MSP_ALTITUDE), ("MSP_RAW_IMU", MSP_RAW_IMU),
+    ("MSP2_INAV_ANALOG", MSP2_INAV_ANALOG), ("MSP2_INAV_OPTICAL_FLOW", MSP2_INAV_OPTICAL_FLOW),
+    ("MSP_RC", MSP_RC), ("MSP_SONAR_ALTITUDE", MSP_SONAR_ALTITUDE),
+    ("MSP2_INAV_FULL_LOCAL_POSE", MSP2_INAV_FULL_LOCAL_POSE),
+    ("MSP_NAV_STATUS", MSP_NAV_STATUS), ("MSP2_INAV_GET_LINK_STATS", MSP2_INAV_GET_LINK_STATS),
+    ("MSP_MOTOR", MSP_MOTOR),
+]
+
+TELEMETRY_DIR = Path(__file__).resolve().parent
+CAPTURE_DIR = TELEMETRY_DIR / "inav" / "msp" / "captures"
+SCRIPTS_DIR = TELEMETRY_DIR.parent / "scripts"           # project/scripts: logbook.py
+ROS_SRC = TELEMETRY_DIR.parent / "ros2" / "src"          # copies of the captures for the C++ tests
 
 SENSOR_NAMES = ["gyro", "acc", "mag", "baro", "gps", "rangefinder", "pitot", "opflow"]
 HW_STATUS = {0: "NONE", 1: "OK", 2: "UNAVAILABLE", 3: "UNHEALTHY"}
@@ -211,6 +247,31 @@ class TcpLink:
         self.sock.close()
 
 
+def processes_using(path):
+    """(pid, name) of other processes that have `path` open. Linux only (reads /proc);
+    elsewhere returns []. Two programs on one serial port steal each other's replies."""
+    proc = Path("/proc")
+    if not proc.is_dir():
+        return []
+    target = os.path.realpath(path)
+    users = []
+    for d in proc.iterdir():
+        if not d.name.isdigit() or int(d.name) == os.getpid():
+            continue
+        try:
+            fds = list((d / "fd").iterdir())
+        except OSError:
+            continue
+        for fd in fds:
+            try:
+                if os.readlink(fd) == target:
+                    users.append((int(d.name), (d / "comm").read_text().strip()))
+                    break
+            except OSError:
+                continue
+    return users
+
+
 class SerialLink:
     def __init__(self, port: str, baud: int, settle: float = 0.2):
         try:
@@ -266,6 +327,8 @@ class MspClient:
         self.tx_bytes = 0
         self.rx_bytes = 0
         self.error_frames = 0
+        self.late_frames = 0       # replies that arrived for an earlier request
+        self.pending = deque()     # frames read but not handed out yet
         self.raw_rx = bytearray()  # first bytes received, for diagnosis
 
     def send(self, cmd: int, payload: bytes = b"") -> None:
@@ -279,6 +342,10 @@ class MspClient:
         self.tx_bytes += len(frame) * count
 
     def poll(self, timeout: float) -> list[Frame]:
+        if self.pending:
+            out = list(self.pending)
+            self.pending.clear()
+            return out
         data = self.link.read(timeout)
         if not data:
             return []
@@ -290,24 +357,37 @@ class MspClient:
         return frames
 
     def drain(self, quiet: float = 0.08, max_time: float = 2.0) -> None:
+        self.pending.clear()
         end = time.perf_counter() + max_time
         while time.perf_counter() < end and self.poll(quiet):
             pass
 
-    def request(self, cmd: int, payload: bytes = b"", timeout: float = 0.5):
-        """Send one request and wait for its reply. Returns (payload, rtt_s)."""
+    def exchange(self, cmd: int, payload: bytes = b"", timeout: float = 0.5):
+        """Send one request; return (Frame, rtt_s), or (None, None) on timeout.
+        Error replies ('!') are returned too. Other frames that arrive meanwhile are
+        late replies to earlier requests: counted and dropped."""
         t0 = time.perf_counter()
         self.send(cmd, payload)
         deadline = t0 + timeout
         while True:
             rem = deadline - time.perf_counter()
             if rem <= 0:
-                raise MspTimeout(CMD_NAMES.get(cmd, cmd))
-            for f in self.poll(min(rem, 0.05)):
+                return None, None
+            frames = self.poll(min(rem, 0.05))
+            for i, f in enumerate(frames):
                 if f.cmd == cmd:
-                    if f.error:
-                        raise MspError(f"FC rejected {CMD_NAMES.get(cmd, cmd)}")
-                    return f.payload, time.perf_counter() - t0
+                    self.pending.extend(frames[i + 1:])
+                    return f, time.perf_counter() - t0
+                self.late_frames += 1
+
+    def request(self, cmd: int, payload: bytes = b"", timeout: float = 0.5):
+        """Send one request and wait for its reply. Returns (payload, rtt_s)."""
+        f, rtt = self.exchange(cmd, payload, timeout)
+        if f is None:
+            raise MspTimeout(CMD_NAMES.get(cmd, cmd))
+        if f.error:
+            raise MspError(f"FC rejected {CMD_NAMES.get(cmd, cmd)}")
+        return f.payload, rtt
 
 
 # --------------------------------------------------------------------------- #
@@ -549,6 +629,7 @@ SECTION_TITLES = {
     "sensor_rate": "Sample rate per MSP command", "sensors": "Sensor values",
     "derived": "Checks", "latency": "Link latency & heavy MSP load",
     "link": "Link health", "diagnose": "Diagnosis", "run": "Run",
+    "capture": "Capture (recording for the tests)",
 }
 
 
@@ -936,10 +1017,13 @@ def derived_checks(rep, samples, args):
         rep.add("derived", "fc_loop_hz", 1e6 / m if m else math.nan, "Hz")
 
 
-def latency_sequential(c, rep, count, timeout, warn_ms):
+def latency_sequential(c, rep, count, timeout, warn_ms, commands, interval=0.0):
+    """One request at a time. Returns the totals the logbook keeps (see summary_values)."""
     c.drain()
     all_rtts = []
-    for cmd in (MSP_API_VERSION, MSP_ATTITUDE, MSP_RAW_IMU, MSP2_INAV_ANALOG, MSP2_INAV_STATUS):
+    seq = {"sent": 0, "lost": 0, "rtts": [], "late": 0, "corrupted": 0, "duration_s": 0.0}
+    late0, crc0, t_start = c.late_frames, c.parser.crc_errors, time.perf_counter()
+    for cmd in commands:
         rtts, lost, plen = [], 0, 0
         for _ in range(count):
             try:
@@ -948,13 +1032,17 @@ def latency_sequential(c, rep, count, timeout, warn_ms):
                 rtts.append(rtt * 1000)
             except MspTimeout:
                 lost += 1
-                c.drain(0.02, 0.2)
             except MspError:
                 lost = -1
                 break
+            if interval:
+                time.sleep(interval)
         if lost < 0:
             rep.add("latency", f"rtt_{CMD_NAMES[cmd]}", "unsupported")
             continue
+        seq["sent"] += len(rtts) + lost
+        seq["lost"] += lost
+        seq["rtts"] += rtts
         s = summarize(rtts)
         if not s:
             rep.add("latency", f"rtt_{CMD_NAMES[cmd]}", "no replies", status="FAIL")
@@ -970,6 +1058,13 @@ def latency_sequential(c, rep, count, timeout, warn_ms):
         rep.add("latency", "rtt_all_sequential", s["median"], "ms",
                 notes="link delay model for the sim (one-way ~ RTT/2)", stats=s)
         rep.add("latency", "jitter_ms", s["std"], "ms", notes="std of sequential RTT")
+    seq["late"] = c.late_frames - late0
+    seq["corrupted"] = c.parser.crc_errors - crc0
+    seq["duration_s"] = time.perf_counter() - t_start
+    if seq["late"]:
+        rep.add("latency", "late_replies", seq["late"], "", "WARN",
+                "replies that came after their request had timed out")
+    return seq
 
 
 def latency_load(c, rep, windows, duration, timeout, cmd=MSP_ATTITUDE):
@@ -1045,6 +1140,7 @@ def link_health(c, rep):
             "PASS" if p.garbage_bytes == 0 else "WARN",
             "non-MSP bytes on link (other client? CLI? wrong baud?)" if p.garbage_bytes else "")
     rep.add("link", "error_frames", c.error_frames, "", notes="FC '!' replies (unsupported cmds count here)")
+    rep.add("link", "late_frames", c.late_frames, "", notes="replies that arrived after their request timed out")
     rep.add("link", "tx_bytes", c.tx_bytes, "B")
     rep.add("link", "rx_bytes", c.rx_bytes, "B")
 
@@ -1052,7 +1148,149 @@ def link_health(c, rep):
 # --------------------------------------------------------------------------- #
 # Main
 # --------------------------------------------------------------------------- #
-def parse_args():
+# --------------------------------------------------------------------------- #
+# Capture (was msp_inventory.py capture)
+# --------------------------------------------------------------------------- #
+def run_capture(c, rep, state, count, timeout, out_dir, fc, link_name):
+    """Ask every message in CAPTURE_MSGS `count` times and save each raw reply, in the
+    format the tests read: a header line, then one JSON object per request."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"{state}.jsonl"
+    c.drain()
+    with open(path, "w") as f:
+        f.write(json.dumps({"setup": {"fc": fc, "link": link_name}, "state": state,
+                            "host": link_name, "time": time.strftime("%Y-%m-%dT%H:%M:%S")}) + "\n")
+        for name, cmd in CAPTURE_MSGS:
+            got = errors = 0
+            for i in range(count):
+                frame, rtt = c.exchange(cmd, timeout=timeout)
+                rec = {"name": name, "cmd": cmd, "i": i}
+                if frame is None:
+                    rec["error"] = "timeout"
+                else:
+                    # INAV replies with flag 0, so re-encoding gives the bytes that came in.
+                    raw = encode_v2(cmd, frame.payload, b"!" if frame.error else b">")
+                    rec.update({"ok": not frame.error, "rtt_ms": round(rtt * 1000, 2), "hex": raw.hex()})
+                    got += not frame.error
+                    errors += frame.error
+                f.write(json.dumps(rec) + "\n")
+            status = "PASS" if got == count else "WARN" if got or errors else "FAIL"
+            note = f"{got}/{count} replies" + (f", {errors} error replies (not supported)" if errors else "")
+            rep.add("capture", name, got, "", status, note)
+    rep.add("capture", "file", str(path), notes="the tests replay it (tests/test_captures.py)")
+    return path
+
+
+def refresh_capture_copies(rep, path, ros_src=ROS_SRC):
+    """fc_bridge's C++ tests keep copies of the captures (test_capture_copies.py checks
+    they match): overwrite every copy with the same name, so both suites test the new data."""
+    if not ros_src.is_dir():
+        return []
+    copies = sorted(p for p in ros_src.rglob(path.name) if p.resolve() != path.resolve())
+    for dst in copies:
+        shutil.copyfile(path, dst)
+        rep.add("capture", "copy", str(dst.relative_to(ros_src.parents[1])), notes="updated")
+    if not copies:
+        rep.add("capture", "copy", "none", status="WARN",
+                notes="new state: add it to test_capture_copies.py and copy it into "
+                      "drone_fc_bridge/test/data/ if the C++ tests should use it")
+    return copies
+
+
+# --------------------------------------------------------------------------- #
+# Logbook (was measure_wifi_rtt.py): project/logs/measurements/<name>/
+# --------------------------------------------------------------------------- #
+def pct_index(sorted_vals, p):
+    """Same percentile as measure_wifi_rtt.py used, so history.csv stays comparable."""
+    return sorted_vals[min(len(sorted_vals) - 1, int(len(sorted_vals) * p))]
+
+
+def summary_values(rep, seq, link_name):
+    """The numbers one line of history.csv keeps. The first block has exactly the keys
+    the old wifi_rtt history used; the rest are the bench's own headline numbers."""
+    rows = {(r["section"], r["item"]): r for r in rep.rows}
+
+    def num(section, item, field="value"):
+        r = rows.get((section, item))
+        try:
+            return round(float(r[field]), 4) if r and r[field] != "" else None
+        except ValueError:
+            return None
+
+    fails = sum(r["status"] == "FAIL" for r in rep.rows)
+    values = {"host": link_name, "result": "FAIL" if fails else "PASS", "fails": fails,
+              "notes": sum(r["status"] == "WARN" for r in rep.rows)}
+    if seq and seq["sent"]:
+        rtts = sorted(seq["rtts"])
+        dur = seq["duration_s"]
+        values.update({
+            "duration_s": round(dur, 1),
+            "rate_hz": round((seq["sent"] - 1) / dur, 1) if dur > 0 else None,
+            "sent": seq["sent"], "answered": len(rtts), "lost": seq["lost"],
+            "lost_pct": round(seq["lost"] / seq["sent"] * 100, 1),
+            "late": seq["late"], "corrupted": seq["corrupted"],
+        })
+        if rtts:
+            values.update({
+                "min_ms": round(rtts[0], 2), "median_ms": round(statistics.median(rtts), 2),
+                "p90_ms": round(pct_index(rtts, 0.9), 2), "p99_ms": round(pct_index(rtts, 0.99), 2),
+                "max_ms": round(rtts[-1], 2), "jitter_ms": round(statistics.pstdev(rtts), 2),
+            })
+    picks = {
+        "max_clean_hz": ("latency", "max_clean_throughput"),
+        "burst_received_pct": ("latency", f"burst_{BURST_FOR_SUMMARY[0]}_received"),
+        "first_reply_s": ("info", "first_reply_after_s"),
+        "acc_norm_error_g": ("derived", "acc_norm_error_g"),
+        "tilt_deg": ("derived", "level_tilt_deg"),
+        "yaw_drift_deg_min": ("derived", "yaw_drift_deg_per_min"),
+        "baro_drift_cm_min": ("derived", "baro_alt_drift_cm_per_min"),
+        "i2c_errors_delta": ("derived", "i2c_errors_delta"),
+        "cell_v": ("derived", "cell_voltage_v"),
+    }
+    for key, (section, item) in picks.items():
+        v = num(section, item)
+        if v is not None:
+            values[key] = v
+    for key, item in (("acc_z_noise_g", "acc_z_g"), ("baro_noise_cm", "baro_alt_cm")):
+        v = num("sensors", item, "std")
+        if v is not None:
+            values[key] = v
+    for key, item in (("cycle_time_us", "cycle_time_us"), ("cpu_load_pct", "cpu_load_pct")):
+        v = num("sensors", item)
+        if v is not None:
+            values[key] = v
+    return values
+
+
+BURST_FOR_SUMMARY = [64]   # set from --burst in main()
+
+
+def record_logbook(rep, values, note, name, link_name, extra_files=()):
+    """New run folder via project/scripts/logbook.py, with the CSVs, values.json and a
+    line in history.csv. Returns the folder."""
+    if str(SCRIPTS_DIR) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS_DIR))
+    import logbook   # noqa: E402  (project/scripts/logbook.py, only needed here)
+    run = logbook.new_run("measurements", name, {
+        "note": note, "tool": "project/telemetry/msp_bench.py", "args": sys.argv[1:],
+        "machine": platform.node(), "link": link_name, "bench_run_id": rep.run_id})
+    rep.write(os.path.join(run, "bench.csv"))
+    rep.write_raw(os.path.join(run, "samples.csv"))
+    for f in extra_files:
+        shutil.copy(f, run)
+    logbook.write_json(os.path.join(run, "values.json"), values)
+    logbook.append_history(run, {**values, "args": " ".join(sys.argv[1:]), "note": note})
+    return run
+
+
+# --------------------------------------------------------------------------- #
+# Main
+# --------------------------------------------------------------------------- #
+RTT_DEFAULT = "API_VERSION,ATTITUDE,RAW_IMU,INAV_ANALOG,INAV_STATUS"
+
+
+def parse_args(argv=None):
     ap = argparse.ArgumentParser(description="Unified INAV/MSP bench test -> CSV",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     link = ap.add_mutually_exclusive_group()
@@ -1061,13 +1299,19 @@ def parse_args():
     ap.add_argument("--baud", type=int, default=115200)
     ap.add_argument("--settle", type=float, default=0.2,
                     help="seconds to wait after opening a serial port (raise if the bridge rebooted)")
-    ap.add_argument("--connect-wait", type=float, default=8.0,
+    ap.add_argument("--connect-wait", type=float, default=15.0,
                     help="keep retrying the first MSP request this long (bridge boot / Wi-Fi join)")
+    ap.add_argument("--force", action="store_true",
+                    help="open the serial port even if another program (msp_gateway?) has it open")
     ap.add_argument("--duration", type=float, default=10.0, help="sensor sampling seconds")
     ap.add_argument("--expect", default="gyro,acc",
                     help="sensors that must be OK (add opflow,rangefinder once the MTF-02P is in)")
     ap.add_argument("--timeout", type=float, default=0.5, help="per-request timeout (s)")
     ap.add_argument("--rtt-count", type=int, default=200, help="sequential requests per command")
+    ap.add_argument("--rtt-commands", default=RTT_DEFAULT,
+                    help="messages for the sequential round-trip test, by name: " + ", ".join(sorted(CMD_BY_NAME)))
+    ap.add_argument("--rtt-interval", type=float, default=0.0,
+                    help="pause between sequential requests, seconds (latency_test.py used 0.05)")
     ap.add_argument("--rtt-warn-ms", type=float, default=20.0, help="WARN if p95 RTT above this")
     ap.add_argument("--load-windows", default="1,2,4,8,16", help="in-flight requests for the load test")
     ap.add_argument("--load-duration", type=float, default=5.0, help="seconds per load window")
@@ -1075,48 +1319,87 @@ def parse_args():
     ap.add_argument("--acc-tol", type=float, default=0.05, help="|acc_norm - 1g| tolerance")
     ap.add_argument("--gyro-bias-tol", type=float, default=1.0, help="deg/s")
     ap.add_argument("--flow-quality-min", type=int, default=50)
-    ap.add_argument("--skip", default="", help="comma list: sensors,latency")
+    ap.add_argument("--skip", default="",
+                    help="comma list: sensors, latency (all of it), load (load + burst only)")
     ap.add_argument("--allow-armed", action="store_true", help="run load tests even if armed")
     ap.add_argument("--quick", action="store_true", help="short run (~15 s)")
     ap.add_argument("--color", choices=["auto", "always", "never"], default="auto",
                     help="colored output (auto = only on a terminal; NO_COLOR env disables)")
     ap.add_argument("--brief", action="store_true",
                     help="hide the per-value sensor table, show checks and problems only")
-    ap.add_argument("--out", default=None, help="CSV path (default results/msp_bench_<host>_<time>.csv)")
+    ap.add_argument("--out", default=None,
+                    help="CSV path (default results/msp_bench_<host>_<time>.csv; with --logbook, the run folder)")
     ap.add_argument("--raw", default=None, help="also write every sample to this CSV")
-    a = ap.parse_args()
+    book = ap.add_argument_group("logbook (project/logs/measurements/)")
+    book.add_argument("--logbook", metavar="NOTE", default=None,
+                      help="keep the run: the conditions, e.g. \"Pi, USB bridge, bench, radio on\"")
+    book.add_argument("--logbook-name", default="msp_bench",
+                      help="measurement folder: msp_bench, or wifi_rtt to continue that history")
+    cap = ap.add_argument_group("capture (recordings for the tests)")
+    cap.add_argument("--capture", metavar="STATE", default=None,
+                     help="record every message into inav/msp/captures/STATE.jsonl instead of the bench, "
+                          "e.g. flat_still, tilted, radio_off, flow_moving")
+    cap.add_argument("--capture-count", type=int, default=20, help="replies recorded per message")
+    cap.add_argument("--capture-dir", default=str(CAPTURE_DIR), help="where the recording goes")
+    cap.add_argument("--no-copy", action="store_true",
+                     help="don't refresh the copies in project/ros2 (drone_fc_bridge/test/data/)")
+    a = ap.parse_args(argv)
     if a.quick:
         a.duration, a.rtt_count, a.load_duration = 5.0, 50, 2.0
         a.load_windows = "1,8"
     a.expect = {s.strip() for s in a.expect.split(",") if s.strip()}
     a.skip = {s.strip() for s in a.skip.split(",") if s.strip()}
+    unknown = a.skip - {"sensors", "latency", "load"}
+    if unknown:
+        ap.error(f"--skip: unknown part(s) {', '.join(sorted(unknown))}")
     a.load_windows = [int(x) for x in str(a.load_windows).split(",") if x.strip()]
+    try:
+        a.rtt_commands = [CMD_BY_NAME[n.strip().upper()] for n in a.rtt_commands.split(",") if n.strip()]
+    except KeyError as e:
+        ap.error(f"--rtt-commands: unknown message {e}")
+    if a.capture and not all(ch.isalnum() or ch in "_-" for ch in a.capture):
+        ap.error("--capture: use letters, digits, _ and - only (it becomes a file name)")
     return a
 
 
 def open_link(a):
     if a.serial:
+        users = processes_using(a.serial)
+        if users and not a.force:
+            names = ", ".join(f"{n} (pid {p})" for p, n in users)
+            raise OSError(f"{a.serial} is already open by {names}. Two programs on one port steal "
+                          "each other's replies: stop it (e.g. msp_gateway) or pass --force")
         return SerialLink(a.serial, a.baud, a.settle)
     host, _, port = (a.tcp or "192.168.4.1:23").partition(":")
     return TcpLink(host, int(port or 23))
 
 
-def main():
-    a = parse_args()
+def info_value(rep, item):
+    for r in rep.rows:
+        if r["section"] == "info" and r["item"] == item:
+            return r["value"]
+    return ""
+
+
+def main(argv=None):
+    a = parse_args(argv)
+    BURST_FOR_SUMMARY[0] = a.burst
     host = platform.node() or "unknown"
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out = a.out or os.path.join("results", f"msp_bench_{host}_{stamp}.csv")
+    out = a.out or (None if a.logbook else os.path.join("results", f"msp_bench_{host}_{stamp}.csv"))
 
+    ui = UI(a.color)
     try:
         link = open_link(a)
     except (OSError, ValueError) as e:
-        print(f"Could not open link: {e}", file=sys.stderr)
+        print(ui.red(f"Could not open link: {e}"), file=sys.stderr)
         return 2
 
-    ui = UI(a.color)
     c = MspClient(link)
     rep = Report(uuid.uuid4().hex[:8], host, link.name)
     code = 0
+    seq = None
+    capture_path = None
     print(ui.bold("MSP bench") + ui.dim(f"  run {rep.run_id} on {host} via {link.name}"))
     ui.step("connecting to the flight controller")
     try:
@@ -1138,44 +1421,68 @@ def main():
         ui.step("reading sensor status")
         st0 = test_sensor_status(c, rep, a.expect, a.timeout)
 
-        if "sensors" not in a.skip:
-            ui.step(f"sampling sensors for {a.duration:.0f} s - keep the drone still")
-            samples, _ = test_sensors(c, rep, a.duration, a.timeout, st0)
-            derived_checks(rep, samples, a)
-            if st0:
-                try:
-                    st1 = read_sensor_status(c, a.timeout)
-                    for k, v in st1.items():
-                        if st0.get(k) != v:
-                            rep.add("sensor_status", f"{k}_changed", f"{st0.get(k)}->{v}",
-                                    status="FAIL", notes="changed during the run")
-                except (MspTimeout, MspError):
-                    pass
+        if a.capture:
+            ui.step(f"capturing {a.capture_count} replies of {len(CAPTURE_MSGS)} messages "
+                    f"as '{a.capture}' - keep the drone in that state")
+            fc = f"{info_value(rep, 'fc_variant')} {info_value(rep, 'fc_version')}".strip()
+            capture_path = run_capture(c, rep, a.capture, a.capture_count, a.timeout,
+                                       a.capture_dir, fc, link.name)
+            if not a.no_copy:
+                refresh_capture_copies(rep, capture_path)
+        else:
+            if "sensors" not in a.skip:
+                ui.step(f"sampling sensors for {a.duration:.0f} s - keep the drone still")
+                samples, _ = test_sensors(c, rep, a.duration, a.timeout, st0)
+                derived_checks(rep, samples, a)
+                if st0:
+                    try:
+                        st1 = read_sensor_status(c, a.timeout)
+                        for k, v in st1.items():
+                            if st0.get(k) != v:
+                                rep.add("sensor_status", f"{k}_changed", f"{st0.get(k)}->{v}",
+                                        status="FAIL", notes="changed during the run")
+                    except (MspTimeout, MspError):
+                        pass
 
-        if "latency" not in a.skip:
-            if armed and not a.allow_armed:
-                rep.add("latency", "skipped", "armed", status="WARN",
-                        notes="disarm or pass --allow-armed")
-            else:
-                ui.step(f"latency: {a.rtt_count} sequential requests x 5 commands")
-                latency_sequential(c, rep, a.rtt_count, a.timeout, a.rtt_warn_ms)
-                ui.step(f"latency: heavy load, windows {a.load_windows}, "
-                        f"{a.load_duration:.0f} s each")
-                latency_load(c, rep, a.load_windows, a.load_duration, max(a.timeout, 1.0))
-                if a.burst:
-                    latency_burst(c, rep, a.burst, max(a.timeout, 1.0))
+            if "latency" not in a.skip:
+                ui.step(f"latency: {a.rtt_count} sequential requests x {len(a.rtt_commands)} messages")
+                seq = latency_sequential(c, rep, a.rtt_count, a.timeout, a.rtt_warn_ms,
+                                         a.rtt_commands, a.rtt_interval)
+                if "load" in a.skip:
+                    pass
+                elif armed and not a.allow_armed:
+                    rep.add("latency", "load_skipped", "armed", status="WARN",
+                            notes="disarm or pass --allow-armed")
+                else:
+                    ui.step(f"latency: heavy load, windows {a.load_windows}, "
+                            f"{a.load_duration:.0f} s each")
+                    latency_load(c, rep, a.load_windows, a.load_duration, max(a.timeout, 1.0))
+                    if a.burst:
+                        latency_burst(c, rep, a.burst, max(a.timeout, 1.0))
         link_health(c, rep)
     except KeyboardInterrupt:
-        rep.add("run", "interrupted", 1, status="WARN")
+        rep.add("run", "interrupted", 1, status="WARN", notes="stopped with Ctrl-C, results so far")
     except ConnectionError as e:
         rep.add("run", "link_lost", str(e), status="FAIL")
     finally:
         link.close()
-        rep.write(out)
+        if out:
+            rep.write(out)
         if a.raw:
             rep.write_raw(a.raw)
+        run_dir = None
+        if a.logbook and code != 2:   # a run that never reached the FC records nothing
+            extra = [capture_path] if capture_path else []
+            run_dir = record_logbook(rep, summary_values(rep, seq, link.name), a.logbook,
+                                     a.logbook_name, link.name, extra)
         rep.print_summary(ui, a.brief)
-        print(ui.dim(f"  CSV: {out}" + (f"\n  raw: {a.raw}" if a.raw else "")))
+        saved = [f"CSV: {out}"] if out else []
+        if a.raw:
+            saved.append(f"raw: {a.raw}")
+        if run_dir:
+            saved.append(f"logbook: {os.path.relpath(run_dir)}")
+        if saved:
+            print(ui.dim("  " + "\n  ".join(saved)))
     if code == 0 and rep.worst == "FAIL":
         code = 1
     return code
