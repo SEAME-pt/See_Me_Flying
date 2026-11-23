@@ -1,0 +1,15 @@
+{
+  "kind": "measurements",
+  "name": "inav_rc_override",
+  "date": "2026-11-17T14:15:28+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "70e3202bce930ae936c049ee5a9f3b4bcdbf3e96",
+  "commit_short": "70e3202",
+  "commit_subject": "Bench script for INAV-6 step D: ROS sticks through MSP RC OVERRIDE",
+  "branch": "inav-6",
+  "uncommitted_code": [],
+  "uncommitted_other": [
+    "seame-docker/logs/measurements/inav_rc_override/fc_config_2026-11-17/README.md"
+  ],
+  "note": "bench, props off, unarmed, laptop on the drone AP, fc_bridge backend inav rc_override, install /tmp/inav6_bench/install"
+}

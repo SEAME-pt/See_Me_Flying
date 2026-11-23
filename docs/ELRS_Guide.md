@@ -1,6 +1,9 @@
+---
+title: ExpressLRS Flashing, Bind and Arming
+---
 # ExpressLRS Flashing, Bind, and ARM tests
 
-Flashing the receiver that came soldered to the drone required figuring out its name. Quite a few tests were run, but the key one was a script created by Claude. Running it allowed us to assert that it had a version of **Crossfire firmware**, a proprietary Team BlackSheep firmware.
+Flashing the receiver that came soldered to the drone required figuring out its name. Quite a few tests were run, but the key one was a script created by Claude. Running it allowed us to assert that it had a version of **Crossfire firmware**, a proprietary Team BlackSheep firmware. The script is now `project/telemetry/receiver_crsf_ping.py` (it was run as `crsf_ping.py` below).
 
 *david@seame-5:\~/Downloads\$ python3 crsf\_ping.py*  
 *Pinging receiver on /dev/ttyACM0 for 5 seconds...*
@@ -85,7 +88,7 @@ LBT
 
 ### Flashing method
 
-Local Download (ELRS-v4.1.0-betafpv.rx\_2400.nano-LBT-bindphrase.bin.gz)
+Local Download (ELRS-v4.1.0-betafpv.rx\_2400.nano-LBT-bindphrase.bin.gz, kept in `project/hardware/radio/`)
 
 ## Bind
 
@@ -100,7 +103,7 @@ With SE being a momentary button, **SE** has to be held while **SD** is flipped.
 
 ## Arming Only From the Radio
 
-No other path can arm the drone. **MSP RC override**, which would let the ground computer send stick commands over Wi-Fi, is not enabled. When it is added in Module 1, it must never include the arm or mode channels.
+No other path can arm the drone. **MSP RC OVERRIDE**, which lets the ground computer send stick commands over Wi-Fi, has been on since Nov 17: the mode is on **AUX3** (channel 7, switch **SA**) and `msp_override_channels = 15` limits it to the four stick channels, never the arm, prearm or mode channels. `fc_bridge` can only build `MSP_SET_RAW_RC` with those four channels. On the bench, with the drone armed and SA on, turning the radio off still made INAV disarm (`DROP`). Details: [FC config of Nov 17](../project/logs/measurements/inav_rc_override/fc_config_2026-11-17/README.md) and the [armed bench run](../project/logs/measurements/inav_rc_override/2026-11-17_c3c73c0/notes.md).
 
 ## Motor setup
 
@@ -115,7 +118,7 @@ Each motor was then spun on its own, with props off. Position and spin direction
 
 ## VTX
 
-UART3 was set to Peripherals: **IRC Tramp**. INAV then detected the VTX and set it to band A, channel 1, 5865 MHz, at 25 mW (power level 1). Idle current dropped from 0.72 A to 0.55 A, which suggests the VTX had still been on a high power setting from the automatic Betaflight configuration.
+UART3 was set to Peripherals: **IRC Tramp** (receiving the video on a PC: [Video Transmission](./Video_Transmission.md)). INAV then detected the VTX and set it to band A, channel 1, 5865 MHz, at 25 mW (power level 1). Idle current dropped from 0.72 A to 0.55 A, which suggests the VTX had still been on a high power setting from the automatic Betaflight configuration.
 
 ## Arming obstacles
 

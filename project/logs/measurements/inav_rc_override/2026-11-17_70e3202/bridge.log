@@ -1,0 +1,44 @@
+[WARN] [1794925153.472674556] [fc_bridge]: Backend inav: reading INAV over MSP at 192.168.4.1:23, and sending setpoints as sticks (rc_override). INAV uses them while the radio's MSP RC OVERRIDE switch is on
+[INFO] [1794925153.524232727] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1794925153.674601892] [fc_bridge]: Link up: the FC replies
+[WARN] [1794925189.255731641] [fc_bridge]: No reply from the FC
+[INFO] [1794925189.856592501] [fc_bridge]: Link up: the FC replies
+[WARN] [1794925190.373133757] [fc_bridge]: INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks
+[WARN] [1794925207.098504691] [fc_bridge]: No reply from the FC
+[INFO] [1794925207.148890483] [fc_bridge]: Link up: the FC replies
+[INFO] [1794925217.573395884] [fc_bridge]: Setpoints received, following them
+[WARN] [1794925224.673567501] [fc_bridge]: Setpoint timeout: holding (zero velocity)
+[INFO] [1794925228.523398403] [fc_bridge]: Setpoints received, following them
+[WARN] [1794925235.623687221] [fc_bridge]: Setpoint timeout: holding (zero velocity)
+[INFO] [1794925238.523436672] [fc_bridge]: Setpoints received, following them
+[WARN] [1794925245.623441630] [fc_bridge]: Setpoint timeout: holding (zero velocity)
+[INFO] [1794925248.473488205] [fc_bridge]: Setpoints received, following them
+[WARN] [1794925255.573491437] [fc_bridge]: Setpoint timeout: holding (zero velocity)
+[INFO] [1794925260.473599970] [fc_bridge]: Setpoints received, following them
+[WARN] [1794925267.573467212] [fc_bridge]: Setpoint timeout: holding (zero velocity)
+[WARN] [1794925270.284774184] [fc_bridge]: No reply from the FC
+[INFO] [1794925270.334883926] [fc_bridge]: Link up: the FC replies
+[INFO] [1794925273.473542365] [fc_bridge]: Setpoints received, following them
+[INFO] [1794925275.451308280] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[INFO] [1794925277.323983462] [fc_bridge]: Backend inav: reading INAV over MSP at 192.168.4.1:23. Listen-only: setpoints go nowhere (rc_override false)
+[INFO] [1794925277.406620735] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1794925277.474741043] [fc_bridge]: Setpoints received, following them
+[INFO] [1794925277.557263330] [fc_bridge]: Link up: the FC replies
+[WARN] [1794925277.574467938] [fc_bridge]: INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks
+[WARN] [1794925285.424695282] [fc_bridge]: Setpoint timeout: holding (zero velocity)
+[INFO] [1794925285.758358385] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[WARN] [1794925287.618362481] [fc_bridge]: Backend inav: reading INAV over MSP at 192.168.4.1:23, and sending setpoints as sticks (rc_override). INAV uses them while the radio's MSP RC OVERRIDE switch is on
+[INFO] [1794925287.669850000] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1794925287.870331178] [fc_bridge]: Link up: the FC replies
+[WARN] [1794925287.918953275] [fc_bridge]: INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks
+[INFO] [1794925292.719048123] [fc_bridge]: Setpoints received, following them
+[WARN] [1794925305.407536910] [fc_bridge]: No reply from the FC
+[WARN] [1794925306.158209901] [fc_bridge]: No reply in 4 cycles with the connection open: reconnecting
+[WARN] [1794925306.168679496] [fc_bridge]: INAV reports MSP RC OVERRIDE off: the radio flies
+[WARN] [1794925310.158798900] [fc_bridge]: Cannot connect to 192.168.4.1:23: retrying every 1.000000 s
+[INFO] [1794925312.248547923] [fc_bridge]: Connected to INAV 9.1.0
+[INFO] [1794925312.498981775] [fc_bridge]: Link up: the FC replies
+[WARN] [1794925314.318906095] [fc_bridge]: INAV reports MSP RC OVERRIDE on: it flies on fc_bridge's sticks
+[WARN] [1794925351.719120726] [fc_bridge]: Setpoint timeout: holding (zero velocity)
+[WARN] [1794925360.118862506] [fc_bridge]: INAV reports MSP RC OVERRIDE off: the radio flies
+[INFO] [1794925365.035364684] [rclcpp]: signal_handler(SIGINT/SIGTERM)

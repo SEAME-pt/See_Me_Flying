@@ -1,0 +1,2 @@
+run,date,commit,dirty,attitude_hz,odom_hz,flow_hz,battery_hz,status_hz,range_msgs,bag_s,bag_msgs,dead_detect_s,recovery_s,note
+2026-11-16_dbf5804,2026-11-16T13:33:10+00:00,dbf5804,False,9.97,9.97,9.94,1.99,0.99,0,43.3,1421,0.75,4.5,"bench, laptop on the drone's AP, esp-link port 23, fc_bridge backend:=inav, props off, not armed, no rangefinder; recovery = battery pulled for a few seconds"

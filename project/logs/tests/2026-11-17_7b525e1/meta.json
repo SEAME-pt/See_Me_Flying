@@ -1,0 +1,14 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-17T13:43:18+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "7b525e17eb4b1527e144ab546fd7b54aaa0df005",
+  "commit_short": "7b525e1",
+  "commit_subject": "INAV-6 step C: fc_bridge sends setpoints as sticks over MSP",
+  "branch": "inav-6",
+  "uncommitted_code": [],
+  "uncommitted_other": [
+    "seame-docker/logs/measurements/inav_rc_override/fc_config_2026-11-17/README.md"
+  ]
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>drone_monitoring</name>
+  <version>0.1.0</version>
+  <description>metrics_exporter: fc_bridge, sensor and safety_manager topics as Prometheus metrics on port 9105, for the Grafana dashboard in monitoring/ (make monitor). Sim and real drone.</description>
+  <maintainer email="joao.barros@seame.pt">João Barros</maintainer>
+  <license>Apache-2.0</license>
+
+  <depend>rclpy</depend>
+  <depend>drone_interfaces</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <exec_depend>python3-prometheus-client</exec_depend>
+
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_mypy</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>ament_xmllint</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <!-- test_metrics.py builds the metrics with prometheus_client -->
+  <test_depend>python3-prometheus-client</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

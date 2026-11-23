@@ -1,0 +1,12 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-17T14:50:08+00:00",
+  "host": "joao-barros-Vostro-5568",
+  "commit": "ea76fb5c9125088690d3324b24ff8ce72e3bd8f7",
+  "commit_short": "ea76fb5",
+  "commit_subject": "INAV-6: motor outputs to ROS, and an armed bench script",
+  "branch": "inav-6",
+  "uncommitted_code": [],
+  "uncommitted_other": []
+}
