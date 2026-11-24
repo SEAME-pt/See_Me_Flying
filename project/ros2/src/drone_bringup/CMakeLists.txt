@@ -30,6 +30,7 @@ if(BUILD_TESTING)
   # Drone limits: values in config/sim.yaml that must agree across nodes.
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_config test/test_config.py TIMEOUT 30)
+  ament_add_pytest_test(test_sim_test_limits test/test_sim_test_limits.py TIMEOUT 30)
   # What sim.launch.py starts for every combination of arguments, without starting it.
   ament_add_pytest_test(test_launch_files test/test_launch_files.py TIMEOUT 60)
   # The Gazebo worlds: the drone is in each one and wired to gz_bridge.yaml (SDF only).
