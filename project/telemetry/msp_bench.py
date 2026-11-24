@@ -12,7 +12,15 @@ What it tests
   3. sensors      median / mean / std / p05 / p95 of every value over N seconds
                   (std = sensor noise for the sim), plus sample rate per command
   4. derived      gyro bias, accel norm, yaw drift, altitude drift,
-                  I2C error delta, rangefinder valid %, flow quality, cell voltage
+                  I2C error delta, cell voltage
+  4b. MTF-02P     (rangefinder + optical flow, on by default)
+                  setup: rangefinder_hardware / opflow_hardware = MSP, the sensor
+                  UART has MSP and nothing else, opflow_scale, align_opflow,
+                  rangefinder filter and estimator weights (read from the FC);
+                  still: rangefinder valid %, states (out of range / hardware
+                  failure / no new data), noise, flow quality, flow at rest;
+                  --flow-motion: guided slide forward/back/right/left that checks
+                  the flow responds and which axis/sign each direction gives
   5. latency      sequential RTT per command (link delay for the sim),
                   pipelined load at several in-flight windows (heavy MSP traffic),
                   burst test (buffer overflow / drop behaviour)
@@ -38,7 +46,8 @@ Examples
   python3 msp_bench.py                                   # esp-link AP default
   python3 msp_bench.py --tcp 192.168.4.1:23
   python3 msp_bench.py --serial /dev/ttyUSB0 --baud 115200
-  python3 msp_bench.py --serial COM5 --expect gyro,acc,opflow,rangefinder
+  python3 msp_bench.py --serial COM5 --expect gyro,acc        # without the MTF-02P
+  python3 msp_bench.py --serial /dev/ttyUSB0 --flow-motion     # + guided motion test
   python3 msp_bench.py --quick --raw raw.csv
   python3 msp_bench.py --serial /dev/ttyUSB0 --logbook "Pi, USB bridge, bench"
   python3 msp_bench.py --capture flat_still
@@ -81,6 +90,8 @@ MSP_ALTITUDE = 109
 MSP_BOXNAMES = 116
 MSP_NAV_STATUS = 121
 MSP_SENSOR_STATUS = 151
+MSP2_COMMON_SETTING_INFO = 0x1007
+MSP2_CF_SERIAL_CONFIG = 0x1009
 MSP2_INAV_STATUS = 0x2000
 MSP2_INAV_OPTICAL_FLOW = 0x2001
 MSP2_INAV_ANALOG = 0x2002
@@ -97,6 +108,7 @@ CMD_NAMES = {
     MSP2_INAV_OPTICAL_FLOW: "INAV_OPTICAL_FLOW", MSP2_INAV_ANALOG: "INAV_ANALOG",
     MSP2_INAV_GET_LINK_STATS: "INAV_LINK_STATS", MSP2_INAV_FULL_LOCAL_POSE: "INAV_LOCAL_POSE",
     MSP_MOTOR: "MOTOR", MSP_BOXNAMES: "BOXNAMES", MSP_NAV_STATUS: "NAV_STATUS",
+    MSP2_COMMON_SETTING_INFO: "SETTING_INFO", MSP2_CF_SERIAL_CONFIG: "SERIAL_CONFIG",
 }
 CMD_BY_NAME = {name: cmd for cmd, name in CMD_NAMES.items()}
 
@@ -417,9 +429,13 @@ def dec_altitude(p):
     return out
 
 
+# INAV rangefinder.h: values <= 0 are states, not distances
+RF_STATES = {0: "zero", -1: "out_of_range", -2: "hw_failure", -3: "no_new_data"}
+
+
 def dec_sonar(p):
     (cm,) = struct.unpack_from("<i", p)
-    out = {"rangefinder_valid": 1.0 if cm > 0 else 0.0}  # 0 = not running, -1 = out of range
+    out = {"rangefinder_valid": 1.0 if cm > 0 else 0.0, "_rf_code": cm}
     if cm > 0:
         out["rangefinder_cm"] = cm
     return out
@@ -630,6 +646,9 @@ SECTION_TITLES = {
     "derived": "Checks", "latency": "Link latency & heavy MSP load",
     "link": "Link health", "diagnose": "Diagnosis", "run": "Run",
     "capture": "Capture (recording for the tests)",
+    "mtf_config": "MTF-02P setup (INAV settings & port)",
+    "mtf": "MTF-02P at rest",
+    "flow_motion": "MTF-02P motion test",
 }
 
 
@@ -945,6 +964,8 @@ def test_sensors(c, rep, duration, timeout, status=None):
                 notes=f"{counts[cmd]} samples, {timeouts[cmd]} timeouts")
 
     for metric, tv in samples.items():
+        if metric.startswith("_"):
+            continue
         vals = [v for _, v in tv]
         s = summarize(vals)
         note = f"median over {elapsed:.1f}s"
@@ -996,17 +1017,7 @@ def derived_checks(rep, samples, args):
         if total and not d:
             rep.add("derived", "i2c_errors_since_boot", total, "", "WARN",
                     "old errors from boot (sensor probing), none during this run")
-    if samples.get("rangefinder_valid"):
-        pct = 100 * statistics.fmean(v for _, v in samples["rangefinder_valid"])
-        expected = "rangefinder" in args.expect
-        rep.add("derived", "rangefinder_valid_pct", pct, "%",
-                ("PASS" if pct >= 95 else "WARN") if expected else "INFO",
-                "share of readings in range" + ("" if expected else " (rangefinder not expected)"))
-    if samples.get("flow_quality"):
-        q = [v for _, v in samples["flow_quality"]]
-        good = 100 * sum(v >= args.flow_quality_min for v in q) / len(q)
-        rep.add("derived", "flow_quality_good_pct", good, "%",
-                notes=f"quality >= {args.flow_quality_min}; depends on surface texture/light")
+    mtf_still_checks(rep, samples, args)
     if (m := med("cell_v")) is not None:
         if med("vbat_v") is not None and med("vbat_v") < 3.0:
             rep.add("derived", "cell_voltage_v", "no battery", "", "WARN", "USB-powered")
@@ -1015,6 +1026,269 @@ def derived_checks(rep, samples, args):
                     "" if m >= 3.5 else "battery low, charge before flight tests")
     if (m := med("cycle_time_us")) is not None:
         rep.add("derived", "fc_loop_hz", 1e6 / m if m else math.nan, "Hz")
+
+
+# --------------------------------------------------------------------------- #
+# MTF-02P (MSP rangefinder + optical flow)
+# --------------------------------------------------------------------------- #
+# INAV setting types (settings.h, low 3 bits of the type byte)
+SETTING_FMT = {0: "<B", 1: "<b", 2: "<H", 3: "<h", 4: "<I", 5: "<f"}
+BAUD_RATES = [0, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 250000,
+              460800, 921600, 1000000, 1500000, 2000000, 2470000]
+FUNCTION_MSP = 1 << 0
+
+# (setting, required value or None, note)
+MTF_SETTINGS = [
+    ("rangefinder_hardware", "MSP", "MTF-02P sends MSP2_SENSOR_RANGEFINDER", "rangefinder"),
+    ("opflow_hardware", "MSP", "MTF-02P sends MSP2_SENSOR_OPTIC_FLOW", "opflow"),
+    ("opflow_scale", None, "calibrate in flight (default until then)", "opflow"),
+    ("align_opflow", None, "must match how the sensor is mounted", "opflow"),
+    ("rangefinder_median_filter", None, "smoothing of the distance", "rangefinder"),
+    ("inav_max_surface_altitude", None, "above this the rangefinder is ignored (cm)", "rangefinder"),
+    ("inav_w_z_surface_p", None, "estimator weight: rangefinder -> altitude", "rangefinder"),
+    ("inav_w_z_surface_v", None, "estimator weight: rangefinder -> climb rate", "rangefinder"),
+    ("inav_w_xy_flow_p", None, "estimator weight: flow -> position", "opflow"),
+    ("inav_w_xy_flow_v", None, "estimator weight: flow -> velocity", "opflow"),
+]
+
+
+def read_setting(c, name, timeout):
+    """MSP2_COMMON_SETTING_INFO: returns the value as text (lookup name for enums).
+    Layout: name\\0, pg u16, type u8, section u8, mode u8, min i32, max u32, index u16,
+    profile u8, profile count u8, [lookup names \\0 ...], value. The value is read from
+    the end (its size follows from the type), so the mode byte need not be decoded."""
+    p, _ = c.request(MSP2_COMMON_SETTING_INFO, name.encode() + b"\0", timeout=timeout)
+    pos = p.index(0) + 1
+    _pg, typ, _sec, _mode, vmin, _vmax = struct.unpack_from("<HBBBiI", p, pos)
+    pos += 2 + 3 + 8 + 2 + 2
+    vtype = typ & 0x07
+    if vtype not in SETTING_FMT:              # string setting
+        return p[pos:].split(b"\0")[0].decode(errors="replace")
+    fmt = SETTING_FMT[vtype]
+    size = struct.calcsize(fmt)
+    (value,) = struct.unpack_from(fmt, p, len(p) - size)
+    names = p[pos:len(p) - size]
+    if names:                                 # lookup table -> enum name
+        table = names.rstrip(b"\0").split(b"\0")
+        i = int(value) - vmin
+        if 0 <= i < len(table):
+            return table[i].decode(errors="replace")
+    return f"{value:.4g}" if isinstance(value, float) else str(value)
+
+
+def test_mtf_config(c, rep, a):
+    for name, want, note, sensor in MTF_SETTINGS:
+        if sensor not in a.expect:
+            continue
+        try:
+            v = read_setting(c, name, a.timeout)
+        except MspError:
+            rep.add("mtf_config", name, "n/a", notes="not in this firmware")
+            continue
+        except (MspTimeout, ValueError, struct.error) as e:
+            rep.add("mtf_config", name, "unreadable", status="WARN", notes=str(e) or type(e).__name__)
+            continue
+        if want is None:
+            rep.add("mtf_config", name, v, notes=note)
+        else:
+            ok = v.upper() == want
+            rep.add("mtf_config", name, v, status="PASS" if ok else "FAIL",
+                    notes=note if ok else f"set {name} = {want}")
+
+    # the sensor's UART: MSP on, nothing else (a serial 'Rangefinder' function on the
+    # same port grabs it and the MSP sensor packets are never decoded)
+    item = f"uart{a.sensor_uart}_functions"
+    try:
+        p, _ = c.request(MSP2_CF_SERIAL_CONFIG, timeout=a.timeout)
+    except (MspTimeout, MspError) as e:
+        rep.add("mtf_config", item, "unreadable", status="WARN", notes=str(e))
+        return
+    ports = {}
+    for off in range(0, len(p) - 8, 9):
+        ident, mask, msp_b, _gps, _tel, _per = struct.unpack_from("<BIBBBB", p, off)
+        ports[ident] = (mask, msp_b)
+    ident = a.sensor_uart - 1                 # INAV: UART1 = identifier 0
+    if ident not in ports:
+        rep.add("mtf_config", item, "no such port", status="FAIL",
+                notes=f"ports on this board: {', '.join(f'UART{i + 1}' for i in sorted(ports) if i < 20)}")
+        return
+    mask, msp_b = ports[ident]
+    if not mask & FUNCTION_MSP:
+        rep.add("mtf_config", item, f"0x{mask:x}", status="FAIL",
+                notes="MSP is off on the sensor port (Ports tab: enable MSP)")
+    elif mask & ~FUNCTION_MSP:
+        rep.add("mtf_config", item, f"0x{mask:x}", status="FAIL",
+                notes="other functions on the sensor port too: leave only MSP "
+                      "(Sensors/Telemetry/Peripherals = Disabled)")
+    else:
+        rep.add("mtf_config", item, "MSP only", status="PASS")
+    baud = BAUD_RATES[msp_b] if msp_b < len(BAUD_RATES) else f"index {msp_b}"
+    rep.add("mtf_config", f"uart{a.sensor_uart}_msp_baud", baud,
+            notes="must match the MTF-02P's output baud")
+    others = [f"UART{i + 1}" for i, (m, _) in ports.items()
+              if i != ident and i < 20 and m & FUNCTION_MSP]
+    if others:
+        rep.add("mtf_config", "other_msp_ports", " ".join(others),
+                notes="fine (e.g. the ESP bridge); just not the sensor's")
+
+
+def mtf_still_checks(rep, samples, args):
+    """Rangefinder and flow at rest (from the normal sampling run)."""
+    rf_exp, fl_exp = "rangefinder" in args.expect, "opflow" in args.expect
+    codes = [int(v) for _, v in samples.get("_rf_code", [])]
+    if codes:
+        n = len(codes)
+        valid = sum(c > 0 for c in codes)
+        pct = 100 * valid / n
+        rep.add("mtf", "rangefinder_valid_pct", pct, "%",
+                ("PASS" if pct >= 95 else "WARN") if rf_exp else "INFO",
+                "share of readings with a distance"
+                + ("; tilted/upside down or out of range counts as invalid" if rf_exp
+                   else " (rangefinder not expected)"))
+        states = defaultdict(int)
+        for c in codes:
+            if c <= 0:
+                states[RF_STATES.get(c, f"code_{c}")] += 1
+        if states:
+            text = ", ".join(f"{k} {v}" for k, v in sorted(states.items()))
+            bad = states.get("hw_failure", 0)
+            rep.add("mtf", "rangefinder_invalid_states", text, "",
+                    "FAIL" if bad and rf_exp else "INFO",
+                    "hardware failure reported by INAV" if bad else
+                    "out_of_range = too close/far or no surface; no_new_data = sensor stopped sending")
+        dist = [v for _, v in samples.get("rangefinder_cm", [])]
+        if len(dist) >= 3:
+            sd = statistics.pstdev(dist)
+            ok = sd <= args.rf_noise_max
+            note = f"std at rest, limit {args.rf_noise_max:g} cm"
+            if not ok:
+                note += "; hand-held or shiny/soft surface adds noise"
+            rep.add("mtf", "rangefinder_noise_cm", sd, "cm",
+                    ("PASS" if ok else "WARN") if rf_exp else "INFO", note)
+            rep.add("mtf", "rangefinder_distance_cm", statistics.median(dist), "cm",
+                    notes=f"{min(dist):.0f}-{max(dist):.0f} cm")
+            changes = sum(1 for x, y in zip(dist, dist[1:]) if x != y)
+            rep.add("mtf", "rangefinder_value_changes_pct", 100 * changes / (len(dist) - 1), "%",
+                    notes="share of polls with a new value; ~0% with the drone still "
+                          "can mean a frozen sensor")
+
+    q = [v for _, v in samples.get("flow_quality", [])]
+    if q:
+        good = 100 * sum(v >= args.flow_quality_min for v in q) / len(q)
+        med_q = statistics.median(q)
+        if not fl_exp:
+            st = "INFO"
+        elif max(q) == 0:
+            st = "FAIL"
+        else:
+            st = "PASS" if good >= 50 else "WARN"
+        rep.add("mtf", "flow_quality_median", med_q, "0-255", st,
+                "quality always 0: no flow data from the sensor" if st == "FAIL" else
+                "depends on surface texture, light and height")
+        rep.add("mtf", "flow_quality_good_pct", good, "%",
+                notes=f"quality >= {args.flow_quality_min}")
+        peaks = [abs(v) for k in ("flow_rate_x_dps", "flow_rate_y_dps")
+                 for _, v in samples.get(k, [])]
+        if peaks:
+            rep.add("mtf", "flow_rate_at_rest_peak_dps", max(peaks), "deg/s",
+                    notes="should stay near 0 with the drone still; "
+                          "use --flow-motion to see it respond")
+
+
+MOTION_PHASES = [
+    ("still", "hold it still"),
+    ("forward", "slide it FORWARD (nose direction)"),
+    ("back", "slide it BACK"),
+    ("right", "slide it RIGHT"),
+    ("left", "slide it LEFT"),
+]
+
+
+def test_flow_motion(c, rep, ui, a):
+    """Guided motion: each phase polls only flow + rangefinder (much faster than the
+    round-robin sampling) and records mean/peak flow per axis."""
+    cmds = [(MSP2_INAV_OPTICAL_FLOW, dec_opflow), (MSP_SONAR_ALTITUDE, dec_sonar)]
+    ui.step("flow motion test: level, ~0.3-1 m over a textured surface, slow and steady")
+    t_start = time.perf_counter()
+    got = {}
+    for key, text in MOTION_PHASES:
+        ui.step(f"next: {text} - in 3 s")
+        time.sleep(3.0)
+        ui.step(f"  now: {text} ({a.flow_phase:g} s)")
+        smp = defaultdict(list)
+        polls = 0
+        t0 = time.perf_counter()
+        while time.perf_counter() - t0 < a.flow_phase:
+            for cmd, dec in cmds:
+                try:
+                    p, _ = c.request(cmd, timeout=a.timeout)
+                    vals = dec(p)
+                except MspTimeout:
+                    c.drain(0.02, 0.2)
+                    continue
+                except (MspError, struct.error):
+                    continue
+                t = time.perf_counter() - t_start
+                for k, v in vals.items():
+                    smp[k].append(float(v))
+                    rep.raw.append(("flow_motion", f"{key}.{k}", t, float(v)))
+            polls += 1
+        dt = time.perf_counter() - t0
+        fx, fy = smp.get("flow_rate_x_dps", []), smp.get("flow_rate_y_dps", [])
+        if not fx:
+            rep.add("flow_motion", key, "no data", status="FAIL", notes="no flow replies")
+            continue
+        mx, my = statistics.fmean(fx), statistics.fmean(fy)
+        peak = max(max(map(abs, fx)), max(map(abs, fy)))
+        q = statistics.median(smp["flow_quality"])
+        codes = smp.get("_rf_code", [])
+        rfv = 100 * sum(v > 0 for v in codes) / len(codes) if codes else 0
+        dist = smp.get("rangefinder_cm", [])
+        rf = f"{statistics.median(dist):.0f} cm" if dist else "no distance"
+        rep.add("flow_motion", key, f"x {mx:+.1f} y {my:+.1f}", "deg/s",
+                notes=f"mean flow; peak {peak:.0f}, quality {q:.0f}, "
+                      f"rangefinder {rf} ({rfv:.0f}% valid), {polls / dt:.0f} polls/s")
+        got[key] = dict(mx=mx, my=my, peak=peak, q=q, rfv=rfv)
+
+    if "still" not in got or len(got) < len(MOTION_PHASES):
+        return
+    moving = [k for k, _ in MOTION_PHASES if k != "still"]
+    floor = max(a.flow_min_dps, 2 * got["still"]["peak"])
+    dead = [k for k in moving if got[k]["peak"] < floor]
+    rep.add("flow_motion", "flow_responds", "no: " + ", ".join(dead) if dead else "yes", "",
+            "FAIL" if dead else "PASS",
+            f"peak must reach {floor:.0f} deg/s in every direction" +
+            ("; check surface texture, light, height and the jumper/protocol" if dead else ""))
+
+    def axis(k):
+        mx, my = got[k]["mx"], got[k]["my"]
+        return ("X", mx) if abs(mx) >= abs(my) else ("Y", my)
+
+    def label(k):
+        ax, v = axis(k)
+        return f"{'+' if v >= 0 else '-'}{ax}"
+
+    if not dead:
+        f_ax, f_v = axis("forward")
+        b_ax, b_v = axis("back")
+        r_ax, r_v = axis("right")
+        l_ax, l_v = axis("left")
+        consistent = (f_ax == b_ax and r_ax == l_ax and f_ax != r_ax
+                      and f_v * b_v < 0 and r_v * l_v < 0)
+        mapping = f"fwd {label('forward')}, back {label('back')}, right {label('right')}, left {label('left')}"
+        rep.add("flow_motion", "axis_mapping", mapping, "",
+                "PASS" if consistent else "WARN",
+                "opposite moves give opposite signs on one axis; compare with INAV's "
+                "convention and fix align_opflow if mirrored or rotated" if consistent else
+                "directions don't separate cleanly: moved diagonally or rotated while sliding? "
+                "repeat; if it persists check align_opflow")
+    q_move = statistics.median(got[k]["q"] for k in moving)
+    rep.add("flow_motion", "quality_while_moving", q_move, "0-255",
+            "PASS" if q_move >= a.flow_quality_min else "WARN",
+            f"median over the moving phases, want >= {a.flow_quality_min}")
+    rfv = statistics.fmean(got[k]["rfv"] for k in moving)
+    rep.add("flow_motion", "rangefinder_valid_while_moving", rfv, "%",
+            "PASS" if rfv >= 95 else "WARN", "rangefinder kept a distance while sliding")
 
 
 def latency_sequential(c, rep, count, timeout, warn_ms, commands, interval=0.0):
@@ -1247,6 +1521,9 @@ def summary_values(rep, seq, link_name):
         "baro_drift_cm_min": ("derived", "baro_alt_drift_cm_per_min"),
         "i2c_errors_delta": ("derived", "i2c_errors_delta"),
         "cell_v": ("derived", "cell_voltage_v"),
+        "rf_valid_pct": ("mtf", "rangefinder_valid_pct"),
+        "rf_noise_cm": ("mtf", "rangefinder_noise_cm"),
+        "flow_quality_median": ("mtf", "flow_quality_median"),
     }
     for key, (section, item) in picks.items():
         v = num(section, item)
@@ -1304,8 +1581,9 @@ def parse_args(argv=None):
     ap.add_argument("--force", action="store_true",
                     help="open the serial port even if another program (msp_gateway?) has it open")
     ap.add_argument("--duration", type=float, default=10.0, help="sensor sampling seconds")
-    ap.add_argument("--expect", default="gyro,acc",
-                    help="sensors that must be OK (add opflow,rangefinder once the MTF-02P is in)")
+    ap.add_argument("--expect", default="gyro,acc,rangefinder,opflow",
+                    help="sensors that must be OK (rangefinder,opflow = the MTF-02P; "
+                         "drop them to bench without it)")
     ap.add_argument("--timeout", type=float, default=0.5, help="per-request timeout (s)")
     ap.add_argument("--rtt-count", type=int, default=200, help="sequential requests per command")
     ap.add_argument("--rtt-commands", default=RTT_DEFAULT,
@@ -1319,8 +1597,20 @@ def parse_args(argv=None):
     ap.add_argument("--acc-tol", type=float, default=0.05, help="|acc_norm - 1g| tolerance")
     ap.add_argument("--gyro-bias-tol", type=float, default=1.0, help="deg/s")
     ap.add_argument("--flow-quality-min", type=int, default=50)
+    mtf = ap.add_argument_group("MTF-02P (rangefinder + optical flow)")
+    mtf.add_argument("--sensor-uart", type=int, default=4,
+                     help="UART number the MTF-02P is wired to (checked for MSP-only)")
+    mtf.add_argument("--rf-noise-max", type=float, default=2.0,
+                     help="note if rangefinder std at rest is above this (cm)")
+    mtf.add_argument("--flow-motion", action="store_true",
+                     help="guided motion test: hold still, then slide forward/back/right/left "
+                          "over a textured surface at ~0.3-1 m")
+    mtf.add_argument("--flow-phase", type=float, default=4.0, help="seconds per motion phase")
+    mtf.add_argument("--flow-min-dps", type=float, default=5.0,
+                     help="flow peak (deg/s) that counts as 'responded' in the motion test")
     ap.add_argument("--skip", default="",
-                    help="comma list: sensors, latency (all of it), load (load + burst only)")
+                    help="comma list: sensors, latency (all of it), load (load + burst only), "
+                         "config (MTF-02P settings/port check)")
     ap.add_argument("--allow-armed", action="store_true", help="run load tests even if armed")
     ap.add_argument("--quick", action="store_true", help="short run (~15 s)")
     ap.add_argument("--color", choices=["auto", "always", "never"], default="auto",
@@ -1349,7 +1639,7 @@ def parse_args(argv=None):
         a.load_windows = "1,8"
     a.expect = {s.strip() for s in a.expect.split(",") if s.strip()}
     a.skip = {s.strip() for s in a.skip.split(",") if s.strip()}
-    unknown = a.skip - {"sensors", "latency", "load"}
+    unknown = a.skip - {"sensors", "latency", "load", "config"}
     if unknown:
         ap.error(f"--skip: unknown part(s) {', '.join(sorted(unknown))}")
     a.load_windows = [int(x) for x in str(a.load_windows).split(",") if x.strip()]
@@ -1420,6 +1710,10 @@ def main(argv=None):
 
         ui.step("reading sensor status")
         st0 = test_sensor_status(c, rep, a.expect, a.timeout)
+        mtf_expected = bool({"rangefinder", "opflow"} & a.expect)
+        if mtf_expected and "config" not in a.skip and not a.capture:
+            ui.step("reading MTF-02P setup (settings, UART)")
+            test_mtf_config(c, rep, a)
 
         if a.capture:
             ui.step(f"capturing {a.capture_count} replies of {len(CAPTURE_MSGS)} messages "
@@ -1443,6 +1737,8 @@ def main(argv=None):
                                         status="FAIL", notes="changed during the run")
                     except (MspTimeout, MspError):
                         pass
+            if a.flow_motion:
+                test_flow_motion(c, rep, ui, a)
 
             if "latency" not in a.skip:
                 ui.step(f"latency: {a.rtt_count} sequential requests x {len(a.rtt_commands)} messages")

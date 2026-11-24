@@ -39,6 +39,7 @@ The scripts' default ports differ, so pass the address explicitly. `inav_telemet
 | I want to… | Use |
 | --- | --- |
 | check the whole drone before a session (sensors, link, arming), or measure sensor noise and link delay for the sim | [`msp_bench.py`](#msp_benchpy) |
+| check the MTF-02P (rangefinder + optical flow): INAV settings, its UART, readings at rest, and that the flow follows the drone's motion | [`msp_bench.py`](#the-mtf-02p-rangefinder-and-optical-flow), `--flow-motion` for the motion test |
 | watch the drone live, or run a motor test (props off) | [`msp_dashboard`](msp_dashboard/README.md) |
 | let several programs use the drone at once, and log every MSP frame | [`msp_gateway`](msp_dashboard/README.md#msp_gateway-one-owner-for-the-msp-link) |
 | record decoded telemetry as JSON lines, or feed it to a script | [`inav_telemetry.py`](#inav_telemetrypy) |
@@ -52,7 +53,7 @@ The scripts' default ports differ, so pass the address explicitly. `inav_telemet
 
 | File | What it is |
 | --- | --- |
-| `msp_bench.py` | The bench test for the real drone: sensor status, sensor values and noise, link latency under heavy MSP load. Also keeps runs in the logbook (`make bench`, `make wifi-rtt`) and records the captures for the tests (`make capture`) |
+| `msp_bench.py` | The bench test for the real drone: sensor status, sensor values and noise, the MTF-02P's setup and readings (plus a guided motion test), link latency under heavy MSP load. Also keeps runs in the logbook (`make bench`, `make wifi-rtt`) and records the captures for the tests (`make capture`) |
 | `inav_telemetry.py` | Polls INAV and prints decoded values (readable or JSON lines). Also the Python reference decoders the tests check |
 | `receiver_crsf_ping.py` | One-off tool: asks a CRSF/ELRS receiver for its name and version through INAV's serial passthrough |
 | `tests/` | MSP framing, decoders, the drone recordings and `msp_bench.py` (pytest; `make test` and CI) |
@@ -124,9 +125,9 @@ In setup B, only the Pi's USB bridge joins this network. Its SSID and password a
 
 ## `msp_bench.py`
 
-One command that checks everything we used to test separately: which sensors INAV sees, what they read while the drone sits still, and how the MSP link behaves when it is pushed hard. It prints a colored summary and writes one CSV per run, with the same columns on every machine, so runs from the Pi and from laptops can be pasted together and compared. Only the Python standard library is needed (plus `pyserial` for `--serial`).
+One command that checks everything we used to test separately: which sensors INAV sees, what they read while the drone sits still, whether the MTF-02P is set up and reading correctly, and how the MSP link behaves when it is pushed hard. It prints a colored summary and writes one CSV per run, with the same columns on every machine, so runs from the Pi and from laptops can be pasted together and compared. Only the Python standard library is needed (plus `pyserial` for `--serial`).
 
-**Before running it:** props off, drone still on a level surface, battery plugged in. Nothing else may be talking to the link (stop `msp_gateway` for `--serial`, close the dashboard and INAV Configurator). The load tests are skipped on their own if the drone is armed.
+**Before running it:** props off, drone still on a level surface, battery plugged in (the MTF-02P may not be powered on USB alone). The rangefinder only gives a distance when the drone is roughly level and pointing at a surface within range, so don't bench it upside down or tilted. Nothing else may be talking to the link (stop `msp_gateway` for `--serial`, close the dashboard and INAV Configurator). The load tests are skipped on their own if the drone is armed.
 
 ```bash
 # setup A: laptop on the drone's Wi-Fi
@@ -141,8 +142,11 @@ python3 project/telemetry/msp_bench.py --serial /dev/ttyUSB0 --quick --brief
 # numbers for the sim (ROS-8): a longer still run, plus every sample
 python3 project/telemetry/msp_bench.py --serial /dev/ttyUSB0 --duration 120 --raw raw.csv
 
-# once the MTF-02 is fitted, flow and rangefinder must be OK too
-python3 project/telemetry/msp_bench.py --tcp 192.168.4.1:23 --expect gyro,acc,opflow,rangefinder
+# MTF-02P motion test: hold it level 0.3-1 m over a textured surface and follow the prompts
+python3 project/telemetry/msp_bench.py --serial /dev/ttyUSB0 --flow-motion
+
+# without the MTF-02P (rangefinder and flow are expected by default)
+python3 project/telemetry/msp_bench.py --tcp 192.168.4.1:23 --expect gyro,acc
 ```
 
 Through the gateway (`--tcp <pi-address>:5760`) works too, but then the latency part measures the gateway's queue as well as the link.
@@ -152,10 +156,13 @@ Through the gateway (`--tcp <pi-address>:5760`) works too, but then the latency 
 | Section | What it checks |
 | --- | --- |
 | Flight controller | INAV version, board, craft name, armed or not, and what blocks arming. Blockers that are normal on the bench (`RC_LINK`, `NO_PREARM`, `ARM_SWITCH`, …) are only noted; anything else (`NOT_LEVEL`, `ACCELEROMETER_NOT_CALIBRATED`, `HARDWARE_FAILURE`, …) fails |
-| Sensor status | Health of gyro, acc, mag, baro, GPS, rangefinder, pitot and opflow, read at the start and again at the end, so a sensor that drops out during the run fails. `--expect` says which must be OK (default `gyro,acc`) |
+| Sensor status | Health of gyro, acc, mag, baro, GPS, rangefinder, pitot and opflow, read at the start and again at the end, so a sensor that drops out during the run fails. `--expect` says which must be OK (default `gyro,acc,rangefinder,opflow`) |
+| MTF-02P setup | INAV's settings and the sensor's UART, read from the FC ([details](#the-mtf-02p-rangefinder-and-optical-flow)). Skipped when neither `rangefinder` nor `opflow` is expected, or with `--skip config` |
 | Sample rate | How often each MSP message could be read in the 10 s. Rangefinder and flow are skipped while INAV reports them missing, because it answers with zeros then |
 | Sensor values | Median, std (the noise), min and max of every value while still: IMU, attitude, altitude, battery, RC channels, INAV's position estimate, ELRS link stats, loop time, CPU load |
 | Checks | Gyro bias, accelerometer norm (≈ 1 g), tilt at rest, yaw drift, altitude and position-estimate drift, new I2C errors, cell voltage |
+| MTF-02P at rest | Rangefinder valid %, why readings were invalid, noise and distance; flow quality and flow at rest |
+| MTF-02P motion test | Only with `--flow-motion`: a guided slide in four directions that checks the flow responds and shows which axis and sign each direction gives |
 | Link latency | Round trip for five messages one at a time (the link delay for the sim), then 1, 2, 4, 8 and 16 requests in flight for 5 s each (heavy MSP traffic), then 64 requests at once (buffer overflow) |
 | Link health | CRC errors, bytes that weren't MSP, error replies |
 
@@ -165,9 +172,9 @@ Through the gateway (`--tcp <pi-address>:5760`) works too, but then the latency 
 
 | Mark | Meaning |
 | --- | --- |
-| red `✖ FAIL` | Needs fixing before flying: FC not answering, armed, an expected sensor missing, a serious arming blocker, calibration out of tolerance, new I2C errors, low battery, lost replies with one request in flight, link dropped |
+| red `✖ FAIL` | Needs fixing before flying: FC not answering, armed, an expected sensor missing, a serious arming blocker, calibration out of tolerance, new I2C errors, low battery, lost replies with one request in flight, link dropped, an MTF-02P setting or port set wrong, rangefinder hardware failure, flow quality stuck at 0, flow not responding in the motion test |
 | green `✔ PASS` | An important check that passed |
-| faded yellow `• note` | Something failed or looks off but needs no action: bench arming blockers, old I2C errors from boot, the Wi-Fi latency tail, loss at high in-flight counts, the link needing a few seconds after the port opens |
+| faded yellow `• note` | Something failed or looks off but needs no action: bench arming blockers, old I2C errors from boot, the Wi-Fi latency tail, loss at high in-flight counts, the link needing a few seconds after the port opens, low flow quality or a noisy rangefinder (surface, light, hand-held), motion-test directions that didn't separate cleanly |
 | no mark | Information only |
 
 The run ends with a box listing what needs attention and what was only noted. Only red marks fail the run.
@@ -185,17 +192,27 @@ The run ends with a box listing what needs attention and what was only noted. On
 | `--tcp HOST[:PORT]` | `192.168.4.1:23` | esp-link, or the gateway on port 5760 |
 | `--serial DEV`, `--baud` | none, `115200` | the Pi's USB bridge instead of TCP |
 | `--connect-wait` | `15` | seconds to keep asking at the start: opening the port reboots the D1 Mini, which then rejoins the drone's Wi-Fi |
+| `--settle` | `0.2` | seconds to wait after opening a serial port before the first request |
 | `--force` | | open the serial port even though another program has it open (normally it refuses and names the program, usually `msp_gateway`) |
 | `--timeout` | `0.5` | seconds before a reply counts as lost |
 | `--duration` | `10` | seconds of sensor sampling |
-| `--expect` | `gyro,acc` | sensors that must be OK |
+| `--expect` | `gyro,acc,rangefinder,opflow` | sensors that must be OK; `gyro,acc` without the MTF-02P |
 | `--rtt-count` | `200` | sequential requests per message in the latency test |
 | `--rtt-commands` | `API_VERSION,ATTITUDE,RAW_IMU,INAV_ANALOG,INAV_STATUS` | which messages the sequential test uses |
 | `--rtt-interval` | `0` | pause between sequential requests, in seconds |
 | `--rtt-warn-ms` | `20` | note if the p95 round trip is above this |
 | `--load-windows`, `--load-duration` | `1,2,4,8,16`, `5` | requests kept in flight, and seconds for each |
 | `--burst` | `64` | requests sent at once (`0` skips it) |
-| `--skip` | | `sensors`, `latency` (all of it) and/or `load` (load and burst, keeps the sequential test) |
+| `--allow-armed` | | run the load tests even when the drone is armed (props off!) |
+| `--acc-tol` | `0.05` | accelerometer norm may differ from 1 g by this much, in g |
+| `--gyro-bias-tol` | `1` | gyro bias allowed at rest, in °/s |
+| `--skip` | | `sensors`, `latency` (all of it), `load` (load and burst, keeps the sequential test) and/or `config` (the MTF-02P settings and UART check) |
+| `--sensor-uart` | `4` | UART the MTF-02P is wired to, checked for MSP only |
+| `--rf-noise-max` | `2` | note if the rangefinder's std at rest is above this, in cm |
+| `--flow-quality-min` | `50` | flow quality that counts as good |
+| `--flow-motion` | | run the guided motion test after the sensor sampling |
+| `--flow-phase` | `4` | seconds per motion-test phase (each one starts with a 3 s countdown) |
+| `--flow-min-dps` | `5` | flow peak in °/s that counts as a response in the motion test (at least twice the still phase's peak) |
 | `--quick` | | short run, about 15 s |
 | `--brief` | | hide the sensor table, show checks and problems only |
 | `--color` | `auto` | `always`, `never`; `auto` turns colors off when the output isn't a terminal, and so does the `NO_COLOR` variable |
@@ -204,6 +221,43 @@ The run ends with a box listing what needs attention and what was only noted. On
 | `--logbook NOTE`, `--logbook-name` | , `msp_bench` | keep the run in `project/logs/measurements/<name>/` ([below](#keeping-the-result-the-logbook)) |
 | `--capture STATE`, `--capture-count` | , `20` | record a capture instead of running the bench ([below](#recording-captures-for-the-tests)) |
 | `--capture-dir`, `--no-copy` | `inav/msp/captures/` | where the capture goes; don't refresh the copies in `project/ros2` |
+
+### The MTF-02P (rangefinder and optical flow)
+
+The MicoAir MTF-02P sits on UART4 and sends its readings to INAV as MSP sensor messages. The bench never sees those messages, only what INAV makes of them, so it checks three things.
+
+**Setup** (section *MTF-02P setup*), read from the FC with `MSP2_COMMON_SETTING_INFO` and `MSP2_CF_SERIAL_CONFIG`:
+
+| Item | Checks |
+| --- | --- |
+| `rangefinder_hardware`, `opflow_hardware` | must be `MSP`, otherwise FAIL |
+| `uart4_functions` | MSP on and nothing else. A second function on the same port (e.g. Sensors → Rangefinder in the Ports tab, which is for serial rangefinders like Benewake) takes the port and the MSP packets are never decoded: FAIL |
+| `uart4_msp_baud` | shown; must match the sensor's output |
+| `opflow_scale`, `align_opflow`, `rangefinder_median_filter`, `inav_max_surface_altitude`, `inav_w_z_surface_*`, `inav_w_xy_flow_*` | shown for the record; settings this firmware doesn't have show `n/a` |
+
+**At rest** (section *MTF-02P at rest*), from the normal sampling:
+
+| Item | Meaning |
+| --- | --- |
+| `rangefinder_valid_pct` | share of readings with a distance; below 95 % is a note |
+| `rangefinder_invalid_states` | why the rest weren't valid: `out_of_range` (too close, too far, no surface, or tilted), `no_new_data` (the sensor stopped sending), `hw_failure` (FAIL) |
+| `rangefinder_noise_cm`, `rangefinder_distance_cm` | std and median distance; a note above `--rf-noise-max` |
+| `rangefinder_value_changes_pct` | share of polls with a new value; close to 0 % can mean a frozen sensor |
+| `flow_quality_median`, `flow_quality_good_pct` | FAIL if quality stays 0 the whole run (no flow data); a note if under half the readings reach `--flow-quality-min` |
+| `flow_rate_at_rest_peak_dps` | should stay near 0 with the drone still |
+
+**Motion test** (`--flow-motion`, section *MTF-02P motion test*): the script asks you to hold the drone still, then slide it forward, back, right and left, each for `--flow-phase` seconds after a 3 s countdown. Hold it level 0.3–1 m over a textured surface in good light, move slowly and don't rotate it. Only the flow and rangefinder messages are polled during this test, so it gets many more samples than the 10 s sampling. It reports, per direction, the mean flow on each axis, the peak, the quality and the rangefinder, then:
+
+| Item | Checks |
+| --- | --- |
+| `flow_responds` | every direction reached the flow threshold; FAIL lists the ones that didn't |
+| `axis_mapping` | only when every direction responded. E.g. `fwd +Y, back -Y, right -X, left +X`: opposite moves must land on one axis with opposite signs, and forward/back on a different axis from right/left. A note if they don't (moved diagonally, or rotated). Compare the mapping with INAV's convention once, and fix `align_opflow` if it's mirrored or rotated |
+| `quality_while_moving`, `rangefinder_valid_while_moving` | the sensor kept good quality and a distance while sliding |
+
+With `--raw`, every motion-test sample is saved too, under section `flow_motion` (items like `forward.flow_rate_y_dps`).
+
+> [!WARNING]
+> With the current INAV build, negative flow rates arrive as 0 (`MSP2_INAV_OPTICAL_FLOW` sends them unsigned). Two of the four directions then look dead: `flow_responds` fails for them and `axis_mapping` is skipped. That is the firmware, not the sensor. Run the motion test again once the signed-rounding patch to `fc_msp.c` is flashed; it is also the check that the patch works.
 
 ### Keeping the result: the logbook
 
@@ -215,7 +269,7 @@ make bench NOTE="Pi, USB bridge, bench" ARGS="--serial /dev/ttyUSB0"     # on th
 make wifi-rtt NOTE="cage, AP mode, radio on" ARGS="--rtt-count 500"      # round trip only, folder wifi_rtt/
 ```
 
-`make wifi-rtt` is what `latency_test.py` measured: one small request at a time, 50 ms apart, 2 s before a reply counts as lost, no sensors and no load test. Its `history.csv` keeps the same columns as before (`median_ms`, `p90_ms`, `p99_ms`, `lost_pct`, `late`, `jitter_ms`, …), so old and new lines compare. Every flag in `ARGS` goes to `msp_bench.py`. A run that never reached the flight controller records nothing; Ctrl-C stops early and still records what was measured.
+`make wifi-rtt` is what `latency_test.py` measured: one small request at a time, 50 ms apart, 2 s before a reply counts as lost, no sensors and no load test. Its `history.csv` keeps the same columns as before (`median_ms`, `p90_ms`, `p99_ms`, `lost_pct`, `late`, `jitter_ms`, …), so old and new lines compare. `make bench` runs also keep `rf_valid_pct`, `rf_noise_cm` and `flow_quality_median`, to follow the MTF-02P over time. Every flag in `ARGS` goes to `msp_bench.py`. A run that never reached the flight controller records nothing; Ctrl-C stops early and still records what was measured.
 
 ### Recording captures for the tests
 
@@ -230,15 +284,19 @@ It asks every message 20 times (`--capture-count`) and writes the file in the sa
 
 ### The CSV
 
-One row per measurement: `run_id, timestamp_utc, host, link, section, item, value, unit, status, n, mean, std, min, max, p05, p95, p99, notes`. `status` is `PASS`, `FAIL`, `WARN` (the faded-yellow notes) or `INFO`. For a measured value, `value` is the median and the other columns hold its statistics. To compare runs, open several in LibreOffice Calc and build a pivot table with `item` as rows and `run_id` or `host` as columns (Data > Pivot Table).
+One row per measurement: `run_id, timestamp_utc, host, link, section, item, value, unit, status, n, mean, std, min, max, p05, p95, p99, notes`. `status` is `PASS`, `FAIL`, `WARN` (the faded-yellow notes) or `INFO`. The MTF-02P rows are in sections `mtf_config`, `mtf` and `flow_motion`. For a measured value, `value` is the median and the other columns hold its statistics. To compare runs, open several in LibreOffice Calc and build a pivot table with `item` as rows and `run_id` or `host` as columns (Data > Pivot Table).
 
 ### Limits to keep in mind
 
 - MSP sends gyro rates in whole °/s and heading in whole degrees, so gyro noise reads as 0 here. Use a blackbox log for the real gyro noise.
 - About 100 replies per second is the ceiling we measured, with or without more requests in flight. Sending many at once loses replies, so the gateway keeps only a few in flight.
 - Drift numbers from a 10 s run are mostly noise. Use `--duration 120` or more before putting them in the sim.
+- The bench only sees the MTF-02P through INAV, so the sensor's own update rate can't be measured here. The sample rate shown is how often the bench polled INAV.
+- Until the INAV flow patch is flashed, negative flow rates read as 0, so `flow_rate_at_rest_peak_dps` and the flow noise only show the positive half, and the motion test fails two directions (see the warning above).
+- The motion test checks that the flow axes separate cleanly, not which sign INAV expects for forward. Check that once against the Sensors tab.
+- Whether INAV actually uses the rangefinder and flow in its estimate (`est_alt_cm`, the position estimate) doesn't show while disarmed on the bench. Use a hover test or a blackbox log.
 
-To try it without the drone: `python3 msp_dashboard/tools/fake_fc.py --port 5760 --no-arm`, then `--tcp 127.0.0.1:5760`. The fake FC tilts and moves, so a few checks fail on purpose.
+To try it without the drone: `python3 msp_dashboard/tools/fake_fc.py --port 5760 --no-arm`, then `--tcp 127.0.0.1:5760`. The fake FC tilts and moves, so a few checks fail on purpose (gyro bias, `NOT_LEVEL`, rangefinder noise). It reports a rangefinder and a flow sensor, but doesn't answer the settings and serial-config messages, so the MTF-02P setup rows show `n/a` and an `unreadable` note; `--skip config` leaves them out.
 
 ---
 
