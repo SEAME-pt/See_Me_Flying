@@ -3,7 +3,7 @@ depth_view: distance to what is straight ahead, from the camera, with an AI dept
 
 Reads camera/image and fc/range (height, used to scale the model to metres:
 drone_sim/depth.py explains how), publishes camera/distance_ahead (m) and warns
-when it is below warn_m. Like camera_view, it only warns; nothing is stopped.
+when it is below warn_m.it only warns; nothing is stopped.
 
 The window shows, side by side:
   left   the camera; green box = what counts as "ahead", text = distance ahead

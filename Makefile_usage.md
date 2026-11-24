@@ -86,3 +86,7 @@ make clean-volumes   # also delete the Gazebo model cache and monitoring data
 - **Joystick not found** (`ls /dev/input/js*` shows nothing): try another USB cable or port. `journalctl -kf | grep -i usb` must not show `error -71`.
 - **Drone ignores the RadioMaster**: it isn't armed. Centre the throttle, then flip SA off and on.
 - **Grafana shows NO DATA**: start a sim first.
+
+
+
+## ros2 run drone_sim depth_view --ros-args -p use_sim_time:=true
