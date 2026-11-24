@@ -192,6 +192,7 @@ The run ends with a box listing what needs attention and what was only noted. On
 | `--tcp HOST[:PORT]` | `192.168.4.1:23` | esp-link, or the gateway on port 5760 |
 | `--serial DEV`, `--baud` | none, `115200` | the Pi's USB bridge instead of TCP |
 | `--connect-wait` | `15` | seconds to keep asking at the start: opening the port reboots the D1 Mini, which then rejoins the drone's Wi-Fi |
+| `--settle` | `0.2` | seconds to wait after opening a serial port before the first request |
 | `--force` | | open the serial port even though another program has it open (normally it refuses and names the program, usually `msp_gateway`) |
 | `--timeout` | `0.5` | seconds before a reply counts as lost |
 | `--duration` | `10` | seconds of sensor sampling |
@@ -202,6 +203,9 @@ The run ends with a box listing what needs attention and what was only noted. On
 | `--rtt-warn-ms` | `20` | note if the p95 round trip is above this |
 | `--load-windows`, `--load-duration` | `1,2,4,8,16`, `5` | requests kept in flight, and seconds for each |
 | `--burst` | `64` | requests sent at once (`0` skips it) |
+| `--allow-armed` | | run the load tests even when the drone is armed (props off!) |
+| `--acc-tol` | `0.05` | accelerometer norm may differ from 1 g by this much, in g |
+| `--gyro-bias-tol` | `1` | gyro bias allowed at rest, in °/s |
 | `--skip` | | `sensors`, `latency` (all of it), `load` (load and burst, keeps the sequential test) and/or `config` (the MTF-02P settings and UART check) |
 | `--sensor-uart` | `4` | UART the MTF-02P is wired to, checked for MSP only |
 | `--rf-noise-max` | `2` | note if the rangefinder's std at rest is above this, in cm |
@@ -220,7 +224,7 @@ The run ends with a box listing what needs attention and what was only noted. On
 
 ### The MTF-02P (rangefinder and optical flow)
 
-The MicoAir MTF-02P sits on UART4 and sends its readings to INAV as MSP sensor messages. The bench can't read the sensor directly, only what INAV makes of it, so it checks three things.
+The MicoAir MTF-02P sits on UART4 and sends its readings to INAV as MSP sensor messages. The bench never sees those messages, only what INAV makes of them, so it checks three things.
 
 **Setup** (section *MTF-02P setup*), read from the FC with `MSP2_COMMON_SETTING_INFO` and `MSP2_CF_SERIAL_CONFIG`:
 
@@ -247,10 +251,13 @@ The MicoAir MTF-02P sits on UART4 and sends its readings to INAV as MSP sensor m
 | Item | Checks |
 | --- | --- |
 | `flow_responds` | every direction reached the flow threshold; FAIL lists the ones that didn't |
-| `axis_mapping` | e.g. `fwd +Y, back -Y, right -X, left +X`: opposite moves must land on one axis with opposite signs, and forward/back on a different axis from right/left. A note if they don't (moved diagonally, or rotated). Compare the mapping with INAV's convention once, and fix `align_opflow` if it's mirrored or rotated |
+| `axis_mapping` | only when every direction responded. E.g. `fwd +Y, back -Y, right -X, left +X`: opposite moves must land on one axis with opposite signs, and forward/back on a different axis from right/left. A note if they don't (moved diagonally, or rotated). Compare the mapping with INAV's convention once, and fix `align_opflow` if it's mirrored or rotated |
 | `quality_while_moving`, `rangefinder_valid_while_moving` | the sensor kept good quality and a distance while sliding |
 
 With `--raw`, every motion-test sample is saved too, under section `flow_motion` (items like `forward.flow_rate_y_dps`).
+
+> [!WARNING]
+> With the current INAV build, negative flow rates arrive as 0 (`MSP2_INAV_OPTICAL_FLOW` sends them unsigned). Two of the four directions then look dead: `flow_responds` fails for them and `axis_mapping` is skipped. That is the firmware, not the sensor. Run the motion test again once the signed-rounding patch to `fc_msp.c` is flashed; it is also the check that the patch works.
 
 ### Keeping the result: the logbook
 
@@ -284,11 +291,12 @@ One row per measurement: `run_id, timestamp_utc, host, link, section, item, valu
 - MSP sends gyro rates in whole °/s and heading in whole degrees, so gyro noise reads as 0 here. Use a blackbox log for the real gyro noise.
 - About 100 replies per second is the ceiling we measured, with or without more requests in flight. Sending many at once loses replies, so the gateway keeps only a few in flight.
 - Drift numbers from a 10 s run are mostly noise. Use `--duration 120` or more before putting them in the sim.
-- The MTF-02P talks to INAV, not to MSP, so the sensor's own update rate can't be measured here. The sample rate shown is how often the bench polled INAV.
+- The bench only sees the MTF-02P through INAV, so the sensor's own update rate can't be measured here. The sample rate shown is how often the bench polled INAV.
+- Until the INAV flow patch is flashed, negative flow rates read as 0, so `flow_rate_at_rest_peak_dps` and the flow noise only show the positive half, and the motion test fails two directions (see the warning above).
 - The motion test checks that the flow axes separate cleanly, not which sign INAV expects for forward. Check that once against the Sensors tab.
 - Whether INAV actually uses the rangefinder and flow in its estimate (`est_alt_cm`, the position estimate) doesn't show while disarmed on the bench. Use a hover test or a blackbox log.
 
-To try it without the drone: `python3 msp_dashboard/tools/fake_fc.py --port 5760 --no-arm`, then `--tcp 127.0.0.1:5760`. The fake FC tilts and moves, so a few checks fail on purpose. If it doesn't report a rangefinder and flow sensor, pass `--expect gyro,acc`. If it doesn't answer the settings and serial-config messages, the MTF-02P setup rows show `n/a` or `unreadable` notes; `--skip config` leaves them out.
+To try it without the drone: `python3 msp_dashboard/tools/fake_fc.py --port 5760 --no-arm`, then `--tcp 127.0.0.1:5760`. The fake FC tilts and moves, so a few checks fail on purpose (gyro bias, `NOT_LEVEL`, rangefinder noise). It reports a rangefinder and a flow sensor, but doesn't answer the settings and serial-config messages, so the MTF-02P setup rows show `n/a` and an `unreadable` note; `--skip config` leaves them out.
 
 ---
 
