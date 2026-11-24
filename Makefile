@@ -26,7 +26,7 @@ clean-volumes: ## Stop everything and delete the volumes (Gazebo model cache, Pr
 	$(COMPOSE) --profile monitoring down -v
 
 logs: ## Follow container logs
-	$(COMPOSE) logs -f $(SERVICE)
+	$(COMPOSE) logs -f $(SERVICE)	
 
 shell: up ## Open a bash shell in the container
 	$(COMPOSE) exec $(SERVICE) bash
@@ -38,7 +38,7 @@ ws: up ## colcon build the ROS workspace (project/ros2/src)
 
 ws-clean: up ## Delete the workspace build/, install/ and log/
 	$(call in_ws,rm -rf build install log)
-
+	
 # ========== tests (results in project/logs/) ==========
 
 test: up ## All tests (ROS + telemetry), like CI: results in project/logs/tests/
@@ -46,6 +46,9 @@ test: up ## All tests (ROS + telemetry), like CI: results in project/logs/tests/
 
 sim-test: ## Headless Gazebo flight test (nightly): results in project/logs/sim_flight/
 	bash $(SCRIPTS)/sim_flight_test.sh
+
+sim-test-sensors: ## Headless Gazebo sensor test: results in project/logs/sim_sensors/
+	SUITE=sensors bash $(SCRIPTS)/sim_flight_test.sh
 
 # ========== simulation (Gazebo) ==========
 

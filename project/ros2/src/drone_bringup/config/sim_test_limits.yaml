@@ -1,0 +1,14 @@
+# Limits for the automated sim tests (drone_bringup/test/test_sim_sensors.py).
+# Measured at 1 m height with the placeholder noise in sim.yaml; see SIM_Sensors.md.
+# Bands [low, high] are regression checks: they record how the sim behaves today,
+# and are meant to change when the estimator does.
+
+sensors:
+  hover_height_mean: 0.02   # m, average of fc/odom z minus true z, 10 s hover
+  hover_height_std: 0.02    # m, its scatter (measured 0.010)
+  hover_vz_std: 0.02        # m/s, scatter of fc/odom's vertical speed (measured 0.012)
+  flow_mean: 0.03           # m/s, average flow speed error, steady 0.3 m/s pass (measured -0.011)
+  flow_std: 0.03            # m/s, its scatter (measured 0.014)
+  pass_error: 0.25          # m, estimate vs truth after the 4 m pass (measured 0.12-0.16)
+  creep_1cm: [0.40, 0.80]   # share of a 1 cm/s creep the estimate misses (measured 63-66 %)
+  creep_3cm: [0.15, 0.45]   # the same at 3 cm/s (measured 31-37 %)

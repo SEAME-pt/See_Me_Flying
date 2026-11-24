@@ -97,6 +97,28 @@ ros2 action send_goal --feedback /mission/goto drone_interfaces/action/Goto "{fo
 ros2 action send_goal /mission/land drone_interfaces/action/Land "{}"
 ```
 
+## Automated sensor test
+
+`make sim-test-sensors` flies the same checks headless, in a throwaway
+container, with no commands to type. It is also run every night in CI
+(the `gazebo-sensors` job of `.github/workflows/nightly.yml`).
+
+| Step | What it measures |
+|---|---|
+| Hover 10 s | `fc/odom` height against the true height, and its vertical speed |
+| 4 m pass at 0.3 m/s | flow speed error while the speed is steady, and estimate drift |
+| Creep at 1 cm/s for 60 s | how much of a slow movement the estimate misses |
+| Creep at 3 cm/s for 30 s | the same, just above the blind spot |
+
+The limits live in `drone_bringup/config/sim_test_limits.yaml`, each with the
+value it was set from. The creep limits are bands: they record how the sim
+behaves today, and are meant to change when the estimator does. A quick check
+of that file runs in every `colcon test`.
+
+Results go to `project/logs/sim_sensors/<date>_<commit>/`: `result.json`, the
+test's log with what each step measured, and a rosbag of the flight (kept on
+your disk only). The test itself is `drone_bringup/test/test_sim_sensors.py`.
+
 ## Sensor specs (MicoAir MTF-02P: rangefinder + optical flow)
 
 Set in `drone_bringup/config/sim.yaml`. σ is the standard deviation of the
