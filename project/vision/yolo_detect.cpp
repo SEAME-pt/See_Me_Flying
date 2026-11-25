@@ -1,9 +1,9 @@
 // YOLO11 / YOLOv8 object detection: ONNX Runtime for inference, OpenCV for everything else.
 //
-// Run (from the cv_lab folder):
-//   ./build/yolo_detect data/bus.jpg            # image -> window + out/result.jpg
-//   ./build/yolo_detect data/vtest.avi          # video (Esc to quit)
-//   ./build/yolo_detect /dev/video2             # camera (V4L2), e.g. the FPV receiver; "2" also works
+// Run (from this folder, after ./download_models.sh and make):
+//   ./yolo_detect photo.jpg                     # image -> window + out/result.jpg
+//   ./yolo_detect video.mp4                     # video (Esc to quit)
+//   ./yolo_detect /dev/video2                   # camera (V4L2), e.g. the FPV receiver; "2" also works
 // Options after the input: --model models/yolo11n.onnx --conf 0.25 --nms 0.45 --nogui
 //   camera only: --size 720x576 --fps 25 --fourcc YUYV   (defaults = FPV receiver, PAL)
 //   a laptop webcam, compressed: --size 640x480 --fps 30 --fourcc MJPG
@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 
 struct Detection {
@@ -99,13 +98,19 @@ private:
     int input_size_ = 640;
 };
 
-static std::vector<std::string> load_names(const std::string& path) {
-    std::vector<std::string> names;
-    std::ifstream f(path);
-    for (std::string line; std::getline(f, line);)
-        if (!line.empty()) names.push_back(line);
-    return names;
-}
+// The 80 COCO classes the YOLO models are trained on, in output order (0 = person).
+static const std::vector<std::string> COCO_NAMES = {
+    "person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
+    "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
+    "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack",
+    "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball",
+    "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket",
+    "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
+    "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair",
+    "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse",
+    "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator",
+    "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
+};
 
 static void draw(cv::Mat& frame, const std::vector<Detection>& dets,
                  const std::vector<std::string>& names) {
@@ -123,7 +128,11 @@ static void draw(cv::Mat& frame, const std::vector<Detection>& dets,
 }
 
 int main(int argc, char** argv) {
-    std::string input = argc > 1 ? argv[1] : "data/bus.jpg";
+    if (argc < 2) {
+        std::cerr << "Usage: ./yolo_detect <image | video | camera> [options]  (see the top of yolo_detect.cpp)\n";
+        return 1;
+    }
+    std::string input = argv[1];
     std::string model = "models/yolo11n.onnx";
     float conf = 0.25f, nms = 0.45f;
     int cam_w = 720, cam_h = 576;
@@ -142,8 +151,12 @@ int main(int argc, char** argv) {
         else if (a == "--nogui") gui = false;
     }
 
+    if (!std::filesystem::exists(model)) {
+        std::cerr << "No " << model << ": run ./download_models.sh first (see README.md)\n";
+        return 1;
+    }
     YoloDetector yolo(model);
-    auto names = load_names("data/coco.names");
+    const auto& names = COCO_NAMES;
     std::filesystem::create_directories("out");
 
     std::string ext = std::filesystem::path(input).extension().string();
@@ -172,7 +185,7 @@ int main(int argc, char** argv) {
         int index = std::stoi(input.substr(input.find_first_of("0123456789")));
         cap.open(index, cv::CAP_V4L2);
         if (cap.isOpened()) {
-            // The FPV receiver's native PAL mode (see docs/Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md).
+            // The FPV receiver's native PAL mode (see docs/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md).
             // YUYV = raw (no delay, a lot of USB bandwidth); MJPG = compressed (less bandwidth).
             cam_fourcc.resize(4, ' ');
             cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc(cam_fourcc[0], cam_fourcc[1], cam_fourcc[2], cam_fourcc[3]));

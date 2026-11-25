@@ -2,9 +2,14 @@
 face_detection
 enroll
 recognize
+yolo_detect
 
-# Models downloaded by ./download_models.sh (37 MB)
+# Downloaded by ./download_models.sh: models (~50 MB) and ONNX Runtime
 models/
+third_party/
+
+# Images saved by yolo_detect
+out/
 
 # Gallery: biometric data of everyone enrolled, never in git
 gallery.yml
