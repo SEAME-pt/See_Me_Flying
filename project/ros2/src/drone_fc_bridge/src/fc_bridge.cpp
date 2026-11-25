@@ -131,12 +131,13 @@ public:
       publish_odom_ = true;
     }
 
-    // keeps defaults for rangefinder values as in model VL53L1X
-    // overrides rangefinder defaults in drone_bringup/config/sim.yaml
+    // Rangefinder defaults: the MicoAir MTF-02P on the real drone (2 cm to 6 m,
+    // 4 deg full cone), the same as drone_bringup/config/sim.yaml. range_noise
+    // is only used by the sim.
     declare_parameter<double>("range_noise", 0.005);    // m
-    declare_parameter<double>("range_min", 0.04);       // m, VL53L1X-like
-    declare_parameter<double>("range_max", 4.0);        // m
-    declare_parameter<double>("range_fov", 0.47);       // rad, full cone
+    declare_parameter<double>("range_min", 0.02);       // m
+    declare_parameter<double>("range_max", 6.0);        // m
+    declare_parameter<double>("range_fov", 0.070);      // rad, full cone
     // Sim: true when nothing arms it (no radio); the launch sets it. inav: unknown
     // until MSP reports it, so false.
     const bool armed_at_start = declare_parameter<bool>("armed_at_start", true);
@@ -537,9 +538,17 @@ private:
         range.field_of_view = param("range_fov");
         range.min_range = param("range_min");
         range.max_range = param("range_max");
-        range.range = state == inav::Rangefinder::State::VALID ?
-          static_cast<float>(s.range.value->distance_m) :
-          std::numeric_limits<float>::infinity();   // REP 117: nothing in range
+        range.range = std::numeric_limits<float>::infinity();   // REP 117: nothing in range
+        if (state == inav::Rangefinder::State::VALID) {
+          // INAV passes on what the sensor sends, below its minimum too (1 cm
+          // with the drone on the floor): the same limits as the sim.
+          const double d = s.range.value->distance_m;
+          if (d < range.min_range) {
+            range.range = -std::numeric_limits<float>::infinity();   // REP 117: too close
+          } else if (d <= range.max_range) {
+            range.range = static_cast<float>(d);
+          }
+        }
         range_pub_->publish(range);
         if (range_valid_ != std::isfinite(range.range)) {
           range_valid_ = std::isfinite(range.range);
