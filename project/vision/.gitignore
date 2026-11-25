@@ -1,0 +1,10 @@
+# Executables: every machine builds its own (make)
+face_detection
+enroll
+recognize
+
+# Models downloaded by ./download_models.sh (37 MB)
+models/
+
+# Gallery: biometric data of everyone enrolled, never in git
+gallery.yml

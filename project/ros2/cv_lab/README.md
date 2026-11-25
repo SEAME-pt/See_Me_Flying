@@ -11,7 +11,7 @@ A sandbox for learning OpenCV in C++ and YOLO object detection. Not a ROS packag
 | Ultralytics (Python) | Host, venv `~/venvs/yolo` | Only to download and export models to ONNX (and, later, to train) |
 | `yolo11n.onnx` | `models/` | YOLO11 nano, 80 COCO classes, input 640×640 |
 
-Models, data, `third_party/` and `build/` are git-ignored; `./setup.sh` (on the host) downloads them again.
+Models, the sample video, `third_party/` and `build/` are git-ignored; `./setup.sh` (on the host) downloads them again. The Haar cascade comes with OpenCV (`opencv-data`); `setup.sh` downloads it only where that package is missing.
 
 ## Build and run (inside the container)
 
@@ -41,7 +41,7 @@ With no display (`DISPLAY=` before the command) the programs save their images i
 
 ## YOLO on the drone's camera
 
-`yolo_detect` opens a camera directly through V4L2: `./build/yolo_detect /dev/video2` (or just `2`). By default it asks for the FPV receiver's native mode, YUYV 720×576 at 25 fps (see `docs/Doc-ROS2/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md`); for another camera pass `--size 640x480 --fps 30`, and `--fourcc MJPG` for a compressed stream (less USB bandwidth). It keeps only the newest frame, so the image does not fall behind when YOLO is slower than the camera.
+`yolo_detect` opens a camera directly through V4L2: `./build/yolo_detect /dev/video2` (or just `2`). By default it asks for the FPV receiver's native mode, YUYV 720×576 at 25 fps (see `docs/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md`); for another camera pass `--size 640x480 --fps 30`, and `--fourcc MJPG` for a compressed stream (less USB bandwidth). It keeps only the newest frame, so the image does not fall behind when YOLO is slower than the camera.
 
 1. **The receiver must be visible as `/dev/videoN`:** `ls /dev/video*`.
 2. **Find the capture node** (the one that lists formats), inside the container:
@@ -57,7 +57,7 @@ Only one program can open the device at a time: stop `usb_cam` first. To run YOL
 ## Exporting other YOLO models (host)
 
 ```bash
-cd ~/seame/See_Me_Flying/project/ros2/cv_lab/models
+cd project/ros2/cv_lab/models   # from the repository root
 ~/venvs/yolo/bin/yolo export model=yolov8n.pt format=onnx opset=12 imgsz=640 simplify=True
 ```
 

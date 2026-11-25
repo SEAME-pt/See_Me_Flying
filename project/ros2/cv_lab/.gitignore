@@ -3,4 +3,5 @@ out/
 third_party/
 models/*.pt
 models/*.onnx
+models/*.xml
 data/*.avi

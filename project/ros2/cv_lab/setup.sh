@@ -11,8 +11,10 @@ fetch https://ultralytics.com/images/bus.jpg                                    
 fetch https://raw.githubusercontent.com/opencv/opencv/4.6.0/samples/data/lena.jpg     data/lena.jpg
 fetch https://raw.githubusercontent.com/opencv/opencv/4.6.0/samples/data/vtest.avi    data/vtest.avi
 fetch https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names       data/coco.names
-fetch https://raw.githubusercontent.com/opencv/opencv/4.6.0/data/haarcascades/haarcascade_frontalface_default.xml \
-      models/haarcascade_frontalface_default.xml
+# Haar cascade for 05_face_haar: only when OpenCV's own copy (opencv-data) is missing
+[ -f /usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml ] ||
+  fetch https://raw.githubusercontent.com/opencv/opencv/4.6.0/data/haarcascades/haarcascade_frontalface_default.xml \
+        models/haarcascade_frontalface_default.xml
 
 # 2) ONNX Runtime C++ (from the official NuGet package: headers + libonnxruntime.so)
 if [ ! -f third_party/onnxruntime/include/onnxruntime_cxx_api.h ]; then
