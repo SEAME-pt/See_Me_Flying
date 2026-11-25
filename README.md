@@ -218,6 +218,7 @@ See_Me_Flying/
 | Hardware | [Hardware overview](project/hardware/README.md) · [Ground station](docs/Groundstation.md) |
 | Firmware | [INAV firmware choices](project/telemetry/inav/README.md) · [ExpressLRS flashing, bind and arming](docs/ELRS_Guide.md) |
 | Guides | [ESP12 setup and telemetry](project/telemetry/README.md) · [FPV video into ROS](docs/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md) · [Camera on a PC](docs/Video_Transmission.md) |
+| Vision | [Computer vision on the Ratel 2 feed](docs/Computer_Vision_Ratel2.md) · [Battery on or off for camera work](docs/Battery_On_Off_Camera_Work.md) |
 | Tools | [MSP dashboard and gateway](project/telemetry/msp_dashboard/README.md) · [Wanhao Duplicator 12/230](docs/Wanhao_Duplicator_12-230.md) |
 | Sprints | [Sprints overview](sprints/README.md) |
 | Resources | [What changed when copy-nando became main](docs/CHANGES.md) · [Sources](docs/Sources.md) |

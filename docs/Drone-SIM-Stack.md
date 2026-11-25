@@ -5,7 +5,7 @@ title: Simulation
 
 Oct 20, 2026 · @Someone · updated Oct 23, 2026
 
-For setup, see [`seame-docker/GUIDE.md`](seame-docker/GUIDE.md). To fly the sim with the keyboard or the RadioMaster Pocket, and for the parameters, failsafes and test results, see [`seame-docker/SIM_TELEOP.md`](seame-docker/SIM_TELEOP.md).
+For setup, see the [Quick start](../README.md#quick-start). To fly the sim with the keyboard or the RadioMaster Pocket, see [Simulation](../README.md#simulation); for the parameters and failsafes, the [ROS 2 stack](../project/ros2/README.md); for test results, [Logs](../project/logs/README.md).
 
 ## System overview
 
