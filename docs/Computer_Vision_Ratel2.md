@@ -197,6 +197,12 @@ source ~/yolo-env/bin/activate
 pip install ultralytics onnx
 ```
 
+On a host without an NVIDIA GPU, install the CPU-only PyTorch first, before `ultralytics`: it is about 200 MB instead of several GB of CUDA libraries.
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+```
+
 If `pip install ultralytics` fails because the host's Python is too new for PyTorch, create the environment with Python 3.12 instead (for example `uv venv --python 3.12 ~/yolo-env`), or do steps 6.1, 7.5 and 7.6 in Google Colab.
 
 **6.2 Host: export the model.** Models are not in git; every teammate builds them with this command, from the repository root:
@@ -228,7 +234,7 @@ source install/setup.bash
 ros2 launch drone_bringup perception.launch.py detector:=yolo
 ```
 
-**6.5 Check.** Open `/perception/debug_image` in `rqt_image_view` and walk in front of the camera: a green `person` box should follow you. The log line gives inference time and frame age, the first latency numbers. On a laptop CPU (central processing unit), expect tens of milliseconds per frame for `yolov8n` at 640; if it cannot keep up with 30 fps (frames per second), frames are dropped, not queued, because of the depth-1 QoS.
+**6.5 Check.** Open `/perception/debug_image` in `rqt_image_view` and walk in front of the camera: a green `person` box should follow you. The log line gives inference time and frame age, the first latency numbers. On a laptop CPU (central processing unit), `yolov8n` at 640 takes about 100 ms per frame (measured in 8.4), so it cannot keep up with 30 fps (frames per second): frames are dropped, not queued, because of the depth-1 QoS.
 
 ## Step 7: Milestone 3, your own objects
 
@@ -330,6 +336,31 @@ ros2 bag record --topics /perception/detections /perception/debug_image -o run_r
 
 The Pi runs Raspberry Pi OS (operating system), not Ubuntu 24.04, so ROS 2 Jazzy runs there in the same Docker image, built for arm64, with the Hailo device passed into the container.
 
+**8.4 Measured on the Ratel 2.** Measured on 25 November 2026 with `perception.launch.py`, the receiver at 640×480 and the calibration `ratel2.yaml`, on a laptop with an AMD Ryzen 7 5700U CPU and no GPU.
+
+ArUco (`DICT_4X4_50`, one printed marker of 0.045 m, id 11):
+
+| Number | Result |
+| --- | --- |
+| Processing time per frame | 4 to 6 ms |
+| Frame age at detection | 7 to 10 ms |
+| Distance `z` with the marker held at 0.30 m | 0.291 to 0.305 m (mean about 0.297 m) |
+| Distance `z` with the marker held at 0.60 m | 0.577 to 0.634 m (mostly 0.59 to 0.61 m) |
+| Farthest detection | about 1.0 m |
+| False detections | ids 17 and 45 appeared in 8 frames while only marker 11 was in view |
+
+The spread of `z` grows with distance: about ±0.7 cm at 0.30 m, about ±2 cm at 0.60 m, and about ±4 cm near 1.0 m.
+
+Pretrained YOLO (`yolov8n.onnx`, 640, `CPUExecutionProvider`):
+
+| Number | Result |
+| --- | --- |
+| Inference time per frame | 85 to 140 ms, peaks of 200 ms |
+| Frame age at detection | 100 to 160 ms, peaks of 330 ms |
+| Detection rate | about 7 to 10 Hz, with the camera at 30 Hz |
+| Scores on objects in view | laptop 0.82 to 0.91, bottle 0.78 to 0.89, chair 0.60 to 0.79 |
+| Low-score detections | `dining table` and `refrigerator`, 0.40 to 0.66 |
+
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
@@ -341,6 +372,7 @@ The Pi runs Raspberry Pi OS (operating system), not Ubuntu 24.04, so ROS 2 Jazzy
 | Markers detected but no positions | Node started without calibration | Check `ros2 topic echo /camera_info --once --field k`; restart the camera node with `camera_info_url` |
 | Marker distance off by a fixed factor | Wrong `marker_size_m` | Measure the black square only, without the white border |
 | False markers or boxes along the edges | INAV's OSD text | `-p mask_border_px:=40` (adjust to your OSD layout) |
+| Marker ids that are not in view appear in single frames | Analog noise decoded as a valid marker | The consumer accepts only the expected ids, and only after several consecutive frames |
 | YOLO node exits at start | No model at `model_path` | Run step 6.2; check `ls ~/ros2_ws/models` |
 | YOLO node starts, no boxes ever | Confidence too high, or no class names in the model | Check the startup log for the class count; try `-p conf_threshold:=0.25` |
 | Boxes in the wrong place | Model is not YOLOv8/YOLO11 layout | Export a YOLOv8 or YOLO11 model, or adapt the decoder |
@@ -350,6 +382,6 @@ The Pi runs Raspberry Pi OS (operating system), not Ubuntu 24.04, so ROS 2 Jazzy
 
 ## Not verified
 
-- The ONNX metadata key for class names, and the output layout, for the Ultralytics version installed on the host. If the node logs 0 classes or the boxes are wrong, this is the place to look.
+- The ONNX metadata key for class names, and the output layout, for Ultralytics versions other than 8.4.216 (the version used in 8.4). If the node logs 0 classes or the boxes are wrong, this is the place to look.
 - Whether `ultralytics` and PyTorch install on every host's Python version (step 6.1 has the fallback).
 - The Hailo steps in 8.3: tool names, flags and supported models change between Hailo releases. The Hailo Developer Zone documentation for the HAT is the reference; this guide gives no exact `hailomz` commands.

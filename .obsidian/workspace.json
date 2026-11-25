@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/CHANGES.md",
+                "file": "HANDOFF_CV.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "CHANGES"
+              "title": "HANDOFF_CV"
             }
           }
         ]
@@ -83,7 +83,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 215.5
   },
   "right": {
     "id": "f560c39ec16463c5",
@@ -159,7 +159,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "docs/CHANGES.md",
+                "file": "HANDOFF_CV.md",
                 "followCursor": true,
                 "showSearch": false,
                 "searchQuery": ""
@@ -189,8 +189,22 @@
   },
   "active": "4183df5703439912",
   "lastOpenFiles": [
+    "docs/Computer_Vision_Ratel2.md.tmp.1174719.eaee23177502",
+    "docs/Computer_Vision_Ratel2.md.tmp.1174719.10b45bf6fa05",
+    "docs/Computer_Vision_Ratel2.md.tmp.1174719.3d6b5bd7d639",
+    "docs/Computer_Vision_Ratel2.md.tmp.1174719.d29cd923b2de",
+    "project/ros2/tools/aruco_4x4_3.png",
+    "project/ros2/tools/aruco_4x4_2.png",
+    "project/ros2/tools/aruco_4x4_1.png",
+    "project/ros2/tools/aruco_4x4_0.png",
+    "project/ros2/models/yolov8n.onnx",
+    "project/ros2/models/yolov8n.pt",
+    "project/ros2/build/drone_bringup/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/drone_bringup.tmpfbeaf",
+    "project/ros2/build/drone_bringup/ament_cmake_core/drone_bringupConfig.cmake.tmp",
+    "project/ros2/build/drone_bringup/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake.tmp",
+    "project/ros2/log/build_2026-11-25_18-29-27/drone_bringup/streams.log",
+    "project/ros2/log/build_2026-11-25_18-29-27/drone_bringup/stdout_stderr.log",
     "README.md",
-    "docs-update-fixes.patch",
     "docs/Drone-SIM-Stack.md",
     "project/ros2/README.md",
     "docs/CHANGES.md",
@@ -207,15 +221,6 @@
     "file:/home/mota/Downloads/README.md",
     "project/logs/README.md",
     "sprints/sprint_0.md",
-    "seame-docker/scripts/motor_music/sing.sh",
-    "seame-docker/scripts/motor_music/sing.py",
-    "seame-docker/scripts/motor_music/rtttl.py",
-    "seame-docker/scripts/motor_music/analyse.py",
-    "seame-docker/scripts/motor_music",
-    "seame-docker/scripts/bench_rc_override.sh",
-    "seame-docker/scripts/bench_rc_armed.sh",
-    "seame-docker/scripts/bench_common.sh",
-    "seame-docker/ros2_ws/src/drone_interfaces/msg/RcChannels.msg",
     "seame-docker/logs/tests/2026-11-17_facb91a/report.md",
     "seame-docker/logs/tests/2026-11-17_ea76fb5/report.md",
     "seame-docker/logs/tests/2026-11-17_7b525e1/report.md",
