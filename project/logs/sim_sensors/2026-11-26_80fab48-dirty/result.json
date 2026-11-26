@@ -1,0 +1,58 @@
+{
+  "verdict": "PASSED",
+  "exit": 0,
+  "seconds": 200,
+  "counts": {
+    "passed": 9,
+    "skipped": 0,
+    "failure": 0,
+    "error": 0
+  },
+  "steps": [
+    {
+      "name": "test_1_sim_comes_up",
+      "status": "passed",
+      "time": 3.949
+    },
+    {
+      "name": "test_2_takeoff",
+      "status": "passed",
+      "time": 8.439
+    },
+    {
+      "name": "test_3_carpet_lane",
+      "status": "passed",
+      "time": 7.219
+    },
+    {
+      "name": "test_4_hover",
+      "status": "passed",
+      "time": 10.035
+    },
+    {
+      "name": "test_5_pass",
+      "status": "passed",
+      "time": 15.381
+    },
+    {
+      "name": "test_6_creep_1cm",
+      "status": "passed",
+      "time": 64.06
+    },
+    {
+      "name": "test_7_creep_3cm",
+      "status": "passed",
+      "time": 34.087
+    },
+    {
+      "name": "test_8_table_crossing",
+      "status": "passed",
+      "time": 21.098
+    },
+    {
+      "name": "test_9_land",
+      "status": "passed",
+      "time": 8.881
+    }
+  ]
+}

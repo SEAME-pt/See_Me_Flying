@@ -12,3 +12,5 @@ sensors:
   pass_error: 0.25          # m, estimate vs truth after the 4 m pass (measured 0.12-0.16)
   creep_1cm: [0.40, 0.80]   # share of a 1 cm/s creep the estimate misses (measured 63-66 %)
   creep_3cm: [0.15, 0.45]   # the same at 3 cm/s (measured 31-37 %)
+  table_missed: [0.80, 1.00]  # share flown without flow that the estimate misses (measured 95 %)
+  table_overshoot: 2.0        # m, max distance flown past the Goto after the table (measured 1.41)
