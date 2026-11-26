@@ -104,7 +104,7 @@ Battery life is also a constraint that comes with the drone's specifications: th
 
 ## Wiring
 
-We wired the ESP12, the ThoneFlow sensor and the ELRS receiver ourselves, during [Sprint 0](../../sprints/sprint_0.md).
+We wired the ESP12, the ThoneFlow sensor and the ELRS receiver ourselves, during [Sprint 0](sprint_0.md).
 
 | UART | Device | Voltage |
 | --- | --- | --- |

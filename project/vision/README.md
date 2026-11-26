@@ -1,3 +1,6 @@
+---
+title: Computer Vision
+---
 # vision: faces and people (C++)
 
 Everything the drone will use to see people: find faces, recognise who they are, and
@@ -90,3 +93,7 @@ Only one program can open a camera at a time: stop `usb_cam` (or `recognize`) fi
 - Small faces (under ~60 px) and profiles are detected worse; with the FPV camera's wide lens,
   faces are only big enough within about 1 m. YOLO finds people much further away.
 - `gallery.yml` holds biometric data: it is in `.gitignore` and must never be committed.
+
+# Tags
+
+#firmware 

@@ -209,6 +209,8 @@ See_Me_Flying/
 
 ## Documentation map
 
+![docu_map](docs/extras/graph.svg)
+
 | Area | Document |
 | --- | --- |
 | ROS 2 | [ROS 2 stack: nodes, topics, parameters, tests, known issues](project/ros2/README.md) |
@@ -219,8 +221,12 @@ See_Me_Flying/
 | Firmware | [INAV firmware choices](project/telemetry/inav/README.md) · [ExpressLRS flashing, bind and arming](docs/ELRS_Guide.md) |
 | Guides | [ESP12 setup and telemetry](project/telemetry/README.md) · [FPV video into ROS](docs/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md) · [Camera on a PC](docs/Video_Transmission.md) |
 | Tools | [MSP dashboard and gateway](project/telemetry/msp_dashboard/README.md) · [Wanhao Duplicator 12/230](docs/Wanhao_Duplicator_12-230.md) |
-| Sprints | [Sprints overview](sprints/README.md) |
+| Sprints | [Sprints overview](docs/sprints/README.md) |
 | Resources | [What changed when copy-nando became main](docs/CHANGES.md) · [Sources](docs/Sources.md) |
+
+### Using obsidian
+
+The documentation was made with [Obsidian](https://obsidian.md/) and it's meant way easier to navigate through it using this tool. The setup is simple, after cloning the repository just open it as a vault inside Obsidian.
 
 ---
 
@@ -463,8 +469,8 @@ USB UVC receiver on the ground computer (`/dev/video2`) → `usb_cam` in the con
 
 | Sprint | Period | Focus |
 | --- | --- | --- |
-| [Sprint 0](sprints/sprint_0.md) ✔ | 6–16 Oct 2026 | Onboarding, dev container, wiring plan, INAV flashing, setpoint publisher + watchdog |
-| [Sprint 1](sprints/sprint_1.md) ✔ | 19 Oct – 1 Nov 2026 | INAV telemetry over Wi-Fi, sim stack + teleop, FPV video to ROS, CI |
+| [Sprint 0](sprint_0.md) ✔ | 6–16 Oct 2026 | Onboarding, dev container, wiring plan, INAV flashing, setpoint publisher + watchdog |
+| [Sprint 1](sprint_1.md) ✔ | 19 Oct – 1 Nov 2026 | INAV telemetry over Wi-Fi, sim stack + teleop, FPV video to ROS, CI |
 
 ### Done
 
