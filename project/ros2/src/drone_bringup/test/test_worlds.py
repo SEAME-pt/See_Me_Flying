@@ -6,9 +6,9 @@ Reads the .sdf files only; Gazebo is not started, so this takes about a second.
 The worlds checked:
 - every world in drone_bringup/worlds/ (outdoor_field.sdf comes with branch
   feature/153; before it there are none);
-- sim.launch.py's default world, multicopter_velocity_control.sdf, which is
-  Gazebo's own. CI installs no Gazebo, so there it is skipped; run_tests.sh in
-  the dev container checks it.
+- sim.launch.py's default world, room_world.sdf, which is one of ours. If the
+  default is ever one of Gazebo's own worlds, that is checked too: skipped in
+  CI (no Gazebo there), checked by run_tests.sh in the dev container.
 
 In each world:
 - the physics system is loaded (without it nothing moves);

@@ -1,0 +1,37 @@
+# Surfaces of room_world.sdf, for flow_model's flow quality.
+# Rectangles in world coordinates (m); heights are above the floor. Positions
+# read from models/room/meshes/room.stl. Where areas overlap, the later one wins.
+
+default: carpet
+
+surfaces:
+  carpet:   {quality: 100}   # grey textured carpet; the ThoneFlow read 100 at rest
+  mat:      {quality: 60}    # small black textured mat: a guess until the real sensor checks it
+  table:    {quality: 0}     # white smooth table tops; the ThoneFlow gave no readings over them
+  shelves:  {quality: 0} 
+  fridge:   {quality: 0}  
+
+areas:
+  # Small groups, 3 tables: 2 regular side by side, and a short table across the +x end
+  - {surface: table, name: group 1, x: [-7.01, -3.97], y: [-2.26, -0.75], height: 0.78}
+  - {surface: table, name: group 2, x: [-7.01, -3.97], y: [0.81, 2.32], height: 0.78}
+  - {surface: table, name: group 5, x: [-0.03, 3.02], y: [-2.86, -1.34], height: 0.78}
+  # Large groups, 4 tables: 2 regular side by side plus a short table across the
+  # +x end, and a longer perpendicular table across the -x end
+  - {surface: table, name: group 3, x: [-0.26, 2.78], y: [3.31, 4.82], height: 0.78}
+  - {surface: table, name: group 3 perpendicular, x: [-1.23, -0.25], y: [3.14, 4.98], height: 0.78}
+  - {surface: table, name: group 4, x: [-0.26, 2.78], y: [0.45, 1.97], height: 0.78}
+  - {surface: table, name: group 4 perpendicular, x: [-1.23, -0.25], y: [0.29, 2.14], height: 0.78}
+  # Single table in the corner
+  - {surface: table, name: corner table, x: [-7.03, -5.70], y: [-5.33, -4.43], height: 0.76}
+  # Other furniture
+  - {surface: fridge, name: mini fridge, x: [-4.78, -4.03], y: [-5.14, -4.38], height: 1.18}
+  - {surface: table, name: tall tables, x: [5.51, 6.49], y: [-4.04, 2.59], height: 1.34}
+  - {surface: shelves, name: shelving, x: [-3.13, 4.86], y: [-5.42, -4.51], height: 2.25}
+  # The mat: position to be measured
+  # - {surface: mat, name: mat, x: [X_MIN, X_MAX], y: [Y_MIN, Y_MAX], height: 0.0}
+
+# Floor to ceiling: flown around, never over. Not used for flow quality; kept
+# for the obstacle-aware rangefinder and for planning test paths.
+obstacles:
+  - {name: column, x: [-2.66, -1.66], y: [-1.81, -0.81], height: 3.49} 
