@@ -69,3 +69,15 @@ def test_noise_has_the_requested_spread():
     std = math.sqrt(sum((x - mean) ** 2 for x in xs) / len(xs))
     assert abs(mean) < 0.005
     assert std == pytest.approx(0.05, rel=0.1)
+
+
+def test_surface_quality_is_reported():
+    rng = random.Random(0)
+    result = measure((0.3, -0.2), 1.0, 0.08, 7.0, 0.0, False, rng, quality=100)
+    assert result == (100, 0.3, -0.2)
+
+
+def test_plain_surface_gives_no_flow():
+    rng = random.Random(0)
+    result = measure((0.3, -0.2), 1.0, 0.08, 7.0, 0.0, False, rng, quality=0)
+    assert result == (0, 0.0, 0.0)

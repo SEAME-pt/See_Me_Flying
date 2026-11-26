@@ -1,0 +1,20 @@
+{
+  "kind": "sim_flight",
+  "name": null,
+  "date": "2026-11-25T16:47:08+00:00",
+  "host": "seame-5",
+  "commit": "ff2233eb3ac3845a71fb2035d34b15482904afa6",
+  "commit_short": "ff2233e",
+  "commit_subject": "Merge pull request #264 from SEAME-pt/malves-b_CV",
+  "branch": "main",
+  "uncommitted_code": [
+    "project/ros2/src/drone_bringup/launch/sim.launch.py",
+    "project/ros2/src/drone_sim/drone_sim/flow_model.py",
+    "project/ros2/src/drone_sim/package.xml",
+    "project/ros2/src/drone_sim/test/test_flow_model.py",
+    "project/ros2/src/drone_bringup/worlds/room_world_surfaces.yaml",
+    "project/ros2/src/drone_sim/drone_sim/floor_map.py",
+    "project/ros2/src/drone_sim/test/test_floor_map.py"
+  ],
+  "uncommitted_other": []
+}

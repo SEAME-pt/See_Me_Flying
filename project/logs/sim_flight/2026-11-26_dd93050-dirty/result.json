@@ -1,0 +1,53 @@
+{
+  "verdict": "PASSED",
+  "exit": 0,
+  "seconds": 131,
+  "counts": {
+    "passed": 8,
+    "skipped": 0,
+    "failure": 0,
+    "error": 0
+  },
+  "steps": [
+    {
+      "name": "test_1_sim_comes_up",
+      "status": "passed",
+      "time": 11.084
+    },
+    {
+      "name": "test_2_on_the_ground_at_start",
+      "status": "passed",
+      "time": 0.0
+    },
+    {
+      "name": "test_3_takeoff",
+      "status": "passed",
+      "time": 4.411
+    },
+    {
+      "name": "test_4_hover_drift",
+      "status": "passed",
+      "time": 13.063
+    },
+    {
+      "name": "test_5_square",
+      "status": "passed",
+      "time": 32.378
+    },
+    {
+      "name": "test_6_speed_capped_at_the_limit",
+      "status": "passed",
+      "time": 3.903
+    },
+    {
+      "name": "test_7_land",
+      "status": "passed",
+      "time": 9.008
+    },
+    {
+      "name": "test_8_mission_dies_and_the_drone_stops",
+      "status": "passed",
+      "time": 19.582
+    }
+  ]
+}

@@ -54,7 +54,7 @@ make sim-keyboard   # builds the ROS code (make ws), then flies in Gazebo with t
 | --- | --- |
 | **`ROS_DOMAIN_ID`** | **`6`** |
 | ROS 2 distro | Jazzy (Docker container `seame-dev`, image `seame/ros2-dev:jazzy`) |
-| Simulator | Gazebo Harmonic, drone X3. Worlds: `room_world.sdf` (used by `make sim-*`), `outdoor_field.sdf`, and Gazebo's `multicopter_velocity_control.sdf` (the launch default) |
+| Simulator | Gazebo Harmonic, drone X3. Worlds: `room_world.sdf` (our default world, used by `make sim-*`), `outdoor_field.sdf`, and Gazebo's `multicopter_velocity_control.sdf` (the basic starter world) |
 | Flight controller | OddityRC F7 40A AIO (STM32F722), INAV 9.1.0, custom target `ODDITYRCF7AIO` (Configurator 9.1.1) |
 | FC ↔ ground link | ESP-12E/F (ESP8266) running esp-link 3.2.47, Wi-Fi AP `seemeflying`, TCP `192.168.4.1:23`, UART1 at 115200 baud |
 | Radio | RadioMaster Pocket, ExpressLRS 4.1.0 (BETAFPV Nano RX), 2.4 GHz |

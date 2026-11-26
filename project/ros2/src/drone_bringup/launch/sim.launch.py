@@ -97,6 +97,11 @@ def setup(context):
         # (full paths and Gazebo's own worlds, like multicopter_velocity_control.sdf)
         world = arg('world')
         ours = os.path.join(share, 'worlds', world)
+        # The world's surfaces file, if it has one (worlds/<world>_surfaces.yaml):
+        # flow quality then depends on the floor under the drone.
+        stem = os.path.splitext(os.path.basename(world))[0]
+        surfaces = os.path.join(share, 'worlds', stem + '_surfaces.yaml')
+        surfaces = surfaces if os.path.exists(surfaces) else ''
         if os.path.isfile(ours):
             world = ours
         # The server (-s) and the window (-g) run as two processes. In one process
@@ -127,7 +132,7 @@ def setup(context):
         # Synthetic optical flow from ground truth; tuned in sim.yaml (flow_model).
         actions.append(Node(
             package='drone_sim', executable='flow_model',
-            parameters=[params, clock], output='screen',
+            parameters=[params, clock, {'surfaces_file': surfaces}], output='screen',
         ))
         # Estimator v1: fc/odom from flow, range and attitude (drone_sim).
         actions.append(Node(
@@ -206,7 +211,7 @@ def generate_launch_description():
         DeclareLaunchArgument('demo', default_value='false', choices=['true', 'false'],
                               description='Fly a scripted demo with source:=mission: '
                                           'takeoff, a square, land'),
-        DeclareLaunchArgument('world', default_value='multicopter_velocity_control.sdf',
+        DeclareLaunchArgument('world', default_value='room_world.sdf',
                               description='Sim only: SDF world file name or full path'),
         DeclareLaunchArgument('camera', default_value='free',
                               choices=['free', 'follow', 'fpv'],

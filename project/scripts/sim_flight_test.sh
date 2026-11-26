@@ -33,7 +33,7 @@ case "$SUITE" in
     flight)  TEST=test_sim_flight.py;  KIND=sim_flight;  DOMAIN=196; PART=flight_test
              SHOW='on the ground:|takeoff: true|hover 10 s|side [0-9]:|square closes|2 m/s asked|landed:|mission killed' ;;
     sensors) TEST=test_sim_sensors.py; KIND=sim_sensors; DOMAIN=197; PART=sensor_test
-             SHOW='hover 10 s|4 m pass|creep [0-9]' ;;
+             SHOW='carpet lane|hover 10 s|4 m pass|creep [0-9]' ;;
     *) echo "Error: SUITE must be flight or sensors, not '$SUITE'"; exit 2 ;;
 esac
 
