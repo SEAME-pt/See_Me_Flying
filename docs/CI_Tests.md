@@ -65,7 +65,7 @@ Starts `fc_bridge` with all noise set to 0. The test plays Gazebo: it publishes 
 | `test_position_is_integrated_not_copied` | The sim says x = y = 5, but `fc/odom` ignores that and builds position from velocity × time, as optical flow would |
 | `test_body_velocity_rotated_by_heading` | Facing +y (yaw 90°), moving forward increases world y, not x |
 | `test_height_and_orientation_from_sim` | Height and orientation are copied from the sim into `fc/odom` and `fc/attitude` |
-| `test_range_level` | Level at 1.2 m, the rangefinder reads 1.2 m and reports min 0.04 m and max 4.0 m |
+| `test_range_level` | Level at 1.2 m, the rangefinder reads 1.2 m and reports min 0.02 m and max 6.0 m (the MTF-02P) |
 | `test_range_reads_longer_when_tilted` | At 1 m height with 60° roll, the range reads 2.0 m (1 / cos 60°) |
 | `test_range_out_of_range_is_inf` | Above the maximum it reads +inf, below the minimum −inf, and upside down +inf |
 
