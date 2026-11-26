@@ -9,7 +9,6 @@ test_sim_flight.py, and measures, in one flight:
   3 into the carpet lane, y = 2.7   7 a creep at 3 cm/s for 30 s
   4 hover 10 s: height and vz       8 (cross the table)
                                     9 land
-                                    
 Steps 4 to 7 fly over carpet, away from the room's plain tables, where flow is lost.
 Every step prints what it measured. The limits are in LIMITS below, and
 SIM_Sensors.md explains them. The steps share one flight, so after a failed
