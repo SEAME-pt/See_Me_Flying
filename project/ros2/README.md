@@ -152,7 +152,7 @@ The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) 
 **What it does**
 
 1. **Receives** setpoints on `fc/setpoint_velocity` and stores the latest one with the time it arrived. The message's own header timestamp is not used. A setpoint with NaN (Not a Number) or infinity in any field is dropped with a warning (at most once a second) and not stored, so the previous one keeps ageing and the timeout takes over.
-2. **Ticks** at `rate_hz` (20 Hz). Each tick it decides whether the stored setpoint is fresh: it arrived no more than `setpoint_timeout_s` ago, and not in the "future" (which happens when sim time is reset).
+2. **Ticks** at `rate_hz` (20 Hz). Each tick it decides whether the stored setpoint is fresh: it arrived no more than `setpoint_timeout_s` ago, and not in the "future" (which happens when sim time is reset). With `inav` it also checks that INAV replied within `telemetry_timeout_s`: setpoints computed from older state are treated as stale (log: `No reply from INAV for over 0.30 s: holding (centred sticks)`, then `INAV is answering: setpoints can be followed`).
 3. **Fresh:** clamps it and publishes it to Gazebo.
 4. **Stale or none yet:** publishes zero velocity. Gazebo's controller keeps following the last command it received, so this explicit zero is what makes the drone stop and hover. That is the failsafe.
 5. **Logs** only on changes: `Setpoints received, following them` and `Setpoint timeout: holding (zero velocity)`. It starts stale, so it publishes zeros and logs nothing until the first setpoint.
@@ -198,6 +198,7 @@ The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) 
 | `armed_at_start` | true (read once at start; sim only; the launch sets it) |
 | `msp_host`, `msp_port` | `192.168.4.1`, 23 (inav only; esp-link's transparent port. Never 2323: it resets the FC) |
 | `msp_timeout_s` | 0.25 s for a poll cycle's replies (inav only) |
+| `telemetry_timeout_s` | 0.3 s (inav only): no reply from INAV for longer holds, like a stale setpoint |
 | `rc_override` | false (read once at start; inav only): true sends setpoints to INAV as sticks |
 
 Timeout and clamp limits are read every tick, so `ros2 param set` changes them live. Numeric parameters are doubles, except `msp_port`: set them as `2.0`, not `2`. The code still declares every parameter with a default; `sim.yaml` only overrides the value. Removing a declaration makes the node crash the first time it reads that parameter.
@@ -254,7 +255,7 @@ The list lives in `drone_bringup/config/gz_bridge.yaml`, which the bridge reads 
 
 `/X3/odom` arrives at 50 Hz with `frame_id: x3/odom` and `child_frame_id: x3/base_footprint`; covariances are all zero; the twist is in the body frame. Nothing above `fc_bridge` should read it, nor `/sim/ground_truth`: they are ground truth the real drone won't have. Any topic not listed does not cross. The X3 model has no IMU (inertial measurement unit) sensor, so there is none to bridge.
 
-**Gazebo** (`gz sim`, Gazebo Harmonic) is not a ROS node. By default it loads Gazebo's own world `multicopter_velocity_control.sdf` (SDF: Simulation Description Format) running from the start (`-r`); `make sim-keyboard` and `make sim-joy` load our `room_world.sdf`, and `outdoor_field.sdf` is there too (`drone_bringup/worlds/`). The default world holds two quadcopters, X3 and X4; only X3 is used. X3 has a built-in velocity controller: given a Twist, it works out the motor speeds to reach that velocity and holds it until the next command. Underneath, the physics is real: per-rotor motor models (thrust, rotor drag, spin-up), gravity and collisions. The controller reads commands in the **body frame** (verified Oct 22, 2026: forward follows the nose to within 1°). It accepts commands only while enabled. Our stack never touches the X4 or the `motor_speed` topic, which drives the propellers directly.
+**Gazebo** (`gz sim`, Gazebo Harmonic) is not a ROS node. By default it loads our `room_world.sdf` (SDF: Simulation Description Format), the lab room, running from the start (`-r`); `outdoor_field.sdf` is there too (`drone_bringup/worlds/`), and Gazebo's own `multicopter_velocity_control.sdf` opens with `world:=multicopter_velocity_control.sdf`. That one holds two quadcopters, X3 and X4; only X3 is used. X3 has a built-in velocity controller: given a Twist, it works out the motor speeds to reach that velocity and holds it until the next command. Underneath, the physics is real: per-rotor motor models (thrust, rotor drag, spin-up), gravity and collisions. The controller reads commands in the **body frame** (verified Oct 22, 2026: forward follows the nose to within 1°). It accepts commands only while enabled. Our stack never touches the X4 or the `motor_speed` topic, which drives the propellers directly.
 
 **Camera views** (#237). `sim.launch.py camera:=...` picks the main view of the Gazebo window; `make sim-keyboard` and `make sim-joy` ask for it before starting:
 
@@ -278,7 +279,7 @@ The FPV camera is a sensor on the X3 in our worlds only (`room_world.sdf`, `outd
 | `source` | `mission` (action servers), `none` (anything else is rejected) | `mission` |
 | `radio` | `true`, `false`. Sim only. `false`: no Pocket (someone else has it): no radio nodes, `fc_bridge` starts armed and `mission` arms on Takeoff and disarms after Land | `true` |
 | `demo` | `true`, `false`: with `source:=mission`, fly the scripted square (`demo_flight`). Without it nothing flies until a goal is sent or the radio takes over | `false` |
-| `world` | Sim only: SDF file name (ours in `worlds/` win) or full path | `multicopter_velocity_control.sdf` |
+| `world` | Sim only: SDF file name (ours in `worlds/` win) or full path | `room_world.sdf` |
 | `camera` | `free`, `follow`, `fpv`. Sim only: the Gazebo window's main view (see Camera views) | `free` |
 | `headless` | `true`, `false`. Sim only. `true`: Gazebo's server without its window, for CI and the nightly flight test | `false` |
 
@@ -292,7 +293,7 @@ Everything is decided in one function once the arguments are known (`OpaqueFunct
 5. All our nodes get `config/sim.yaml`, and `use_sim_time` true with `sim` (false with `inav`). Each source is remapped from `setpoint_velocity` to its own topic: `/cmd/mission` (`mission`) or `/cmd/radio` (`radio_teleop`). The watchdog is remapped to `/fc/setpoint_velocity`.
 6. Ctrl-C stops everything together. Every Python node handles the shutdown race in rclpy (the context can close between two waits), so none of them dies with a traceback.
 
-What the Makefile starts: `make sim-keyboard` is `source:=none radio:=false world:=room_world.sdf camera:=<your choice>` plus `teleop_twist_keyboard` on `/cmd/manual`; `make sim-joy` is `source:=none world:=room_world.sdf camera:=<your choice>`; `make sim-test` is `headless:=true radio:=false` inside the flight test.
+What the Makefile starts: `make sim-keyboard` is `source:=none radio:=false camera:=<your choice>` plus `teleop_twist_keyboard` on `/cmd/manual`; `make sim-joy` is `source:=none camera:=<your choice>`; `make sim-test` is `headless:=true radio:=false` inside the flight test.
 
 ## Known issues and limitations
 

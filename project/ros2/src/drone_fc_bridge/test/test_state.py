@@ -120,15 +120,15 @@ class TestState(unittest.TestCase):
         self.feed(0.3, z=1.2)
         r = self.last['/fc/range']
         self.assertAlmostEqual(r.range, 1.2, places=5)
-        self.assertAlmostEqual(r.min_range, 0.04, places=5)
-        self.assertAlmostEqual(r.max_range, 4.0, places=5)
+        self.assertAlmostEqual(r.min_range, 0.02, places=5)
+        self.assertAlmostEqual(r.max_range, 6.0, places=5)
 
     def test_range_reads_longer_when_tilted(self):
         self.feed(0.3, z=1.0, q=ROLL_60)
         self.assertAlmostEqual(self.last['/fc/range'].range, 2.0, places=4)
 
     def test_range_out_of_range_is_inf(self):
-        self.feed(0.3, z=5.0)
+        self.feed(0.3, z=7.0)
         self.assertEqual(self.last['/fc/range'].range, math.inf)
         self.feed(0.3, z=0.01)
         self.assertEqual(self.last['/fc/range'].range, -math.inf)

@@ -4,6 +4,7 @@ import math
 import random
 
 from drone_interfaces.msg import OpticalFlow
+from drone_sim.floor_map import FloorMap
 from nav_msgs.msg import Odometry
 import rclpy
 from rclpy.node import Node
@@ -24,9 +25,10 @@ def to_whole_degrees(rate):
     return math.radians(int(math.degrees(rate)))
 
 
-def measure(flow, z, min_height, max_rate, noise, quantize, rng):
+def measure(flow, z, min_height, max_rate, noise, quantize, rng, quality=GOOD_QUALITY):
     # Return (quality, flow_rate_x, flow_rate_y) as the sensor would report.
-    if flow is None or z < min_height:
+    # quality is the surface's: 0 (plain, nothing to track) gives no flow.
+    if flow is None or z < min_height or quality <= 0:
         return 0, 0.0, 0.0
     fx, fy = flow
     if max(abs(fx), abs(fy)) > max_rate:
@@ -35,7 +37,7 @@ def measure(flow, z, min_height, max_rate, noise, quantize, rng):
     fy += rng.gauss(0.0, noise)
     if quantize:
         fx, fy = to_whole_degrees(fx), to_whole_degrees(fy)
-    return GOOD_QUALITY, fx, fy
+    return quality, fx, fy
 
 
 class FlowModel(Node):
@@ -49,6 +51,10 @@ class FlowModel(Node):
         self.quantize = self.declare_parameter('quantize', False).value
         seed = self.declare_parameter('seed', -1).value
         self.rng = random.Random(None if seed < 0 else seed)
+        path = self.declare_parameter('surfaces_file', '').value
+        self.floor = FloorMap.load(path) if path else None
+        if self.floor:
+            self.get_logger().info(f'flow quality from {path}')
         self.pub = self.create_publisher(OpticalFlow, 'fc/optical_flow', 10)
         self.create_subscription(
             Odometry, '/sim/ground_truth', self.on_truth, 10)
@@ -62,8 +68,10 @@ class FlowModel(Node):
         w = msg.twist.twist.angular
         z = msg.pose.pose.position.z
         flow = ideal_flow(v.x, v.y, w.x, w.y, z, up_z)
+        p = msg.pose.pose.position
+        surface = self.floor.quality(p.x, p.y) if self.floor else GOOD_QUALITY
         quality, fx, fy = measure(flow, z, self.min_height, self.max_rate,
-                                  self.noise, self.quantize, self.rng)
+                                  self.noise, self.quantize, self.rng, quality=surface)
         bx, by = w.x, w.y
         if self.quantize:
             bx, by = to_whole_degrees(bx), to_whole_degrees(by)

@@ -1,0 +1,18 @@
+Starting >>> drone_interfaces
+Starting >>> drone_safety
+Starting >>> drone_teleop
+Finished <<< drone_safety [0.90s]
+Finished <<< drone_teleop [0.90s]
+Finished <<< drone_interfaces [8.51s]
+Starting >>> drone_fc_bridge
+Starting >>> drone_mission
+Starting >>> drone_monitoring
+Starting >>> drone_sim
+Finished <<< drone_monitoring [1.04s]
+Finished <<< drone_mission [1.05s]
+Finished <<< drone_sim [1.05s]
+Finished <<< drone_fc_bridge [13.8s]
+Starting >>> drone_bringup
+Finished <<< drone_bringup [2.27s]
+
+Summary: 8 packages finished [24.6s]

@@ -96,8 +96,9 @@ disarmed for motor tests.
 `msp_gateway` is the only program that talks to esp-link. Every other tool
 (the dashboard, the ROS node, INAV Configurator, test scripts) connects to the
 gateway instead. The gateway queues requests from all of them, sends them to
-the FC one at a time, routes each reply back to whoever asked, and logs every
-frame in both directions with the client it came from.
+the FC a few at a time (see **Pacing** below), routes each reply back to
+whoever asked, and logs every frame in both directions with the client it
+came from.
 
 ```
   dashboard ─┐
@@ -111,8 +112,16 @@ frame in both directions with the client it came from.
 - **Collisions.** esp-link forwards every client's bytes straight to one
   UART. Two clients writing at the same moment can interleave their frames,
   and the FC then sees garbage. Two clients asking for the same message can
-  also receive each other's replies. The gateway serialises everything, so
-  only one request is ever on the wire.
+  also receive each other's replies. The gateway writes every frame itself,
+  whole, and routes each reply to the client that asked.
+- **Pacing.** Up to `--max-inflight` requests (default 4) are on the wire at
+  once, and together they stay under `--max-inflight-bytes` (default 200),
+  because INAV's UART receive buffer is 256 bytes with no overflow guard. On
+  the bench (Nov 25-26, `msp_bench.py`), 1 request in flight gave about 45
+  replies/s and 4-8 gave 85-97; 16 doubled the round trip for no gain, and a
+  burst of 64 lost 29 of them. MSP replies carry no request id, so each reply
+  goes to the oldest request in flight with the same command; INAV answers in
+  order.
 - **A complete log.** Connected directly to esp-link, a client can see the
   FC's replies to other clients but never the other clients' requests. Behind
   the gateway, every request and reply from every client passes through one
@@ -132,6 +141,7 @@ On the machine that is connected to the drone's esp-link AP (the Pi):
 ./build/msp_gateway                        # esp-link 192.168.4.1:23, clients on port 5760
 ./build/msp_gateway -v                     # also print every read request, not just writes
 ./build/msp_gateway --log flight3.jsonl    # choose the log file name
+./build/msp_gateway --max-inflight 1       # back to one request at a time
 ```
 
 Then point every client at the gateway instead of the ESP:

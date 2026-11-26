@@ -1,5 +1,5 @@
 ---
-title: What Changed When copy-nando Became main
+title: What Changed
 ---
 # What changed: copy-nando becomes main
 

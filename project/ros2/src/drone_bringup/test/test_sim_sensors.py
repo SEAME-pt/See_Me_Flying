@@ -1,13 +1,17 @@
 """
 Gazebo sensor test: the simulated sensors and the estimator against ground truth.
 
-Starts sim.launch.py headless with the mission, like test_sim_flight.py, and
-measures, in one flight:
+Starts sim.launch.py headless in room_world with the mission, like
+test_sim_flight.py, and measures, in one flight:
 
-  1 the sim comes up               4 a 4 m pass at 0.3 m/s: flow speed, estimate drift
-  2 takeoff                        5 a creep at 1 cm/s for 60 s: what the estimate misses
-  3 hover 10 s: height and vz      6 a creep at 3 cm/s for 30 s
-                                   7 land
+  1 the sim comes up                5 a 4 m pass at 0.3 m/s: flow speed, estimate drift
+  2 takeoff                         6 a creep at 1 cm/s for 60 s: what the estimate misses
+  3 into the carpet lane, y = 2.7   7 a creep at 3 cm/s for 30 s
+  4 hover 10 s: height and vz       8 across a plain table, no flow: estimate drift, overshoot
+                                    9 land
+
+Steps 4 to 7 fly over carpet. Step 8 crosses one of the room's plain tables on purpose:
+flow is lost there.
 Every step prints what it measured. The limits are in LIMITS below, and
 SIM_Sensors.md explains them. The steps share one flight, so after a failed
 step the rest are skipped.
@@ -45,6 +49,13 @@ import yaml
 SHARE = get_package_share_directory('drone_bringup')
 PASS_SPEED = 0.3     # m/s, the 4 m pass
 STEADY = 0.03        # m/s: flow is judged only while the true speed is this close to it
+LANE_Y = 2.7         # m, room_world: a carpet lane from wall to wall, clear of every table
+LANE_MARGIN = 0.2    # m, how far from the lane still counts as in it
+TABLE_X = 1.3        # m, room_world: the middle of table group 4 (x -0.26 to 2.78)
+TABLE_CROSS = 1.7    # m to the right, by the estimate: from the lane, across group 4
+#                      (y 1.97 to 0.45), and on to the carpet before group 5 (y -1.34).
+#                      The estimate freezes over the table, so the drone truly flies
+#                      about 1.4 m further and stops near y = -0.5, on carpet.
 with open(os.path.join(SHARE, 'config', 'sim_test_limits.yaml')) as f:
     LIMITS = yaml.safe_load(f)['sensors']
 
@@ -114,6 +125,7 @@ class TestSimSensors(unittest.TestCase):
             Parameter('use_sim_time', Parameter.Type.BOOL, True)])
         cls.truth = cls.odom = cls.range = None
         cls.flow_errors = None   # a list while the pass collects, else None
+        cls.crossing = None      # a list while the table crossing collects, else None
         cls.node.create_subscription(Odometry, '/sim/ground_truth',
                                      lambda m: setattr(cls, 'truth', m), 10)
         cls.node.create_subscription(Odometry, '/fc/odom', lambda m: setattr(cls, 'odom', m), 10)
@@ -135,6 +147,9 @@ class TestSimSensors(unittest.TestCase):
 
     @classmethod
     def on_flow(cls, msg):
+        if cls.crossing is not None and None not in (cls.truth, cls.odom):
+            now = cls.node.get_clock().now().nanoseconds * 1e-9
+            cls.crossing.append((now, msg.quality, xy(cls.truth), xy(cls.odom)))
         if cls.flow_errors is None or cls.truth is None or cls.range is None:
             return
         v = cls.truth.twist.twist.linear
@@ -224,7 +239,19 @@ class TestSimSensors(unittest.TestCase):
         self.sleep_sim(3.0)
 
     @step
-    def test_3_hover(self):
+    def test_3_carpet_lane(self):
+        # The room's tables are plain: flow is lost over them. The steps that follow
+        # fly forward along y = 2.7, which is carpet all the way.
+        left = LANE_Y - self.truth.pose.pose.position.y
+        self.send('goto', forward=0.0, left=left, yaw=0.0, speed=0.0)
+        self.sleep_sim(2.0)
+        y = self.truth.pose.pose.position.y
+        print(f'carpet lane: moved {left:+.2f} m sideways, now at y = {y:.2f} m '
+              f'(lane at {LANE_Y:.2f} m)')
+        self.assertLess(abs(y - LANE_Y), LANE_MARGIN, 'not in the carpet lane')
+
+    @step
+    def test_4_hover(self):
         dz, vz = [], []
         end = self.sim_now() + 10.0
         while self.sim_now() < end:
@@ -240,7 +267,7 @@ class TestSimSensors(unittest.TestCase):
         self.assertLess(vz_std, LIMITS['hover_vz_std'])
 
     @step
-    def test_4_pass(self):
+    def test_5_pass(self):
         drift = checks.Drift(xy(self.truth), xy(self.odom))
         cls = type(self)   # launch_test runs a copy of this class: use the copy
         cls.flow_errors = []
@@ -256,13 +283,47 @@ class TestSimSensors(unittest.TestCase):
         self.assertLess(err, LIMITS['pass_error'])
 
     @step
-    def test_5_creep_1cm(self):
+    def test_6_creep_1cm(self):
         self.creep(0.01, 60.0, 'creep_1cm')
 
     @step
-    def test_6_creep_3cm(self):
+    def test_7_creep_3cm(self):
         self.creep(0.03, 30.0, 'creep_3cm')
 
     @step
-    def test_7_land(self):
+    def test_8_table_crossing(self):
+        # Flow is lost over the plain table: the estimate stops while the drone flies
+        # on, and the mission, which steers by the estimate, overshoots.
+        x = self.truth.pose.pose.position.x
+        self.send('goto', forward=TABLE_X - x, left=0.0, yaw=0.0, speed=0.0)
+        self.sleep_sim(2.0)
+        drift = checks.Drift(xy(self.truth), xy(self.odom))
+        cls = type(self)   # launch_test runs a copy of this class: use the copy
+        cls.crossing = []
+        self.send('goto', forward=0.0, left=-TABLE_CROSS, yaw=0.0, speed=0.0)
+        samples, cls.crossing = cls.crossing, None
+        moved, err = drift.update(xy(self.truth), xy(self.odom))
+        lost = [s for s in samples if s[1] == 0]
+        self.assertTrue(lost, 'flow was never lost: the drone missed the table')
+        lost_s = lost[-1][0] - lost[0][0]
+        lost_true = math.dist(lost[0][2], lost[-1][2])
+        lost_est = math.dist(lost[0][3], lost[-1][3])
+        missed = 1.0 - lost_est / lost_true if lost_true > 0.0 else 0.0
+        overshoot = moved - TABLE_CROSS
+        lo, hi = LIMITS['table_missed']
+        cap = LIMITS['table_overshoot']
+        print(f'table crossing: asked {TABLE_CROSS:.2f} m, truly moved {moved:.3f} m '
+              f'(overshoot {overshoot:+.3f} m, max {cap:.1f} m), estimate off by {err:.3f} m; '
+              f'flow lost for {lost_s:.1f} s, while the drone moved {lost_true:.3f} m '
+              f'and the estimate {lost_est:.3f} m: missed {missed:.0%} '
+              f'(expected {lo:.0%}..{hi:.0%})')
+        self.assertGreater(lost_true, 1.0, 'under 1 m without flow: not across the table')
+        self.assertGreater(samples[-1][1], 0, 'stopped over the table, not on carpet')
+        self.assertGreaterEqual(missed, lo)
+        self.assertLessEqual(missed, hi)
+        self.assertLess(overshoot, cap)
+        self.sleep_sim(2.0)
+
+    @step
+    def test_9_land(self):
         self.send('land')

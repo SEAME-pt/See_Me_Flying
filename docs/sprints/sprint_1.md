@@ -18,10 +18,10 @@ Turn the Sprint 0 baseline into working links: read INAV over Wi-Fi, fly the dro
 
 ### 2.1 Telemetry and INAV
 
-- ESP12 bridge between the flight controller's UART1 and the ground computer, first on MicroPython, later on esp-link for lower latency ([ESP12 setup](../project/telemetry/README.md), [Wi-Fi latency tests](../docs/Telemetry_test.md)).
+- ESP12 bridge between the flight controller's UART1 and the ground computer, first on MicroPython, later on esp-link for lower latency ([ESP12 setup](project/telemetry/README.md), [Wi-Fi latency tests](Telemetry_test.md)).
 - `inav_telemetry.py` reads attitude, altitude, battery, RC channels, motors, arming blockers and modes over MSP.
-- Radio receiver replaced (TBS Crossfire → BETAFPV Nano RX on ELRS 4.1.0), bound to the RadioMaster Pocket, arming and radio-loss failsafe tested ([ELRS guide](../docs/ELRS_Guide.md)).
-- Battery reading calibrated: `vbat_scale = 1103` (Oct 28, [Li-Po battery tests](../docs/Li-Po_Battery_Tests.md)).
+- Radio receiver replaced (TBS Crossfire → BETAFPV Nano RX on ELRS 4.1.0), bound to the RadioMaster Pocket, arming and radio-loss failsafe tested ([ELRS guide](ELRS_Guide.md)).
+- Battery reading calibrated: `vbat_scale = 1103` (Oct 28, [Li-Po battery tests](Li-Po_Battery_Tests.md)).
 - INAV configuration backed up on Oct 26 ([`project/hardware/flight-controller/`](../project/hardware/flight-controller/)).
 
 ### 2.2 Simulation stack
@@ -33,11 +33,11 @@ Turn the Sprint 0 baseline into working links: read INAV over Wi-Fi, fly the dro
 - `mission` node: takeoff, goto and land on the rangefinder, replacing the timed `setpoint_pub` (Oct 29).
 - `safety_manager`: one commander at a time, the radio overrides the mission (Oct 30).
 
-Every node in detail: [ROS 2 stack](../project/ros2/README.md).
+Every node in detail: [ROS 2 stack](project/ros2/README.md).
 
 ### 2.3 Video and CI
 
-- FPV video into ROS as `/image_raw` at about 25 Hz ([FPV guide](../docs/FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md)).
+- FPV video into ROS as `/image_raw` at about 25 Hz ([FPV guide](FPV_Video_Receiver_Setup_UVC_Receiver_to_ROS.md)).
 - CI builds and tests the ROS workspace on every push and pull request.
 
 ## 3. Decisions
