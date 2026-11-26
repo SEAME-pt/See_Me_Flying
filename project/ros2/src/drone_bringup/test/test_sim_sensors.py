@@ -1,13 +1,16 @@
 """
 Gazebo sensor test: the simulated sensors and the estimator against ground truth.
 
-Starts sim.launch.py headless with the mission, like test_sim_flight.py, and
-measures, in one flight:
+Starts sim.launch.py headless in room_world with the mission, like
+test_sim_flight.py, and measures, in one flight:
 
-  1 the sim comes up               4 a 4 m pass at 0.3 m/s: flow speed, estimate drift
-  2 takeoff                        5 a creep at 1 cm/s for 60 s: what the estimate misses
-  3 hover 10 s: height and vz      6 a creep at 3 cm/s for 30 s
-                                   7 land
+  1 the sim comes up                5 a 4 m pass at 0.3 m/s: flow speed, estimate drift
+  2 takeoff                         6 a creep at 1 cm/s for 60 s: what the estimate misses
+  3 into the carpet lane, y = 2.7   7 a creep at 3 cm/s for 30 s
+  4 hover 10 s: height and vz       8 (cross the table)
+                                    9 land
+                                    
+Steps 4 to 7 fly over carpet, away from the room's plain tables, where flow is lost.
 Every step prints what it measured. The limits are in LIMITS below, and
 SIM_Sensors.md explains them. The steps share one flight, so after a failed
 step the rest are skipped.
@@ -45,6 +48,8 @@ import yaml
 SHARE = get_package_share_directory('drone_bringup')
 PASS_SPEED = 0.3     # m/s, the 4 m pass
 STEADY = 0.03        # m/s: flow is judged only while the true speed is this close to it
+LANE_Y = 2.7         # m, room_world: a carpet lane from wall to wall, clear of every table
+LANE_MARGIN = 0.2    # m, how far from the lane still counts as in it
 with open(os.path.join(SHARE, 'config', 'sim_test_limits.yaml')) as f:
     LIMITS = yaml.safe_load(f)['sensors']
 
@@ -224,7 +229,19 @@ class TestSimSensors(unittest.TestCase):
         self.sleep_sim(3.0)
 
     @step
-    def test_3_hover(self):
+    def test_3_carpet_lane(self):
+        # The room's tables are plain: flow is lost over them. The steps that follow
+        # fly forward along y = 2.7, which is carpet all the way.
+        left = LANE_Y - self.truth.pose.pose.position.y
+        self.send('goto', forward=0.0, left=left, yaw=0.0, speed=0.0)
+        self.sleep_sim(2.0)
+        y = self.truth.pose.pose.position.y
+        print(f'carpet lane: moved {left:+.2f} m sideways, now at y = {y:.2f} m '
+              f'(lane at {LANE_Y:.2f} m)')
+        self.assertLess(abs(y - LANE_Y), LANE_MARGIN, 'not in the carpet lane')
+
+    @step
+    def test_4_hover(self):
         dz, vz = [], []
         end = self.sim_now() + 10.0
         while self.sim_now() < end:
@@ -240,7 +257,7 @@ class TestSimSensors(unittest.TestCase):
         self.assertLess(vz_std, LIMITS['hover_vz_std'])
 
     @step
-    def test_4_pass(self):
+    def test_5_pass(self):
         drift = checks.Drift(xy(self.truth), xy(self.odom))
         cls = type(self)   # launch_test runs a copy of this class: use the copy
         cls.flow_errors = []
@@ -256,13 +273,13 @@ class TestSimSensors(unittest.TestCase):
         self.assertLess(err, LIMITS['pass_error'])
 
     @step
-    def test_5_creep_1cm(self):
+    def test_6_creep_1cm(self):
         self.creep(0.01, 60.0, 'creep_1cm')
 
     @step
-    def test_6_creep_3cm(self):
+    def test_7_creep_3cm(self):
         self.creep(0.03, 30.0, 'creep_3cm')
 
     @step
-    def test_7_land(self):
+    def test_8_land(self):
         self.send('land')
