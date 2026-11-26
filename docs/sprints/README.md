@@ -11,8 +11,8 @@ The project follows an iterative development approach, with each sprint lasting 
 
 | Sprint                                                | Period               | Documentation             |
 | ----------------------------------------------------- | -------------------- | ------------------------- |
-| **Sprint 0** — Onboarding & Baseline                  | 6 Oct – 16 Oct 2026  | [Sprint 0](./sprint_0.md) |
-| **Sprint 1** — Telemetry, Simulation & Video          | 19 Oct – 1 Nov 2026  | [Sprint 1](./sprint_1.md) |
+| **Sprint 0** — Onboarding & Baseline                  | 6 Oct – 16 Oct 2026  | [Sprint 0](sprint_0.md) |
+| **Sprint 1** — Telemetry, Simulation & Video          | 19 Oct – 1 Nov 2026  | [Sprint 1](sprint_1.md) |
 
 ## 🔗 Sprint Roadmap
 
@@ -20,17 +20,17 @@ The project follows an iterative development approach, with each sprint lasting 
 
 **Focus:** Development environment setup, Git workflow, ROS 2 fundamentals, team organization, and initial hardware teardown and analysis.
 
-**Documentation:** [Sprint 0](./sprint_0.md)
+**Documentation:** [Sprint 0](sprint_0.md)
 
 ### ✔️ Sprint 1 — Telemetry, Simulation & Video
 
 **Focus:** INAV telemetry over Wi-Fi, the simulation stack with teleoperation, FPV video into ROS, and CI.
 
-**Documentation:** [Sprint 1](./sprint_1.md)
+**Documentation:** [Sprint 1](sprint_1.md)
 
 ---
 
-*Project documentation is updated throughout each sprint. Where things stand today: [Status and roadmap](../README.md#status-and-roadmap).*
+*Project documentation is updated throughout each sprint. Where things stand today: [Status and roadmap](README.md#status-and-roadmap).*
 
 # Tags
 
