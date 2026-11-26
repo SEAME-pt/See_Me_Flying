@@ -5,7 +5,7 @@ title: ROS and Video communication
 
 The drone's analog camera now reaches ROS 2. A USB receiver on the ground computer picks up the 5.8 GHz signal, and `usb_cam` inside the container publishes it as `/image_raw` at about 25 Hz.
 
-Frames flow one way, from the drone to `/image_raw`. The dashed perception node does not exist yet; it is the next step.
+Frames flow one way, from the drone to `/image_raw`. The perception nodes that consume it are in [Computer vision on the Ratel 2 feed](Computer_Vision_Ratel2.md).
 
 ## Hardware and software in use
 

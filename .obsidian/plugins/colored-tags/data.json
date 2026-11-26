@@ -10,13 +10,13 @@
     "highTextContrast": false
   },
   "knownTags": {
-    "firmware": 1,
+    "firmware": 7,
     "guides": 2,
-    "hardware": 3,
+    "hardware": 8,
     "resources": 4,
-    "simulator": 7,
-    "sprints": 5,
-    "tests": 8,
+    "simulator": 9,
+    "sprints": 10,
+    "tests": 11,
     "tools": 6
   },
   "tagColors": {},

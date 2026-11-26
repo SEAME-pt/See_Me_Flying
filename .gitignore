@@ -23,5 +23,13 @@ project/logs/measurements/motor_music/*/*.wav
 # Obsidian: share the vault settings, not each person's open tabs
 .obsidian/workspace.json
 
+# Perception: models are rebuilt with the export command in the computer-vision guide;
+# recordings, extracted frames and training datasets are too big for git
+project/ros2/models/*.onnx
+*.pt
+project/ros2/bags/
+project/ros2/frames/
+project/ros2/dataset/
+
 # msp_bench.py CSVs when run without --logbook or --out
 results/
