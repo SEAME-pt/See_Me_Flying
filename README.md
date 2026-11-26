@@ -226,7 +226,7 @@ See_Me_Flying/
 
 ### Using obsidian
 
-The documentation was made with [Obsidan](https://obsidian.md/) and it's meant way easier to navigate through it using this tool. The setup is simple, after cloning the repository just open it as a vault inside Obsidian.
+The documentation was made with [Obsidian](https://obsidian.md/) and it's meant way easier to navigate through it using this tool. The setup is simple, after cloning the repository just open it as a vault inside Obsidian.
 
 ---
 
