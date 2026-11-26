@@ -1,0 +1,16 @@
+{
+  "kind": "sim_sensors",
+  "name": null,
+  "date": "2026-11-26T14:24:05+00:00",
+  "host": "seame-5",
+  "commit": "80fab484780a442e614178bca87d87893547d7cd",
+  "commit_short": "80fab48",
+  "commit_subject": "Sim Sensor test fix: drone flies in the room's carpet lane",
+  "branch": "room_flow",
+  "uncommitted_code": [
+    "project/ros2/src/drone_bringup/test/test_sim_sensors.py"
+  ],
+  "uncommitted_other": [
+    "project/scripts/sim_flight_test.sh"
+  ]
+}

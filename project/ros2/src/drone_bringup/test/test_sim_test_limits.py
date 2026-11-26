@@ -6,7 +6,8 @@ import yaml
 
 LIMITS = Path(__file__).resolve().parents[1] / 'config' / 'sim_test_limits.yaml'
 EXPECTED = {'hover_height_mean', 'hover_height_std', 'hover_vz_std', 'flow_mean',
-            'flow_std', 'pass_error', 'creep_1cm', 'creep_3cm'}
+            'flow_std', 'pass_error', 'creep_1cm', 'creep_3cm', 'table_missed',
+            'table_overshoot'}
 
 
 def load():

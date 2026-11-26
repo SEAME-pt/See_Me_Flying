@@ -1,16 +1,16 @@
 # Surfaces of room_world.sdf, for flow_model's flow quality.
 # Rectangles in world coordinates (m); heights are above the floor. Positions
 # read from models/room/meshes/room.stl. Where areas overlap, the later one wins.
-
+ 
 default: carpet
-
+ 
 surfaces:
-  carpet:   {quality: 100}   # grey textured carpet; the ThoneFlow read 100 at rest
-  mat:      {quality: 60}    # small black textured mat: a guess until the real sensor checks it
-  table:    {quality: 0}     # white smooth table tops; the ThoneFlow gave no readings over them
-  shelves:  {quality: 0} 
-  fridge:   {quality: 0}  
-
+  carpet:   {quality: 100}   # grey textured carpet: the ThoneFlow read 100
+  mat:      {quality: 60}    # small black textured mat: a guess
+  table:    {quality: 0}     # white smooth table tops: the ThoneFlow read nothing
+  shelves:  {quality: 0}     # not measured; treated like the tables
+  fridge:   {quality: 0}     # not measured; treated like the tables
+ 
 areas:
   # Small groups, 3 tables: 2 regular side by side, and a short table across the +x end
   - {surface: table, name: group 1, x: [-7.01, -3.97], y: [-2.26, -0.75], height: 0.78}
@@ -30,8 +30,8 @@ areas:
   - {surface: shelves, name: shelving, x: [-3.13, 4.86], y: [-5.42, -4.51], height: 2.25}
   # The mat: position to be measured
   # - {surface: mat, name: mat, x: [X_MIN, X_MAX], y: [Y_MIN, Y_MAX], height: 0.0}
-
+ 
 # Floor to ceiling: flown around, never over. Not used for flow quality; kept
 # for the obstacle-aware rangefinder and for planning test paths.
 obstacles:
-  - {name: column, x: [-2.66, -1.66], y: [-1.81, -0.81], height: 3.49} 
+  - {name: column, x: [-2.66, -1.66], y: [-1.81, -0.81], height: 3.49}
