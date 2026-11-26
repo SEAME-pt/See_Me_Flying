@@ -2,9 +2,20 @@
 //
 // It connects to esp-link (or a serial port) once, and lets any number of
 // clients (msp_dashboard, a ROS node, INAV Configurator, scripts...) connect to
-// it instead. Requests from all clients are queued and sent to the FC one at a
-// time, each reply goes back to the client that asked, and every frame in both
-// directions is logged with the client it belongs to.
+// it instead. Requests from all clients are queued and sent to the FC, each
+// reply goes back to the client that asked, and every frame in both directions
+// is logged with the client it belongs to.
+//
+// Up to --max-inflight requests (default 4) are on the wire at once. INAV
+// answers queued requests in order, one per 10 ms serial task run, so a few in
+// flight hide the Wi-Fi round trip: on the bench (Nov 25-26) 1 in flight gave
+// about 45 replies/s and 4-8 gave 85-97. Two limits keep INAV safe:
+//   - its UART receive buffer is 256 bytes with no overflow guard, so the
+//     requests in flight together stay under --max-inflight-bytes (default 200);
+//   - more than 8 in flight only adds delay (16 in flight doubled the round
+//     trip with no extra replies), so --max-inflight is capped at 8.
+// MSP replies carry no request id: a reply goes to the oldest request in flight
+// with the same command and MSP version.
 //
 //   msp_gateway                                  esp-link at 192.168.4.1:23, clients on :5760
 //   msp_gateway --serial /dev/ttyUSB0
@@ -62,6 +73,8 @@ struct Options {
     std::string bind = "0.0.0.0";
     int listen_port = 5760;
     double timeout_s = 0.3;
+    int max_inflight = 4;
+    int max_inflight_bytes = 200;
     std::string log_path;              // empty = auto-named, "-" = no file
     bool verbose = false;
     bool motor_guard = true;
@@ -78,7 +91,10 @@ void usage(const char* prog) {
         "  -p, --port N           esp-link TCP port (default 23)\n"
         "  -s, --serial DEV       use a serial device instead, e.g. /dev/ttyUSB0\n"
         "  -b, --baud N           serial baud rate (default 115200)\n"
-        "  -t, --timeout SEC      wait for each FC reply (default 0.3)\n\n"
+        "  -t, --timeout SEC      wait for each FC reply (default 0.3)\n"
+        "      --max-inflight N   requests on the wire at once, 1-8 (default 4; 1 = one at a time)\n"
+        "      --max-inflight-bytes N\n"
+        "                         their total size, to fit INAV's 256-byte UART buffer (default 200)\n\n"
         "clients:\n"
         "      --bind ADDR        address to listen on (default 0.0.0.0 = every interface)\n"
         "  -l, --listen-port N    port clients connect to (default 5760)\n"
@@ -101,6 +117,8 @@ std::optional<Options> parse_args(int argc, char** argv) {
         {"listen-port", required_argument, nullptr, 'l'}, {"max-clients", required_argument, nullptr, 2},
         {"log", required_argument, nullptr, 3},        {"verbose", no_argument, nullptr, 'v'},
         {"no-motor-guard", no_argument, nullptr, 4},   {"help", no_argument, nullptr, 'h'},
+        {"max-inflight", required_argument, nullptr, 5},
+        {"max-inflight-bytes", required_argument, nullptr, 6},
         {nullptr, 0, nullptr, 0},
     };
     int c;
@@ -117,6 +135,8 @@ std::optional<Options> parse_args(int argc, char** argv) {
             case 3: o.log_path = optarg; break;
             case 'v': o.verbose = true; break;
             case 4: o.motor_guard = false; break;
+            case 5: o.max_inflight = std::atoi(optarg); break;
+            case 6: o.max_inflight_bytes = std::atoi(optarg); break;
             case 'h': usage(argv[0]); std::exit(0);
             default: usage(argv[0]); return std::nullopt;
         }
@@ -124,6 +144,11 @@ std::optional<Options> parse_args(int argc, char** argv) {
     if (o.port <= 0 || o.port > 65535 || o.listen_port <= 0 || o.listen_port > 65535 ||
         o.timeout_s <= 0 || o.max_clients < 1) {
         std::fprintf(stderr, "invalid --port, --listen-port, --timeout or --max-clients\n");
+        return std::nullopt;
+    }
+    if (o.max_inflight < 1 || o.max_inflight > 8 || o.max_inflight_bytes < 16 ||
+        o.max_inflight_bytes > 256) {
+        std::fprintf(stderr, "--max-inflight must be 1-8 and --max-inflight-bytes 16-256\n");
         return std::nullopt;
     }
     return o;
@@ -320,10 +345,9 @@ private:
         up_.reset();
         upstream_error_logged_ = true;
         next_reconnect_ = Clock::now() + std::chrono::seconds(2);
-        if (inflight_) {
-            log_transaction(inflight_->req, nullptr, "link_lost");
-            inflight_.reset();
-        }
+        for (const InFlight& in : inflight_) log_transaction(in.req, nullptr, "link_lost", in.sent);
+        inflight_.clear();
+        inflight_bytes_ = 0;
     }
 
     void read_upstream() {
@@ -337,9 +361,15 @@ private:
         }
         up_parser_.feed(buf, n);
         while (auto f = up_parser_.next()) {
-            if (inflight_ && f->cmd == inflight_->req.frame.cmd && f->version == inflight_->req.frame.version) {
-                deliver(*inflight_, *f);
-                inflight_.reset();
+            // INAV answers in order, so the oldest request with this command is the one answered.
+            const auto it = std::find_if(inflight_.begin(), inflight_.end(), [&](const InFlight& in) {
+                return in.req.frame.cmd == f->cmd && in.req.frame.version == f->version;
+            });
+            if (it != inflight_.end()) {
+                const InFlight in = std::move(*it);
+                inflight_bytes_ -= in.req.frame.bytes.size();
+                inflight_.erase(it);
+                deliver(in, *f);
             } else {
                 // Nobody asked for this right now (e.g. a late reply after a timeout).
                 log_.record("\"event\":\"unsolicited\",\"v\":" + std::to_string(f->version) +
@@ -351,9 +381,14 @@ private:
         }
     }
 
-    // Sends the next queued request when the line is free.
+    // Sends queued requests while there is room on the wire: fewer than
+    // --max-inflight waiting for a reply, and their bytes under --max-inflight-bytes.
     void dispatch() {
-        while (!inflight_ && !queue_.empty()) {
+        while (!queue_.empty() && inflight_.size() < static_cast<size_t>(o_.max_inflight)) {
+            const size_t size = queue_.front().frame.bytes.size();
+            // An oversized request still goes, but only on an empty line.
+            if (!inflight_.empty() && inflight_bytes_ + size > static_cast<size_t>(o_.max_inflight_bytes))
+                break;
             Request req = std::move(queue_.front());
             queue_.pop_front();
             if (auto it = clients_.find(req.client_id); it != clients_.end() && it->second.queued > 0)
@@ -369,14 +404,18 @@ private:
                 upstream_lost(e.what());
                 continue;
             }
-            inflight_ = InFlight{std::move(req), Clock::now()};
+            inflight_bytes_ += size;
+            inflight_.push_back(InFlight{std::move(req), Clock::now()});
         }
     }
 
+    // inflight_ is in send order, so the oldest request, the first to time out, is at the front.
     void check_timeout() {
-        if (inflight_ && Clock::now() - inflight_->sent > timeout()) {
-            log_transaction(inflight_->req, nullptr, "timeout");
-            inflight_.reset();
+        while (!inflight_.empty() && Clock::now() - inflight_.front().sent > timeout()) {
+            const InFlight in = std::move(inflight_.front());
+            inflight_.pop_front();
+            inflight_bytes_ -= in.req.frame.bytes.size();
+            log_transaction(in.req, nullptr, "timeout", in.sent);
         }
     }
 
@@ -465,7 +504,7 @@ private:
     // ----- replies -----
 
     void deliver(const InFlight& in, const RawFrame& reply) {
-        log_transaction(in.req, &reply, reply.direction == '>' ? "ok" : "error");
+        log_transaction(in.req, &reply, reply.direction == '>' ? "ok" : "error", in.sent);
         track_motors(in.req, reply);
         if (in.req.client_id == kGatewayId) return;
         auto it = clients_.find(in.req.client_id);
@@ -484,13 +523,14 @@ private:
         motor_owner_ = spinning ? std::optional<int>(req.client_id) : std::nullopt;
     }
 
-    void log_transaction(const Request& req, const RawFrame* reply, const char* result) {
+    // `sent` is when the request went on the wire; nullopt if it never did.
+    void log_transaction(const Request& req, const RawFrame* reply, const char* result,
+                         std::optional<Clock::time_point> sent = std::nullopt) {
         const auto now = Clock::now();
         const long wait_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                 (inflight_ ? inflight_->sent : now) - req.received).count();
-        const long latency_ms = inflight_ ? std::chrono::duration_cast<std::chrono::milliseconds>(
-                                                now - inflight_->sent).count()
-                                          : 0;
+                                 sent.value_or(now) - req.received).count();
+        const long latency_ms =
+            sent ? std::chrono::duration_cast<std::chrono::milliseconds>(now - *sent).count() : 0;
         const std::string name = msp::command_name(req.frame.cmd);
         const bool write = msp::is_write_command(req.frame.cmd);
 
@@ -522,9 +562,9 @@ private:
 
     int wait_ms() const {
         long ms = 1000;
-        if (inflight_) {
+        if (!inflight_.empty()) {
             const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(
-                inflight_->sent + timeout() - Clock::now()).count();
+                inflight_.front().sent + timeout() - Clock::now()).count();
             ms = std::max(0L, std::min(ms, left + 1));
         }
         if (!up_) {
@@ -562,7 +602,8 @@ private:
     std::map<int, Client> clients_;
     int next_id_ = 1;
     std::deque<Request> queue_;
-    std::optional<InFlight> inflight_;
+    std::deque<InFlight> inflight_;   // sent, waiting for a reply; oldest first
+    size_t inflight_bytes_ = 0;
     std::optional<int> motor_owner_;
 };
 
@@ -589,6 +630,8 @@ int main(int argc, char** argv) {
 
     log.screen("msp_gateway listening on " + opts->bind + ":" + std::to_string(opts->listen_port) +
                (log.path().empty() ? "  (no log file)" : "  ·  logging to " + log.path()));
+    log.screen("up to " + std::to_string(opts->max_inflight) + " requests in flight, " +
+               std::to_string(opts->max_inflight_bytes) + " bytes at most");
     log.screen(opts->verbose ? "showing every request" : "showing writes, errors and connections (-v for everything)");
     gw.run();
     log.screen("gateway stopped");
