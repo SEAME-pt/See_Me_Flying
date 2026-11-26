@@ -209,6 +209,8 @@ See_Me_Flying/
 
 ## Documentation map
 
+![docu_map](docs/extras/graph.svg)
+
 | Area | Document |
 | --- | --- |
 | ROS 2 | [ROS 2 stack: nodes, topics, parameters, tests, known issues](project/ros2/README.md) |
@@ -221,6 +223,10 @@ See_Me_Flying/
 | Tools | [MSP dashboard and gateway](project/telemetry/msp_dashboard/README.md) · [Wanhao Duplicator 12/230](docs/Wanhao_Duplicator_12-230.md) |
 | Sprints | [Sprints overview](docs/sprints/README.md) |
 | Resources | [What changed when copy-nando became main](docs/CHANGES.md) · [Sources](docs/Sources.md) |
+
+### Using obsidian
+
+The documentation was made with [Obsidan](https://obsidian.md/) and it's meant way easier to navigate through it using this tool. The setup is simple, after cloning the repository just open it as a vault inside Obsidian.
 
 ---
 
