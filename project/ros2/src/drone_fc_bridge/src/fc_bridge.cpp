@@ -12,6 +12,8 @@
 //         (inav_sticks.*) -> MSP_SET_RAW_RC; stale or holding sends centred
 //         sticks. INAV uses them only while the radio's MSP RC OVERRIDE
 //         switch is on, and goes back to the radio about 1 s after they stop.
+//         No reply from INAV within telemetry_timeout_s also sends centred
+//         sticks: the setpoints were computed from state that is now too old.
 //   Both: fc/arm, fc/hold (std_srvs/SetBool) and fc/status (drone_interfaces/FcStatus)
 //
 // Publishes every tick, not only on new setpoints: Gazebo's velocity
@@ -193,6 +195,9 @@ public:
       link.host = declare_parameter<std::string>("msp_host", link.host);
       link.port = static_cast<uint16_t>(declare_parameter<int>("msp_port", link.port));
       link.reply_timeout_s = declare_parameter<double>("msp_timeout_s", link.reply_timeout_s);
+      // Older replies than this: hold (centred sticks) until INAV answers again.
+      declare_parameter<double>("telemetry_timeout_s", 0.3);
+      telemetry_stale_ = true;   // nothing received yet
       rc_override_ = declare_parameter<bool>("rc_override", false);
       flow_pub_ = create_publisher<OpticalFlow>("fc/optical_flow", 10);
       battery_pub_ = create_publisher<BatteryState>("fc/battery", 10);
@@ -262,7 +267,7 @@ private:
     st.backend = backend_;
     st.armed = armed_;
     st.holding = holding_;
-    st.following_setpoints = !stale_ && !holding_;
+    st.following_setpoints = !stale_ && !holding_ && !telemetry_stale_;
     st.setpoint_age_s = last_rx_ ? static_cast<float>((now() - *last_rx_).seconds()) : -1.0f;
     st.range_valid = range_valid_;
     st.link_ok = true;
@@ -296,12 +301,36 @@ private:
       publish_status();
     }
 
+    const bool telemetry_fresh = telemetry_ok();
+    if (telemetry_stale_ == telemetry_fresh) {
+      telemetry_stale_ = !telemetry_fresh;
+      if (telemetry_stale_) {
+        RCLCPP_WARN(get_logger(), "No reply from INAV for over %.2f s: holding (centred sticks)",
+          param("telemetry_timeout_s"));
+      } else {
+        RCLCPP_INFO(get_logger(), "INAV is answering: setpoints can be followed");
+      }
+      publish_status();
+    }
+
+    const bool follow = fresh && telemetry_fresh && !holding_;
     if (cmd_pub_) {
-      cmd_pub_->publish(fresh && !holding_ ? clamp(last_sp_) : Twist());
+      cmd_pub_->publish(follow ? clamp(last_sp_) : Twist());
     }
     if (link_ && rc_override_) {
-      link_->set_sticks(sticks(fresh && !holding_ ? clamp(last_sp_) : Twist()));
+      link_->set_sticks(sticks(follow ? clamp(last_sp_) : Twist()));
     }
+  }
+
+  // inav: INAV replied within telemetry_timeout_s. sim: always true.
+  bool telemetry_ok()
+  {
+    if (!link_) {
+      return true;
+    }
+    const auto s = link_->state();
+    return s.last_reply != inav::Clock::time_point{} &&
+           seconds_since(s.last_reply) <= param("telemetry_timeout_s");
   }
 
   // The clamped setpoint as sticks: the max_speed_* limits are full stick.
@@ -635,6 +664,7 @@ private:
   Twist last_sp_;
   std::optional<rclcpp::Time> last_rx_;
   bool stale_{true};
+  bool telemetry_stale_{false};   // inav: no reply from INAV within telemetry_timeout_s
   bool armed_{true};
   bool holding_{false};
   bool range_valid_{false};

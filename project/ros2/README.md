@@ -152,7 +152,7 @@ The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) 
 **What it does**
 
 1. **Receives** setpoints on `fc/setpoint_velocity` and stores the latest one with the time it arrived. The message's own header timestamp is not used. A setpoint with NaN (Not a Number) or infinity in any field is dropped with a warning (at most once a second) and not stored, so the previous one keeps ageing and the timeout takes over.
-2. **Ticks** at `rate_hz` (20 Hz). Each tick it decides whether the stored setpoint is fresh: it arrived no more than `setpoint_timeout_s` ago, and not in the "future" (which happens when sim time is reset).
+2. **Ticks** at `rate_hz` (20 Hz). Each tick it decides whether the stored setpoint is fresh: it arrived no more than `setpoint_timeout_s` ago, and not in the "future" (which happens when sim time is reset). With `inav` it also checks that INAV replied within `telemetry_timeout_s`: setpoints computed from older state are treated as stale (log: `No reply from INAV for over 0.30 s: holding (centred sticks)`, then `INAV is answering: setpoints can be followed`).
 3. **Fresh:** clamps it and publishes it to Gazebo.
 4. **Stale or none yet:** publishes zero velocity. Gazebo's controller keeps following the last command it received, so this explicit zero is what makes the drone stop and hover. That is the failsafe.
 5. **Logs** only on changes: `Setpoints received, following them` and `Setpoint timeout: holding (zero velocity)`. It starts stale, so it publishes zeros and logs nothing until the first setpoint.
@@ -198,6 +198,7 @@ The only node allowed to command the drone. Parameter `backend`: `sim` (Gazebo) 
 | `armed_at_start` | true (read once at start; sim only; the launch sets it) |
 | `msp_host`, `msp_port` | `192.168.4.1`, 23 (inav only; esp-link's transparent port. Never 2323: it resets the FC) |
 | `msp_timeout_s` | 0.25 s for a poll cycle's replies (inav only) |
+| `telemetry_timeout_s` | 0.3 s (inav only): no reply from INAV for longer holds, like a stale setpoint |
 | `rc_override` | false (read once at start; inav only): true sends setpoints to INAV as sticks |
 
 Timeout and clamp limits are read every tick, so `ros2 param set` changes them live. Numeric parameters are doubles, except `msp_port`: set them as `2.0`, not `2`. The code still declares every parameter with a default; `sim.yaml` only overrides the value. Removing a declaration makes the node crash the first time it reads that parameter.
