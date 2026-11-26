@@ -1,6 +1,27 @@
+# colcon output (project/ros2/build, install, log)
 build/
 install/
 log/
+# written by `make up` from your host
 .env
 __pycache__/
 *.pyc
+.pytest_cache/
+# `make sim-test`: the flight's rosbag and every node's log stay on your disk only
+# (big); the rest of the run folder (meta, result, logs, xUnit) is committed.
+project/logs/sim_flight/*/flight_bag/
+project/logs/sim_flight/*/ros_log/
+project/logs/sim_sensors/*/flight_bag/
+project/logs/sim_sensors/*/ros_log/
+# Motor music: songs stay local (ringtones of other people's music)
+project/scripts/motor_music/songs/
+project/logs/measurements/motor_music/*/song.rtttl
+project/logs/measurements/motor_music/_archive/
+project/logs/measurements/motor_music/*/bag/
+project/logs/measurements/motor_music/*/*.wav
+
+# Obsidian: share the vault settings, not each person's open tabs
+.obsidian/workspace.json
+
+# msp_bench.py CSVs when run without --logbook or --out
+results/

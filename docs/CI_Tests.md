@@ -1,16 +1,43 @@
+---
+title: CI Tests Plan
+---
 # CI tests: what exists and what to add
 
-State of `main` on 2026-11-09 (commit `87c48fc`).
+Written against `main` on 2026-11-09 (commit `87c48fc`). Paths, package names and the status of every item were updated on 2026-11-19 for the new layout (`project/`, `make test`). Part 1's test counts are from Nov 9; every test file as it is now is listed in the [ROS 2 stack](../project/ros2/README.md#tests), and every run's results are in the [logs](../project/logs/README.md).
 
 - [Part 1: tests that exist](#part-1-tests-that-exist)
 - [Part 2: tests to add](#part-2-tests-to-add)
 - [Order of work](#order-of-work)
 
+## Status on Nov 19
+
+| Item | Status |
+| --- | --- |
+| A1 MSP framing, A2 decoders, A3 capture replay | Done: `project/telemetry/tests/` (`test_msp_frame.py`, `test_decoders.py`, `test_captures.py`) |
+| A4 poll loop, A5 INAV SITL | Open. The `inav` backend has its own bench runs: `make bench-rc`, `make bench-armed` |
+| A6 live bench check | Done (Nov 23): `project/telemetry/msp_bench.py`, `make bench` |
+| A7, A8 | Done |
+| B1 config consistency | Done: `drone_bringup/test/test_config.py` |
+| B2 fc_bridge with `sim.yaml`, B3 parameter safety | Open. `test_stack.py` runs fc_bridge with `sim.yaml`, but nothing checks the MTF-02P limits |
+| C1 safety_manager node | Open; covered end to end by `test_stack.py` |
+| C2 full stack with a fake drone | Done: `drone_bringup/test/test_stack.py` with `fake_drone.py` |
+| C3 radio_teleop node, C4 flow_model node | Open |
+| C5 watchdog | Done: `drone_fc_bridge/test/test_watchdog.py`. The `setpoint_pub` half went with the node |
+| C6 launch files, C7 worlds | Done |
+| D0, D1 Gazebo flight, nightly | Done: `make sim-test`, `.github/workflows/nightly.yml` |
+| D2 every world, D3 radio in the sim | Open |
+| E1 pytest in the telemetry job, E3 mypy/xmllint in `drone_sim`, E7 nightly job | Done |
+| E2 lint for `drone_fc_bridge` | Open: its `CMakeLists.txt` still has no `ament_lint_auto` |
+| E4–E6, E8 | Open |
+| E9 required checks | Not checked (GitHub settings) |
+| E10 `Develop` in the triggers | Open: `ci.yml` still lists it |
+| E11 | Closed |
+
 ---
 
 # Part 1: tests that exist
 
-There are 110 behaviour tests in 8 files, plus lint checks. All run in CI job `ros2-build-test` through `colcon test`. Paths are relative to `seame-docker/ros2_ws/src/`.
+There are 110 behaviour tests in 8 files, plus lint checks. All run in CI job `ros2-build-test` through `colcon test`. Paths are relative to `project/ros2/src/`.
 
 ## 1.1 `drone_fc_bridge/test/test_failsafes.py` (9 tests, João Barros)
 
@@ -57,7 +84,7 @@ Starts `fc_bridge` and calls its `fc/arm` and `fc/hold` services.
 
 ## 1.4 `drone_fc_bridge/test/test_inav.py` (3 tests, João Barros)
 
-Starts `fc_bridge` with `backend:=inav`, which is currently a stub for the real drone.
+Starts `fc_bridge` with `backend:=inav`, its MSP link pointed at a closed port (on Nov 9 the backend was still a stub).
 
 | Test | What it checks |
 | --- | --- |
@@ -158,7 +185,7 @@ Tests which command source reaches fc_bridge (`arbiter.py`), without ROS. Priori
 | `test_update_reports_changes_once` | A change of active source is reported exactly once |
 | `test_time_going_backwards_is_not_fresh` | If the clock jumps back (sim reset), old commands don't count as fresh |
 
-## 1.7 `drone_basics_py/test/test_radio_teleop.py` (24 tests, João Barros)
+## 1.7 `drone_teleop/test/test_radio_teleop.py` (24 tests, João Barros)
 
 Tests the radio handling in `radio_teleop` by feeding it Joy messages directly. No radio and no launch are needed.
 
@@ -189,7 +216,7 @@ Tests the radio handling in `radio_teleop` by feeding it Joy messages directly. 
 | `test_arm_off_releases_even_with_takeover_on` | Arm off releases control and disarms, even with takeover still on |
 | `test_missing_takeover_axis_is_off` | A Joy message without the takeover axis counts as off |
 
-## 1.8 `drone_sim_sensors/test/test_flow_model.py` (11 tests, David Roque)
+## 1.8 `drone_sim/test/test_flow_model.py` (11 tests, David Roque)
 
 Tests the simulated optical flow sensor math (`flow_model.py`), without ROS.
 
@@ -207,29 +234,26 @@ Tests the simulated optical flow sensor math (`flow_model.py`), without ROS.
 | `test_measure_too_fast_has_no_quality` | Above 7 rad/s the quality is 0 |
 | `test_noise_has_the_requested_spread` | Over 4000 samples, noise has mean ≈ 0 and the requested standard deviation (±10 %) |
 
-## 1.9 Lint and style checks
+## 1.9 Lint and style checks (Nov 19)
 
 | Package | Checks |
 | --- | --- |
-| `drone_basics_py`, `drone_mission`, `drone_safety` | flake8, pep257, mypy, xmllint, copyright (the copyright check is skipped) |
-| `drone_sim_sensors` | flake8, pep257, copyright (skipped). **mypy and xmllint are missing** |
-| `drone_basics_cpp`, `drone_bringup` | `ament_lint_common` (cppcheck, uncrustify, lint_cmake, xmllint, flake8 and pep257 on the launch files) |
-| `drone_fc_bridge` | **No lint at all.** The main C++ node isn't style-checked |
-| `telemetry/` (CI job `telemetry-python`) | Syntax check and flake8. **No tests** |
+| `drone_teleop`, `drone_mission`, `drone_safety`, `drone_sim`, `drone_monitoring` | flake8, pep257, mypy, xmllint |
+| `drone_bringup` | `ament_lint_common` (cppcheck, uncrustify, lint_cmake, xmllint, flake8 and pep257 on the launch files and tests) |
+| `drone_fc_bridge` | **No lint at all.** The main C++ node, and the watchdog next to it, aren't style-checked |
+| `project/telemetry/` (CI job `telemetry-python`) | Syntax check, flake8 and pytest |
 
-## 1.10 What has no tests
+## 1.10 What has no tests (Nov 19)
 
 | Code | Status |
 | --- | --- |
-| `telemetry/inav_telemetry.py`, `telemetry/latency_test.py` | No tests: MSP framing, checksum and decoders are all untested |
-| `drone_safety/safety_manager.py` (the ROS node) | The arbiter logic is tested, but not the node: its topics `cmd/*` → `fc/setpoint_velocity` and `safety/active_source` |
-| `drone_mission/mission.py` (the ROS node) | The logic is tested, but not the Takeoff, Goto and Land action servers over ROS |
-| `drone_mission/demo_flight.py`, `drone_basics_py/setpoint_pub.py` | Nothing |
-| `drone_sim_sensors/flow_model.py` (the ROS node) | The math is tested, but not the node publishing `fc/optical_flow` |
-| `drone_basics_cpp/watchdog.cpp` | Nothing |
-| `drone_bringup/launch/*.py`, `config/*.yaml` | Nothing: a broken launch file or a mismatched config value passes CI |
-| Gazebo simulation | Not in CI at all: CI doesn't install Gazebo |
-| `fc_bridge` with the `sim.yaml` parameters | Only tested with its built-in defaults |
+| `project/telemetry/inav_telemetry.py` poll loop | Framing and decoders are tested (`project/telemetry/tests/`); the poll loop isn't (A4) |
+| `drone_safety/safety_manager.py` (the ROS node) | The arbiter logic is tested, and the node runs in `test_stack.py`; no node test of its own (C1) |
+| `drone_mission/mission.py` (the ROS node) | Flown over ROS by `test_stack.py` and the nightly Gazebo flight |
+| `drone_mission/demo_flight.py` | Nothing |
+| `drone_sim/flow_model.py`, `drone_sim/estimator_node.py` (the ROS nodes) | The math is tested, not the nodes (C4) |
+| `drone_teleop/radio_teleop.py` (the ROS node) | The logic is tested, not the node with `sim.yaml`'s signs (C3) |
+| `fc_bridge` with the `sim.yaml` parameters | Runs in `test_stack.py`; no test checks the MTF-02P limits (B2) |
 
 ---
 
@@ -239,16 +263,16 @@ Each block lists where the test goes, what it checks, and what it would catch. T
 
 ## A. Telemetry and INAV (`telemetry/`)
 
-`telemetry/` isn't a ROS package, so these tests are plain pytest. Put them in `telemetry/tests/` and add to CI job `telemetry-python`:
+`project/telemetry/` isn't a ROS package, so these tests are plain pytest, in `project/telemetry/tests/`. CI job `telemetry-python` runs them (done), and so does `make test`:
 
 ```yaml
       - name: Unit tests
         run: |
           pip install pytest
-          pytest telemetry -v
+          python -m pytest project/telemetry -v
 ```
 
-### A1. MSP framing: `telemetry/tests/test_msp_frame.py`
+### A1. MSP framing: `project/telemetry/tests/test_msp_frame.py` (done)
 
 | Test | Checks |
 | --- | --- |
@@ -263,9 +287,9 @@ Each block lists where the test goes, what it checks, and what it would catch. T
 
 **Catches:** a broken checksum or parser, which would silently corrupt every telemetry value.
 
-> `latency_test.py` has its own copy of `crc8_dvb_s2` and `build_frame`. Either move both copies into one shared `msp.py` that both scripts import, or add a test that both copies give identical bytes.
+> `latency_test.py` had its own copy of `crc8_dvb_s2` and `build_frame`; it was replaced by `msp_bench.py` on Nov 23. `msp_bench.py` keeps its own small copy so it runs anywhere, and `tests/test_msp_bench.py` checks its frames and decoders against `inav_telemetry.py` and the recordings.
 
-### A2. Decoders with hand-made payloads: `telemetry/tests/test_decoders.py`
+### A2. Decoders with hand-made payloads: `project/telemetry/tests/test_decoders.py` (done)
 
 Build each payload with `struct.pack` and check the decoded values and units:
 
@@ -284,9 +308,9 @@ Build each payload with `struct.pack` and check the decoded values and units:
 
 **Catches:** wrong units or scaling: a 10× attitude error, metres vs centimetres, a wrong sign on flow.
 
-### A3. Replay of real drone captures: `telemetry/tests/test_captures.py`
+### A3. Replay of real drone captures: `project/telemetry/tests/test_captures.py` (done)
 
-The INAV-4 branch (`issue123/INAV-4`) has `telemetry/inav/captures/.../*.jsonl`, real MSP replies from the drone. Its README says they were captured "for testing the decoders". Merge that branch, then:
+The captures are real MSP replies from the drone, recorded with `msp_inventory.py capture` (now `msp_bench.py --capture`, `make capture STATE=...`) for testing the decoders, now in `project/telemetry/inav/msp/captures/*.jsonl` (they came from the INAV-4 branch). The plan was:
 
 | Test | Capture | Checks |
 | --- | --- | --- |
@@ -300,7 +324,7 @@ The INAV-4 branch (`issue123/INAV-4`) has `telemetry/inav/captures/.../*.jsonl`,
 
 **Catches:** decoder changes that break on real firmware data (INAV 9.1.0). These tests are much stronger than hand-made payloads because they're the exact bytes the drone sends.
 
-### A4. Poll loop: `telemetry/tests/test_poll.py`
+### A4. Poll loop: `project/telemetry/tests/test_poll.py`
 
 Use a fake MSP client that returns canned replies:
 
@@ -318,27 +342,27 @@ INAV can be built as **SITL**, a program that runs the real flight-controller fi
 Job outline:
 1. Build INAV SITL for the same version as the drone (9.1.0). Cache the build.
 2. Start it in the background.
-3. `python3 telemetry/inav_telemetry.py --host 127.0.0.1 --port 5760 --info` for ~5 s, saving the output.
+3. `python3 project/telemetry/inav_telemetry.py --host 127.0.0.1 --port 5760 --info` for ~5 s, saving the output.
 4. Check: the API version reply arrives, the FC variant is `INAV`, the version is 9.1.x, and attitude, status and analog are all present on every cycle, with no rejected core messages.
-5. Optional: load `docs/extras/Drone_INAV_Backup_26_10_26.txt` into the SITL through the CLI, then check that box names and modes match the real drone's config.
+5. Optional: load `project/hardware/flight-controller/Drone_INAV_Backup_26_10_26.txt` into the SITL through the CLI, then check that box names and modes match the real drone's config.
 
 **Catches:** MSP protocol changes after an INAV upgrade, messages your code polls that the firmware no longer supports, and a broken TCP client. This is as close to the real flight controller as CI can get without the drone.
 
-### A6. Real drone check (manual, not CI)
+### A6. Real drone check (manual, not CI) (done)
 
-The real flight controller can't be reached from GitHub's machines. Turn the bench checks into a script, `telemetry/bench_check.py`, that connects to the drone and runs the A3 checks live, and log its result with `logbook.py`. Run it before each flight session. The INAV-4 branch's `msp_inventory.py` is already most of the way there.
+The real flight controller can't be reached from GitHub's machines, so the bench checks are a script run by hand: [`project/telemetry/msp_bench.py`](../project/telemetry/README.md#msp_benchpy) connects to the drone, checks sensors, arming blockers, sensor noise and the link under load, and logs its result with `project/scripts/logbook.py` (`make bench NOTE=...`). Run it before each flight session. CI runs it against `fake_fc.py` (`tests/test_msp_bench.py`).
 
 ### A7. The Python decoders where fc_bridge's C++ decoders disagree (done)
 
-ROS-6 step A on `main` added C++ decoders for fc_bridge (`drone_fc_bridge/src/inav_decode.cpp`), written from the INAV 9.1.0 source. Their comments name three bugs in `inav_telemetry.py`: arming blockers include the simulator and unused bits; 0 cm from the rangefinder counts as a valid distance; power and the drawn counters are read unsigned. Each became a strict expected fail at the end of `telemetry/tests/test_decoders.py`, replacing `test_unknown_arming_bit_is_kept`, which expected the wrong arming behaviour. All three were fixed on Nov 12, with the parser bug in `test_msp_frame.py`, and are now ordinary passing tests. Two passing rangefinder tests were added too (it had none). Details: [TESTS.md](../TESTS.md#33-test_decoderspy-decoders-59-cases).
+ROS-6 step A on `main` added C++ decoders for fc_bridge (`drone_fc_bridge/src/inav_decode.cpp`), written from the INAV 9.1.0 source. Their comments name three bugs in `project/telemetry/inav_telemetry.py`: arming blockers include the simulator and unused bits; 0 cm from the rangefinder counts as a valid distance; power and the drawn counters are read unsigned. Each became a strict expected fail at the end of `project/telemetry/tests/test_decoders.py`, replacing `test_unknown_arming_bit_is_kept`, which expected the wrong arming behaviour. All three were fixed on Nov 12, with the parser bug in `test_msp_frame.py`, and are now ordinary passing tests. Two passing rangefinder tests were added too (it had none).
 
 ### A8. The C++ tests' copies of the recordings match (done)
 
-`drone_fc_bridge/test/data/` on `main` holds copies of the four recordings. `telemetry/tests/test_capture_copies.py` checks that every file under `ros2_ws/src` with a recording's name is identical to the original, and prints the `cp` command if not. With `main` merged in (Nov 12) it runs and passes.
+`drone_fc_bridge/test/data/` holds copies of the four recordings. `project/telemetry/tests/test_capture_copies.py` checks that every file under `project/ros2/src` with a recording's name is identical to the original, and prints the `cp` command if not. With `main` merged in (Nov 12) it runs and passes.
 
 ## B. Drone limits and configuration
 
-### B1. Config consistency: `drone_bringup/test/test_config.py`
+### B1. Config consistency: `drone_bringup/test/test_config.py` (done)
 
 Plain pytest that loads `config/sim.yaml`. Register it in `drone_bringup/CMakeLists.txt` with `ament_add_pytest_test`, and add `ament_cmake_pytest` as a test dependency.
 
@@ -387,6 +411,8 @@ These tests are the missing middle layer. The logic is tested and fc_bridge is t
 
 ### C1. `drone_safety/test/test_safety_manager_node.py`
 
+Still open, though `test_stack.py` (C2) already runs the node end to end.
+
 Starts `safety_manager`. The test publishes on `cmd/mission`, `cmd/manual` and `cmd/radio`, and reads `fc/setpoint_velocity` and `safety/active_source`.
 
 | Test | Checks |
@@ -397,7 +423,9 @@ Starts `safety_manager`. The test publishes on `cmd/mission`, `cmd/manual` and `
 | `test_active_source_is_latched` | A subscriber that starts late still receives the current source |
 | `test_low_battery_warns` | A `fc/battery` message below 20 % logs a warning (the behaviour is currently a placeholder) |
 
-### C2. Full stack without Gazebo: `drone_bringup/test/test_stack_fake_plant.py` ⭐
+### C2. Full stack without Gazebo ⭐ (done as `drone_bringup/test/test_stack.py`)
+
+Done with `fake_drone.py` as the fake plant, on domain 198: Takeoff refused until armed, a full flight with real actions, the radio taking over and giving back, and disarming mid-flight and while the radio flies. The original plan:
 
 Starts **mission + safety_manager + fc_bridge** with `sim.yaml`. The test node acts as a simple drone: it subscribes to `/X3/gazebo/command/twist`, integrates the velocity, and publishes `/X3/odom` at 50 Hz. fc_bridge turns that into `fc/range` and `fc/odom` itself.
 
@@ -412,7 +440,7 @@ Starts **mission + safety_manager + fc_bridge** with `sim.yaml`. The test node a
 
 **Catches:** wrong topic names, remaps, QoS, action names or parameter loading. None of these is caught today. The test is fast (seconds) and needs no Gazebo, so it can run on every PR. **This is the most valuable new ROS test.**
 
-### C3. `drone_basics_py/test/test_radio_teleop_node.py`
+### C3. `drone_teleop/test/test_radio_teleop_node.py`
 
 Starts `radio_teleop` with `sim.yaml` (the real axis signs). The test publishes `/joy` and provides a fake `fc/arm` service.
 
@@ -422,7 +450,7 @@ Starts `radio_teleop` with `sim.yaml` (the real axis signs). The test publishes 
 | `test_arm_service_called` | Arm switch on → `fc/arm(true)`; off → `fc/arm(false)` |
 | `test_publishes_on_setpoint_velocity` | Output is on the topic the launch remaps to `cmd/radio` |
 
-### C4. `drone_sim_sensors/test/test_flow_node.py`
+### C4. `drone_sim/test/test_flow_node.py`
 
 Starts `flow_model` (noise 0, quantize off). The test feeds odometry and range.
 
@@ -433,15 +461,15 @@ Starts `flow_model` (noise 0, quantize off). The test feeds odometry and range.
 | `test_low_height_quality_zero` | Below 8 cm the quality is 0 |
 | `test_seed_is_reproducible` | The same seed gives the same noise sequence |
 
-Also add `test_mypy.py` and `test_xmllint.py` to this package, as the other Python packages have.
+The package now has `test_mypy.py` and `test_xmllint.py`, as the other Python packages have (E3, done).
 
-### C5. `drone_basics_cpp`: watchdog
+### C5. The watchdog (done)
 
-A launch test that checks the warning appears after `timeout_s` with no setpoint, and doesn't appear while setpoints arrive at 20 Hz. Also run `setpoint_pub` for 2 s and check it publishes at 20 Hz with the configured speed.
+Done as `drone_fc_bridge/test/test_watchdog.py`: the watchdog started as the launch starts it, on `/fc/setpoint_velocity`, warns when the stream stops for its 0.5 s `timeout_s` and again when it is back (read from `/rosout`). The planned `setpoint_pub` check was dropped with the node.
 
 ### C6. Launch files: `drone_bringup/test/test_launch_files.py` (done)
 
-Done as planned, for all 48 argument combinations, plus: the clock (`use_sim_time`) per backend, `sim.yaml` given to every node, the pre-start package check covering every package started, and the guard against a second sim. 24 cases, about 1 s. Details: [TESTS.md](../TESTS.md#42-what-the-launch-file-starts-test_launch_filespy-24-cases). The original plan:
+Done as planned, for all 48 argument combinations, plus: the clock (`use_sim_time`) per backend, `sim.yaml` given to every node, the pre-start package check covering every package started, and the guard against a second sim. 24 cases on Nov 12, about 1 s; `camera` and `headless` have been added since. The original plan:
 
 Without running anything, build the launch description for each combination of arguments and inspect it:
 
@@ -451,21 +479,21 @@ Without running anything, build the launch description for each combination of a
 | `backend:=inav` | It includes **no** Gazebo, no `ros_gz_bridge` and no `flow_model` |
 | `radio:=false` | No `joy_node`, and the mission has `radio_arms=false` |
 | `demo:=true` | `demo_flight` is included |
-| `source:=setpoint` | `setpoint_pub` is included instead of the mission |
+| `source:=none` | No `mission` and no `demo_flight` |
 | All | Every `package`/`executable` named exists in the ament index, and every `parameters=` file exists |
 
 **Catches:** a renamed executable or wrong path, which today is only found when someone launches the sim.
 
 ### C7. The Gazebo worlds: `drone_bringup/test/test_worlds.py` (done)
 
-Reads every world in `drone_bringup/worlds/` and the default world as XML, without Gazebo: the drone is there, its velocity controller and odometry use the topics in `gz_bridge.yaml`, it starts on the ground, its Fuel model is pinned, and every model, texture and mesh exists and is installed. It is the cheap half of D2, on every PR. It does little in CI until `feature/153` brings `worlds/`, because the default world is Gazebo's own and CI has no Gazebo. Details: [TESTS.md](../TESTS.md#43-the-gazebo-worlds-test_worldspy-9-cases).
+Reads every world in `drone_bringup/worlds/` and the default world as XML, without Gazebo: the drone is there, its velocity controller and odometry use the topics in `gz_bridge.yaml`, it starts on the ground, its Fuel model is pinned, and every model, texture and mesh exists and is installed. It is the cheap half of D2, on every PR. `worlds/` now holds `room_world.sdf` and `outdoor_field.sdf`, so it checks both.
 
 ## D. Simulation in Gazebo (new CI job: nightly, and from the Actions tab)
 
 ### D0. What's needed first (done)
 
 1. `headless:=true` in `sim.launch.py`: `gz_args = '-s -r ' + world`, server only, no window. Not `--headless-rendering`: nothing in these worlds renders, and in the dev container that option tries the GPU without its driver and Gazebo never starts. A world with a camera would need it.
-2. The job runs **inside the project's Docker image** (`seame/ros2-dev:jazzy`), the same sim as on our laptops. `.github/workflows/nightly.yml` builds it from the `docker-image` job's layer cache, then runs `seame-docker/scripts/sim_flight_test.sh`, which anyone can also run on the host.
+2. The job runs **inside the project's Docker image** (`seame/ros2-dev:jazzy`), the same sim as on our laptops. `.github/workflows/nightly.yml` builds it from the `docker-image` job's layer cache, then runs `project/scripts/sim_flight_test.sh`, which anyone can also run on the host with `make sim-test`.
 3. It runs every night (02:00 UTC), from the Actions tab, and on PRs that change the sim (launch, config, the test, the script). It takes 4–5 min and isn't part of `block-red-pr`.
 
 ### D1. Flight tests in Gazebo: `drone_bringup/test/test_sim_flight.py` (done)
@@ -491,7 +519,7 @@ Every run keeps the test log, the xUnit report, every node's log and a rosbag of
 
 ### D2. Run it for every world
 
-Run D1 for each world: the default one and `outdoor_field.sdf` (from branch `feature/153`, once merged), plus any room world from `sim_room`. This checks that each world loads and the drone can fly in it.
+Run D1 for each world: the default one, `room_world.sdf` and `outdoor_field.sdf` (both in `drone_bringup/worlds/` now). This checks that each world loads and the drone can fly in it.
 
 ### D3. Radio in the simulation
 
@@ -501,13 +529,13 @@ Publish fake `/joy` messages, as the real radio would send, into the full sim: e
 
 | # | Change | Why |
 | --- | --- | --- |
-| E1 | Add `pytest` to job `telemetry-python` | Needed for part A |
+| E1 | Add `pytest` to job `telemetry-python` (done) | Needed for part A |
 | E2 | Add `ament_lint_auto` to `drone_fc_bridge` | The main C++ node has no lint |
-| E3 | Add `test_mypy`/`test_xmllint` to `drone_sim_sensors` | It has fewer checks than the other Python packages |
-| E4 | Add `shellcheck seame-docker/scripts/*.sh` | The scripts are never checked |
-| E5 | Add flake8 on `seame-docker/ros2_ws/tools/` and `seame-docker/scripts/*.py` | These aren't covered by any job |
+| E3 | Add `test_mypy`/`test_xmllint` to `drone_sim` (done) | It had fewer checks than the other Python packages |
+| E4 | Add `shellcheck project/scripts/*.sh` | The scripts are never checked |
+| E5 | Add flake8 on `project/scripts/ros2_tools/` and `project/scripts/*.py` | These aren't covered by any job |
 | E6 | Add coverage: `colcon test --pytest-with-coverage` and upload the report | Shows which lines are never tested |
-| E7 | Add a `sim-nightly` job (part D) with `schedule:` and `workflow_dispatch:` | Gazebo tests without slowing PRs |
+| E7 | Add a `sim-nightly` job (part D) with `schedule:` and `workflow_dispatch:` (done: `nightly.yml`) | Gazebo tests without slowing PRs |
 | E8 | Add a `inav-sitl` job (A5), nightly | Real firmware protocol check |
 | E9 | Make the jobs **required status checks** on `main` (GitHub settings → Branches) | Otherwise a red CI can still be merged |
 | E10 | Remove `Develop` from the triggers | The branch was deleted (Nov 12); `ci.yml` still lists it |
@@ -519,14 +547,18 @@ Publish fake `/joy` messages, as the real radio would send, into the full sim: e
 
 | Step | Work | Effort | CI cost |
 | --- | --- | --- | --- |
-| 1 | **B1** config consistency + **E1** pytest in the telemetry job | Small | +seconds |
-| 2 | **A1 + A2** MSP framing and decoders | Small | +seconds |
-| 3 | Merge INAV-4 → **A3** capture replay | Small | +seconds |
-| 4 | **C2** full stack with a fake drone ⭐ | Medium | +~30 s |
+| 1 | **B1** config consistency + **E1** pytest in the telemetry job (done) | Small | +seconds |
+| 2 | **A1 + A2** MSP framing and decoders (done) | Small | +seconds |
+| 3 | **A3** capture replay (done) | Small | +seconds |
+| 4 | **C2** full stack with a fake drone ⭐ (done) | Medium | +~30 s |
 | 5 | **B2** fc_bridge with `sim.yaml`, **C6** launch files (done), **C7** worlds (done) | Small | +~20 s |
 | 6 | **C1, C3, C4** node tests, **E2–E5** lint | Medium | +~1 min |
-| 7 | **D0 + D1** Gazebo flight tests, nightly | Large | Nightly only |
+| 7 | **D0 + D1** Gazebo flight tests, nightly (done) | Large | Nightly only |
 | 8 | **A5** INAV SITL, nightly | Medium/large | Nightly only |
 | 9 | **E9** required checks | Settings only | — |
 
 Steps 1–3 cover telemetry, INAV and the drone limits with fast tests that run on every PR. Step 4 checks that the whole ROS stack works together. Steps 7–8 test the real simulator and the real INAV firmware.
+
+# Tags
+
+#tests

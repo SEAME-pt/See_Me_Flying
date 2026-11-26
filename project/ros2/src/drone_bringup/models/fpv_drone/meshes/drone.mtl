@@ -1,0 +1,73 @@
+# Approximate colours for drone.obj: the .mtl from Blender was not committed.
+# Replace this file with the one Blender exports next to drone.obj.
+newmtl aluminium
+Kd 0.70 0.70 0.72
+Ks 0.6 0.6 0.6
+Ns 80
+newmtl antenna_black
+Kd 0.05 0.05 0.05
+newmtl antenna_red
+Kd 0.75 0.08 0.08
+newmtl camera_black
+Kd 0.06 0.06 0.06
+newmtl carbon
+Kd 0.12 0.12 0.13
+Ks 0.3 0.3 0.3
+Ns 40
+newmtl chip
+Kd 0.10 0.10 0.10
+newmtl coax_black
+Kd 0.05 0.05 0.05
+newmtl connector_white
+Kd 0.90 0.90 0.88
+newmtl copper
+Kd 0.72 0.45 0.20
+Ks 0.5 0.4 0.3
+Ns 60
+newmtl duct_blue
+Kd 0.10 0.35 0.85
+newmtl gold
+Kd 0.83 0.69 0.22
+Ks 0.6 0.5 0.3
+Ns 60
+newmtl grommet_blue
+Kd 0.15 0.40 0.90
+newmtl lens_glass
+Kd 0.05 0.08 0.12
+Ks 0.9 0.9 0.9
+Ns 200
+newmtl motor_black
+Kd 0.08 0.08 0.08
+Ks 0.3 0.3 0.3
+Ns 30
+newmtl pcb_black
+Kd 0.07 0.09 0.07
+newmtl prop_clear
+Kd 0.85 0.85 0.90
+d 0.45
+newmtl rubber
+Kd 0.04 0.04 0.04
+newmtl screw_black
+Kd 0.08 0.08 0.08
+newmtl steel
+Kd 0.60 0.60 0.62
+Ks 0.6 0.6 0.6
+Ns 80
+newmtl strap_black
+Kd 0.05 0.05 0.05
+newmtl tpu_black
+Kd 0.07 0.07 0.07
+newmtl tpu_gray
+Kd 0.45 0.45 0.47
+newmtl vtx_metal
+Kd 0.55 0.55 0.58
+Ks 0.5 0.5 0.5
+Ns 60
+newmtl wire_black
+Kd 0.04 0.04 0.04
+newmtl wire_red
+Kd 0.80 0.08 0.08
+newmtl xt30_black
+Kd 0.06 0.06 0.06
+newmtl xt30_gray
+Kd 0.40 0.40 0.42

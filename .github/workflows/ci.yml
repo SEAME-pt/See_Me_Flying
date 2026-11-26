@@ -26,7 +26,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: seame-docker/ros2_ws
+        working-directory: project/ros2
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -60,10 +60,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ros2-test-results
-          path: seame-docker/ros2_ws/build/*/test_results
+          path: project/ros2/build/*/test_results
           if-no-files-found: ignore
 
-  # 2. telemetry/: plain Python, not a ROS package, so job 1 never sees it
+  # 2. project/telemetry/: plain Python, not a ROS package, so job 1 never sees it
   telemetry-python:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -77,22 +77,18 @@ jobs:
           python-version: "3.12"
 
       - name: Syntax check
-        if: hashFiles('telemetry/*.py') != ''   # skip when there is no telemetry code yet
         run: |
-          python -m py_compile telemetry/*.py
-        # main.py is MicroPython, but its syntax is plain Python 3, so this still works
+          python -m py_compile project/telemetry/*.py
 
       - name: Lint
-        if: hashFiles('telemetry/*.py') != ''
         run: |
           pip install flake8
-          flake8 telemetry --max-line-length=140
+          flake8 project/telemetry --max-line-length=140
 
-      - name: Unit tests            # MSP framing and decoders, no drone needed (telemetry/tests/)
-        if: hashFiles('telemetry/tests/*.py') != ''
+      - name: Unit tests            # MSP framing and decoders, no drone needed (project/telemetry/tests/)
         run: |
           pip install pytest
-          python -m pytest telemetry -v
+          python -m pytest project/telemetry -v
 
   # 3. Dev container: proves the Dockerfile still builds from scratch (STK-2)
   docker-image:
@@ -108,7 +104,7 @@ jobs:
       - name: Build the dev image (not pushed anywhere)
         uses: docker/build-push-action@v6
         with:
-          context: seame-docker
+          context: project
           push: false
           cache-from: type=gha  # reuse layers from earlier runs: much faster
           cache-to: type=gha,mode=max

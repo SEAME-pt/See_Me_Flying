@@ -1,0 +1,48 @@
+{
+  "verdict": "PASSED",
+  "exit": 0,
+  "seconds": 187,
+  "counts": {
+    "passed": 7,
+    "skipped": 0,
+    "failure": 0,
+    "error": 0
+  },
+  "steps": [
+    {
+      "name": "test_1_sim_comes_up",
+      "status": "passed",
+      "time": 17.804
+    },
+    {
+      "name": "test_2_takeoff",
+      "status": "passed",
+      "time": 8.536
+    },
+    {
+      "name": "test_3_hover",
+      "status": "passed",
+      "time": 10.015
+    },
+    {
+      "name": "test_4_pass",
+      "status": "passed",
+      "time": 15.395
+    },
+    {
+      "name": "test_5_creep_1cm",
+      "status": "passed",
+      "time": 64.02
+    },
+    {
+      "name": "test_6_creep_3cm",
+      "status": "passed",
+      "time": 34.027
+    },
+    {
+      "name": "test_7_land",
+      "status": "passed",
+      "time": 9.291
+    }
+  ]
+}

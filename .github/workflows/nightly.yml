@@ -1,10 +1,13 @@
 name: Nightly sim
 
-# The Gazebo flight test (drone_bringup/test/test_sim_flight.py): takeoff, hover,
-# a square, the speed limits, the mission dying mid-flight, landing. Too slow for
-# every push (4-5 min with the image), so: every night, from the Actions tab, and
-# on PRs that change the sim itself. Not part of the block-red-pr check.
-# Same as running seame-docker/scripts/sim_flight_test.sh on a laptop.
+# Two Gazebo suites, in parallel (project/scripts/sim_flight_test.sh, SUITE=...):
+#   flight   drone_bringup/test/test_sim_flight.py: takeoff, hover, a square, the
+#            speed limits, the mission dying mid-flight, landing
+#   sensors  drone_bringup/test/test_sim_sensors.py: the simulated sensors and the
+#            estimator against ground truth (hover, 4 m pass, two slow creeps)
+# Too slow for every push (5-6 min each with the image), so: every night, from the
+# Actions tab, and on PRs that change the sim itself. Not part of the block-red-pr
+# check. Same as `make sim-test` and `make sim-test-sensors` on a laptop.
 
 on:
   schedule:
@@ -12,10 +15,13 @@ on:
   workflow_dispatch:            # "Run workflow" button in the Actions tab
   pull_request:
     paths:
-      - 'seame-docker/ros2_ws/src/drone_bringup/launch/**'
-      - 'seame-docker/ros2_ws/src/drone_bringup/config/**'
-      - 'seame-docker/ros2_ws/src/drone_bringup/test/test_sim_flight.py'
-      - 'seame-docker/scripts/sim_flight_test.sh'
+      - 'project/ros2/src/drone_bringup/launch/**'
+      - 'project/ros2/src/drone_bringup/config/**'
+      - 'project/ros2/src/drone_bringup/worlds/**'
+      - 'project/ros2/src/drone_bringup/test/test_sim_flight.py'
+      - 'project/ros2/src/drone_bringup/test/test_sim_sensors.py'
+      - 'project/ros2/src/drone_sim/**'
+      - 'project/scripts/sim_flight_test.sh'
       - '.github/workflows/nightly.yml'
 
 concurrency:                    # a new run cancels the older one on the same branch
@@ -26,9 +32,14 @@ permissions:
   contents: read
 
 jobs:
-  gazebo-flight:
+  gazebo:
+    name: gazebo-${{ matrix.suite }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    strategy:
+      fail-fast: false          # one suite failing does not cancel the other
+      matrix:
+        suite: [flight, sensors]
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -41,19 +52,21 @@ jobs:
       - name: Build the dev image
         uses: docker/build-push-action@v6
         with:
-          context: seame-docker
+          context: project
           load: true
           tags: seame/ros2-dev:jazzy
           cache-from: type=gha
 
       - name: Fly in Gazebo (headless)
-        run: seame-docker/scripts/sim_flight_test.sh "$RUNNER_TEMP/sim_flight"
+        env:
+          SUITE: ${{ matrix.suite }}
+        run: project/scripts/sim_flight_test.sh "$RUNNER_TEMP/sim_${{ matrix.suite }}"
 
       - name: Keep the results (log, xUnit, rosbag of the flight)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sim-flight
-          path: ${{ runner.temp }}/sim_flight
+          name: sim-${{ matrix.suite }}
+          path: ${{ runner.temp }}/sim_${{ matrix.suite }}
           retention-days: 14
           if-no-files-found: ignore

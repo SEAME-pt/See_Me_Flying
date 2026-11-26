@@ -1,0 +1,71 @@
+# Dev container for the drone stack. Use it through the Makefile: `make help`.
+name: seame
+
+services:
+  dev:
+    build:
+      context: project          # project/Dockerfile; project/.dockerignore keeps the context small
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+        VIDEO_GID: ${VIDEO_GID:-44}     # same numbers as group_add below
+        RENDER_GID: ${RENDER_GID:-993}
+        INPUT_GID: ${INPUT_GID:-994}
+    image: seame/ros2-dev:jazzy
+    container_name: seame-dev
+    network_mode: host   # DDS discovery across containers and machines
+    ipc: host            # Fast DDS shared-memory transport
+    environment:
+      - DISPLAY=${DISPLAY}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-6}
+      - XDG_RUNTIME_DIR=/tmp/runtime-dev   # silences the Qt warning; dir is created in the Dockerfile
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./project/ros2:/home/dev/ros2_ws   # the colcon workspace (src/, build/, install/, log/)
+      - ./project:/home/dev/project        # the rest: telemetry/ (make test runs its tests here)
+      - /dev/input:/dev/input
+      - gz-cache:/home/dev/.gz   # Fuel models (X3, X4) survive recreating the container
+      - /dev:/dev
+    devices:
+      - /dev/dri:/dev/dri
+    device_cgroup_rules:
+      - 'c 13:* rmw'   # input devices (js*, event*), incl. replugging the radio
+      - 'c 81:* rmw'
+    # GPU access: the dev user must be in the host's video and render groups.
+    # Numbers come from .env (`make up` writes it). Wrong numbers = software rendering, never a failure.
+    group_add:
+      - "${VIDEO_GID:-44}"
+      - "${RENDER_GID:-993}"
+      - "${INPUT_GID:-994}"
+    stdin_open: true
+    tty: true
+    init: true
+
+  # Monitoring: `make monitor`. Only started with the monitoring profile, so
+  # `make up` still starts the dev container alone.
+  # Prometheus scrapes metrics_exporter (drone_monitoring) on localhost:9105.
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    profiles: [monitoring]
+    network_mode: host   # reaches the exporter in the dev container on localhost
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom-data:/prometheus
+  # Grafana on http://localhost:3000: the drone dashboard opens without login;
+  # log in as admin/admin to edit.
+  grafana:
+    image: grafana/grafana:13.2.6
+    profiles: [monitoring]
+    network_mode: host
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/drone.json
+    volumes:
+      - ./monitoring/grafana:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  gz-cache:
+  prom-data:
+  grafana-data:
