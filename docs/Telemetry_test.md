@@ -32,7 +32,7 @@ This test consisted of sending and receiving MSP packets; each value is the aver
 
 ## Latency measurement (STK-5.2, #82)
 
-Measured on 2026-11-12 with `project/telemetry/latency_test.py`, at the bench and inside the cage. Every sample is kept, including lost ones, so drops and slow replies are visible.
+Measured on 2026-11-12 with `latency_test.py` (since replaced by [`msp_bench.py`](../project/telemetry/README.md#msp_benchpy)), at the bench and inside the cage. Every sample is kept, including lost ones, so drops and slow replies are visible.
 
 **Setup:** esp-link 3.2.47 in AP mode (laptop on the drone's own Wi-Fi) · INAV 9.1.0 on the OddityRC F7 AIO, MSP on UART1 at 115200 · laptop Wi-Fi power saving off · 500 requests per run, 50 ms apart, 2 s timeout.
 
@@ -59,11 +59,13 @@ No corrupted frames in either run. The raw samples (`bench.csv` and `cage.csv`) 
 
 ### Measuring it again
 
-`make wifi-rtt` runs the same script and keeps the result in `project/logs/measurements/wifi_rtt/` (a dated folder plus a line in `history.csv`). Pass the port, since the script still defaults to 5760, the old MicroPython bridge's port:
+`make wifi-rtt` repeats this measurement with `msp_bench.py` (one small request at a time, 50 ms apart, 2 s timeout) and keeps the result in `project/logs/measurements/wifi_rtt/` (a dated folder plus a line in `history.csv`). For 500 requests like the runs above:
 
 ```bash
-make wifi-rtt NOTE="cage, AP mode, radio on" ARGS="--port 23 -n 500"
+make wifi-rtt NOTE="cage, AP mode, radio on" ARGS="--rtt-count 500"
 ```
+
+`make bench` measures the same and more: sensors, noise, and the link under heavy load.
 
 How the logbook works: [Logs](../project/logs/README.md).
 

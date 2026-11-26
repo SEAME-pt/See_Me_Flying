@@ -1,0 +1,26 @@
+{
+  "kind": "sim_flight",
+  "name": null,
+  "date": "2026-11-26T11:28:47+00:00",
+  "host": "seame-5",
+  "commit": "dd93050f55805137d6cfd2af1d42de6e718ec8ce",
+  "commit_short": "dd93050",
+  "commit_subject": "Merge pull request #263 from SEAME-pt/mtf_02p",
+  "branch": "room_flow",
+  "uncommitted_code": [
+    "project/ros2/src/drone_bringup/launch/sim.launch.py",
+    "project/ros2/src/drone_bringup/test/test_worlds.py",
+    "project/ros2/src/drone_bringup/worlds/room_world_surfaces.yaml",
+    "project/ros2/src/drone_sim/drone_sim/floor_map.py",
+    "project/ros2/src/drone_sim/drone_sim/flow_model.py",
+    "project/ros2/src/drone_sim/package.xml",
+    "project/ros2/src/drone_sim/test/test_floor_map.py",
+    "project/ros2/src/drone_sim/test/test_flow_model.py"
+  ],
+  "uncommitted_other": [
+    "README.md",
+    "project/ros2/README.md",
+    "project/scripts/sim_joy.sh",
+    "project/scripts/sim_keyboard.sh"
+  ]
+}

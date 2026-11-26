@@ -47,6 +47,7 @@ class FakeInav:
 
     def __init__(self):
         self.sensors = SENSORS
+        self.range_cm = 120
         self.silent = False
         self.seen = set()
         self.sock = socket.socket()
@@ -68,7 +69,7 @@ class FakeInav:
         if cmd == 0x2001:   # quality, flow x, y, body x, y in deg/s
             return struct.pack('<Bhhhh', 100, 30, 12, 5, 0)
         if cmd == 58:
-            return struct.pack('<i', 120)
+            return struct.pack('<i', self.range_cm)
         if cmd == 104:      # 8 motors, the last 4 unused
             return struct.pack('<8H', 1100, 1200, 1300, 1400, 0, 0, 0, 0)
         if cmd == 105:      # roll, pitch, yaw, throttle, AUX1: INAV's order
@@ -192,6 +193,8 @@ class TestInavState(unittest.TestCase):
     def test_e_range(self):
         r = self.last('/fc/range')
         self.assertAlmostEqual(r.range, 1.2, places=5)
+        self.assertAlmostEqual(r.min_range, 0.02, places=5)   # MTF-02P
+        self.assertAlmostEqual(r.max_range, 6.0, places=5)
 
     def test_f_optical_flow_passes_through(self):
         f = self.last('/fc/optical_flow')
@@ -224,6 +227,18 @@ class TestInavState(unittest.TestCase):
 
     def test_j_motors(self):
         self.assertEqual(list(self.last('/fc/motors').motors), [1100, 1200, 1300, 1400])
+
+    def test_x_range_limits_as_in_the_sim(self):
+        # INAV passes on 1 cm with the drone on the floor: below range_min is
+        # too close (-inf), above range_max nothing in range (+inf), REP 117.
+        for cm, want in ((1, -math.inf), (2, 0.02), (600, 6.0), (650, math.inf)):
+            FAKE.range_cm = cm
+            self.spin(0.5)
+            self.assertAlmostEqual(self.last('/fc/range').range, want, places=5, msg=f'{cm} cm')
+        self.assertFalse(self.last('/fc/status').range_valid)
+        FAKE.range_cm = 120
+        self.spin(0.5)
+        self.assertTrue(self.last('/fc/status').range_valid)
 
     def test_y_no_rangefinder_bit_means_no_range(self):
         # 120 cm keeps coming, but without the sensor bit it isn't trusted.

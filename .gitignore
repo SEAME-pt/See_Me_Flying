@@ -11,6 +11,8 @@ __pycache__/
 # (big); the rest of the run folder (meta, result, logs, xUnit) is committed.
 project/logs/sim_flight/*/flight_bag/
 project/logs/sim_flight/*/ros_log/
+project/logs/sim_sensors/*/flight_bag/
+project/logs/sim_sensors/*/ros_log/
 # Motor music: songs stay local (ringtones of other people's music)
 project/scripts/motor_music/songs/
 project/logs/measurements/motor_music/*/song.rtttl
@@ -28,3 +30,6 @@ project/ros2/models/*.onnx
 project/ros2/bags/
 project/ros2/frames/
 project/ros2/dataset/
+
+# msp_bench.py CSVs when run without --logbook or --out
+results/

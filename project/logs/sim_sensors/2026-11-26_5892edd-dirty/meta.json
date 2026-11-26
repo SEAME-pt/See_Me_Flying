@@ -1,0 +1,16 @@
+{
+  "kind": "sim_sensors",
+  "name": null,
+  "date": "2026-11-26T12:22:28+00:00",
+  "host": "seame-5",
+  "commit": "5892edddaad93a808c6497f174a3c6e79fb518eb",
+  "commit_short": "5892edd",
+  "commit_subject": "room_world is default world + flow quality with placeholder values",
+  "branch": "room_flow",
+  "uncommitted_code": [
+    "project/ros2/src/drone_bringup/test/test_sim_sensors.py"
+  ],
+  "uncommitted_other": [
+    "project/scripts/sim_flight_test.sh"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "kind": "sim_flight",
+  "name": null,
+  "date": "2026-11-24T11:59:17+00:00",
+  "host": "seame-5",
+  "commit": "fcdc4b482914902c74fdd9458c4f0fadcdec90b7",
+  "commit_short": "fcdc4b4",
+  "commit_subject": "Merge pull request #258 from SEAME-pt/feature/drone-mesh",
+  "branch": "sim_test_automation",
+  "uncommitted_code": [
+    "project/ros2/src/drone_bringup/CMakeLists.txt",
+    "project/ros2/src/drone_bringup/test/test_sim_sensors.py",
+    "project/ros2/src/drone_sim/drone_sim/checks.py",
+    "project/ros2/src/drone_sim/drone_sim/flow_check.py",
+    "project/ros2/src/drone_sim/drone_sim/odom_check.py",
+    "project/ros2/src/drone_sim/test/test_checks.py",
+    "project/ros2/src/drone_bringup/config/sim_test_limits.yaml",
+    "project/ros2/src/drone_bringup/test/test_sim_test_limits.py"
+  ],
+  "uncommitted_other": [
+    ".gitignore",
+    "Makefile",
+    "project/ros2/attitude_rest.csv",
+    "project/ros2/attitude_rest.csv~",
+    "project/scripts/sim_flight_test.sh"
+  ]
+}

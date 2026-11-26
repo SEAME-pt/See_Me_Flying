@@ -1,0 +1,24 @@
+[WARN] [ros2bag]: Positional "topics" argument deprecated. Please use optional "--topics" argument instead.
+stdin is not a terminal device. Keyboard handling disabled.[INFO] [1795521583.195505918] [rosbag2_recorder]: Press SPACE for pausing/resuming
+[INFO] [1795521583.195514064] [rosbag2_recorder]: Event publisher thread: Started
+[INFO] [1795521583.197878200] [rosbag2_recorder]: Starting recording to '/results/flight_bag'
+[INFO] [1795521583.198867753] [rosbag2_recorder]: Listening for topics...
+[INFO] [1795521583.198883071] [rosbag2_recorder]: Recording...
+[INFO] [1795521583.198940195] [rosbag2_recorder]: Topics discovery started.
+[INFO] [1795521583.568919703] [rosbag2_recorder]: Subscribed to topic '/cmd/manual'
+[INFO] [1795521583.699372705] [rosbag2_recorder]: Subscribed to topic '/fc/status'
+[INFO] [1795521583.701306158] [rosbag2_recorder]: Subscribed to topic '/fc/range'
+[INFO] [1795521583.702628163] [rosbag2_recorder]: Subscribed to topic '/X3/gazebo/command/twist'
+[INFO] [1795521583.703584492] [rosbag2_recorder]: Subscribed to topic '/fc/attitude'
+[INFO] [1795521583.829893259] [rosbag2_recorder]: Subscribed to topic '/fc/optical_flow'
+[INFO] [1795521583.910057019] [rosbag2_recorder]: Subscribed to topic '/cmd/mission'
+[INFO] [1795521583.925374668] [rosbag2_recorder]: Subscribed to topic '/fc/odom'
+[INFO] [1795521583.927370881] [rosbag2_recorder]: Subscribed to topic '/safety/active_source'
+[INFO] [1795521583.928038921] [rosbag2_recorder]: Subscribed to topic '/fc/setpoint_velocity'
+[INFO] [1795521584.609440464] [rosbag2_recorder]: Subscribed to topic '/sim/ground_truth'
+[INFO] [1795521584.609519925] [rosbag2_recorder]: All requested topics are subscribed. Stopping discovery...
+[INFO] [1795521584.609541306] [rosbag2_recorder]: Topics discovery stopped.
+[INFO] [1795521679.120205991] [rosbag2_recorder]: Pausing recording.
+[INFO] [1795521679.120423169] [rosbag2_cpp]: Writing remaining messages from cache to the bag. It may take a while
+[INFO] [1795521679.129839223] [rosbag2_recorder]: Recording stopped
+[INFO] [1795521679.141853564] [rosbag2_recorder]: Event publisher thread: Exited

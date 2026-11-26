@@ -50,8 +50,8 @@ The original **custom INAV target** had a bug regarding the gyro, present only i
 
 - The custom target build and every configuration backup (INAV `diff all` of 26 Oct 2026, the Betaflight 4.5.1 fallback, the accelerometer calibration): [`project/hardware/flight-controller/`](../../hardware/flight-controller/).
 - Later INAV changes, such as MSP RC OVERRIDE on Nov 17: [FC config of Nov 17](../../logs/measurements/inav_rc_override/fc_config_2026-11-17/README.md).
-- `msp/captures/`: real MSP replies recorded from the drone (`flat_still`, `tilted`, `flow_moving`, `radio_off`), saved with `msp_inventory.py capture`. The telemetry tests replay them, and `drone_fc_bridge/test/data/` holds copies for the C++ tests.
-- `msp/rates/`: MSP reply rates measured with `msp_inventory.py rate`.
+- `msp/captures/`: real MSP replies recorded from the drone (`flat_still`, `tilted`, `flow_moving`, `radio_off`), saved with `msp_bench.py --capture <state>` (`make capture STATE=...`; the first ones were made with `msp_inventory.py`, now removed). The telemetry tests replay them, and `drone_fc_bridge/test/data/` holds copies for the C++ tests.
+- `msp/rates/`: MSP reply rates measured with the old `msp_inventory.py rate` (kept for comparison; `msp_bench.py` measures rates now).
 - Radio, arming and failsafe setup: [ELRS guide](../../../docs/ELRS_Guide.md). Talking to INAV over Wi-Fi: [ESP12 setup](../README.md).
 
 # Tags

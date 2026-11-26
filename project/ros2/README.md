@@ -254,7 +254,7 @@ The list lives in `drone_bringup/config/gz_bridge.yaml`, which the bridge reads 
 
 `/X3/odom` arrives at 50 Hz with `frame_id: x3/odom` and `child_frame_id: x3/base_footprint`; covariances are all zero; the twist is in the body frame. Nothing above `fc_bridge` should read it, nor `/sim/ground_truth`: they are ground truth the real drone won't have. Any topic not listed does not cross. The X3 model has no IMU (inertial measurement unit) sensor, so there is none to bridge.
 
-**Gazebo** (`gz sim`, Gazebo Harmonic) is not a ROS node. By default it loads Gazebo's own world `multicopter_velocity_control.sdf` (SDF: Simulation Description Format) running from the start (`-r`); `make sim-keyboard` and `make sim-joy` load our `room_world.sdf`, and `outdoor_field.sdf` is there too (`drone_bringup/worlds/`). The default world holds two quadcopters, X3 and X4; only X3 is used. X3 has a built-in velocity controller: given a Twist, it works out the motor speeds to reach that velocity and holds it until the next command. Underneath, the physics is real: per-rotor motor models (thrust, rotor drag, spin-up), gravity and collisions. The controller reads commands in the **body frame** (verified Oct 22, 2026: forward follows the nose to within 1°). It accepts commands only while enabled. Our stack never touches the X4 or the `motor_speed` topic, which drives the propellers directly.
+**Gazebo** (`gz sim`, Gazebo Harmonic) is not a ROS node. By default it loads our `room_world.sdf` (SDF: Simulation Description Format), the lab room, running from the start (`-r`); `outdoor_field.sdf` is there too (`drone_bringup/worlds/`), and Gazebo's own `multicopter_velocity_control.sdf` opens with `world:=multicopter_velocity_control.sdf`. That one holds two quadcopters, X3 and X4; only X3 is used. X3 has a built-in velocity controller: given a Twist, it works out the motor speeds to reach that velocity and holds it until the next command. Underneath, the physics is real: per-rotor motor models (thrust, rotor drag, spin-up), gravity and collisions. The controller reads commands in the **body frame** (verified Oct 22, 2026: forward follows the nose to within 1°). It accepts commands only while enabled. Our stack never touches the X4 or the `motor_speed` topic, which drives the propellers directly.
 
 **Camera views** (#237). `sim.launch.py camera:=...` picks the main view of the Gazebo window; `make sim-keyboard` and `make sim-joy` ask for it before starting:
 
@@ -278,7 +278,7 @@ The FPV camera is a sensor on the X3 in our worlds only (`room_world.sdf`, `outd
 | `source` | `mission` (action servers), `none` (anything else is rejected) | `mission` |
 | `radio` | `true`, `false`. Sim only. `false`: no Pocket (someone else has it): no radio nodes, `fc_bridge` starts armed and `mission` arms on Takeoff and disarms after Land | `true` |
 | `demo` | `true`, `false`: with `source:=mission`, fly the scripted square (`demo_flight`). Without it nothing flies until a goal is sent or the radio takes over | `false` |
-| `world` | Sim only: SDF file name (ours in `worlds/` win) or full path | `multicopter_velocity_control.sdf` |
+| `world` | Sim only: SDF file name (ours in `worlds/` win) or full path | `room_world.sdf` |
 | `camera` | `free`, `follow`, `fpv`. Sim only: the Gazebo window's main view (see Camera views) | `free` |
 | `headless` | `true`, `false`. Sim only. `true`: Gazebo's server without its window, for CI and the nightly flight test | `false` |
 
@@ -292,7 +292,7 @@ Everything is decided in one function once the arguments are known (`OpaqueFunct
 5. All our nodes get `config/sim.yaml`, and `use_sim_time` true with `sim` (false with `inav`). Each source is remapped from `setpoint_velocity` to its own topic: `/cmd/mission` (`mission`) or `/cmd/radio` (`radio_teleop`). The watchdog is remapped to `/fc/setpoint_velocity`.
 6. Ctrl-C stops everything together. Every Python node handles the shutdown race in rclpy (the context can close between two waits), so none of them dies with a traceback.
 
-What the Makefile starts: `make sim-keyboard` is `source:=none radio:=false world:=room_world.sdf camera:=<your choice>` plus `teleop_twist_keyboard` on `/cmd/manual`; `make sim-joy` is `source:=none world:=room_world.sdf camera:=<your choice>`; `make sim-test` is `headless:=true radio:=false` inside the flight test.
+What the Makefile starts: `make sim-keyboard` is `source:=none radio:=false camera:=<your choice>` plus `teleop_twist_keyboard` on `/cmd/manual`; `make sim-joy` is `source:=none camera:=<your choice>`; `make sim-test` is `headless:=true radio:=false` inside the flight test.
 
 ## Known issues and limitations
 

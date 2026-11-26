@@ -6,6 +6,10 @@
 # display and no GPU like GitHub's machines, copies project/ros2/src into it,
 # builds, and flies drone_bringup/test/test_sim_flight.py (about 2 min). Your dev
 # container and its build/ are not touched, so it also runs while your own sim is open.
+# 
+# ! SUITE=sensors flies drone_bringup/test/test_sim_sensors.py instead (the simulated
+# sensors and the estimator against ground truth, about 2.5 min); its results go to
+# project/logs/sim_sensors/.
 #
 # Results, in project/logs/sim_flight/<date>_<commit>/ (or the folder given as the
 # first argument, as the nightly workflow does: then no history line is written):
@@ -23,6 +27,16 @@ SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPTS/.." && pwd)"
 IMAGE="${SIM_IMAGE:-seame/ros2-dev:jazzy}"
 
+# Which test: SUITE=flight (the default, what nightly runs) or SUITE=sensors.
+SUITE="${SUITE:-flight}"
+case "$SUITE" in
+    flight)  TEST=test_sim_flight.py;  KIND=sim_flight;  DOMAIN=196; PART=flight_test
+             SHOW='on the ground:|takeoff: true|hover 10 s|side [0-9]:|square closes|2 m/s asked|landed:|mission killed' ;;
+    sensors) TEST=test_sim_sensors.py; KIND=sim_sensors; DOMAIN=197; PART=sensor_test
+             SHOW='carpet lane|hover 10 s|4 m pass|creep [0-9]' ;;
+    *) echo "Error: SUITE must be flight or sensors, not '$SUITE'"; exit 2 ;;
+esac
+
 if ! docker image inspect "$IMAGE" > /dev/null 2>&1; then
     echo "Error: No $IMAGE image. Build it first: make build"
     exit 2
@@ -32,7 +46,7 @@ RUN=""
 if [ $# -ge 1 ]; then
     OUT="$1"
 else
-    RUN=$(python3 -c "import sys; sys.path.insert(0, '$SCRIPTS'); from logbook import new_run; print(new_run('sim_flight'))")
+    RUN=$(python3 -c "import sys; sys.path.insert(0, '$SCRIPTS'); from logbook import new_run; print(new_run('$KIND'))")
     OUT="$RUN"
 fi
 mkdir -p "$OUT"
@@ -52,13 +66,13 @@ if ! colcon build --packages-up-to drone_bringup > /results/build.log 2>&1; then
 fi
 source install/setup.bash
 # Own domain, localhost only, own Gazebo partition: nothing else can join this sim.
-export ROS_DOMAIN_ID=196 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST GZ_PARTITION=flight_test
+export ROS_DOMAIN_ID=$DOMAIN ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST GZ_PARTITION=$PART
 ros2 bag record -o /results/flight_bag /sim/ground_truth /fc/status /fc/range /fc/odom \
     /cmd/mission /cmd/manual /fc/setpoint_velocity /X3/gazebo/command/twist \
-    /safety/active_source < /dev/null > /results/bag.log 2>&1 &
+    /safety/active_source /fc/optical_flow /fc/attitude < /dev/null > /results/bag.log 2>&1 &
 bag=$!
-echo "### flight test (about 2 min)"
-launch_test src/drone_bringup/test/test_sim_flight.py --junit-xml /results/flight.xml \
+echo "### $TEST"
+launch_test src/drone_bringup/test/$TEST --junit-xml /results/flight.xml \
     < /dev/null > /results/flight.log 2>&1
 status=$?
 # TERM, not INT: a job started with & in a script ignores SIGINT, and the recorder
@@ -67,7 +81,7 @@ kill -TERM $bag
 wait $bag
 cp -r ~/.ros/log /results/ros_log 2>/dev/null
 # What each step measured, then the verdict.
-grep -oE "(on the ground:|takeoff: true|hover 10 s|side [0-9]:|square closes|2 m/s asked|landed:|mission killed)[^[]*" /results/flight.log
+grep -oE "($SHOW)[^[]*" /results/flight.log
 grep -E "^(OK|FAILED)|^(FAIL|ERROR):|^AssertionError" /results/flight.log
 exit $status
 EOF
@@ -75,7 +89,8 @@ EOF
 
 start=$(date +%s)
 set +e
-docker run --rm -v "$PROJECT_DIR/ros2/src:/src:ro" -v "$OUT:/results" "$IMAGE" bash -c "$INSIDE"
+docker run --rm -e TEST="$TEST" -e DOMAIN="$DOMAIN" -e PART="$PART" -e SHOW="$SHOW" \
+    -v "$PROJECT_DIR/ros2/src:/src:ro" -v "$OUT:/results" "$IMAGE" bash -c "$INSIDE"
 status=$?
 set -e
 
