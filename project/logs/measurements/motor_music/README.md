@@ -1,6 +1,10 @@
+---
+title: Motor music
+---
 # Motor music runs
 
-`project/scripts/motor_music/sing.sh` (`make motor-music`): the motors play a melody through ROS (`fc/setpoint_velocity` → fc_bridge `rc_override` → INAV), props off. Only the runs worth keeping are here, with their events, step times and metadata; bags and recordings stay on the laptop that ran them. The laptop mic records no real sound, so there is no audio of any run.
+`project/scripts/motor_music/sing.sh` (`make motor-music`): the motors play a melody through ROS (`fc/setpoint_velocity` → fc_bridge `rc_override` → INAV), 
+props off. Only the runs worth keeping are here, with their events, step times and metadata; bags and recordings stay on the laptop that ran them. The laptop mic records no real sound, so there is no audio of any run.
 
 | Run | What it shows |
 |---|---|
@@ -20,3 +24,7 @@ Tried splitting the motors into two voices through the sticks: throttle for the 
 Same code and build as Nov 17. SA was on (CH7 2000), but INAV kept the radio's sticks most of the time. The bridge logged 5 to 23 "No reply from the FC" per run (Nov 17: 0 to 4), and the laptop lost the drone's Wi-Fi 11 times in 12 minutes (beacon loss and deauth in its journal). INAV only applies MSP RC OVERRIDE after 0.7 s of unbroken MSP_SET_RAW_RC frames and drops it after about 0.4 s without them, so every dropout handed control back to the radio.
 
 Cause: a Raspberry Pi with a second ESP was connected to the drone's ESP. With it disconnected, the song played normally again. **Keep the drone's ESP to one client, the laptop running fc_bridge.**
+
+# Tags
+
+#firmware 
