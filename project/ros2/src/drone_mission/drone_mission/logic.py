@@ -176,6 +176,21 @@ class Mission:
                 self.finish(ABORTED, 'disarmed')
             self.go(t, GROUNDED)
 
+    def planned(self) -> Optional[Tuple[float, float, float]]:
+        """
+        Where the current goal leads: x, y and height, in the odometry frame.
+
+        For path_viz's planned line: Takeoff goes straight up, Goto to its target,
+        Land straight down. None with no goal.
+        """
+        if self.goal is None:
+            return None
+        if self.goal.kind == GOTO:
+            return self.target[0], self.target[1], self.hold_h
+        if self.goal.kind == TAKEOFF:
+            return self.x, self.y, self.hold_h
+        return self.x, self.y, 0.0
+
     # Goals: each returns (accepted, reason)
 
     def request_takeoff(self, t: float, height: float = 0.0) -> Tuple[bool, str]:
