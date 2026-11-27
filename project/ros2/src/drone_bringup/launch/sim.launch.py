@@ -140,10 +140,15 @@ def setup(context):
             parameters=[params, clock], output='screen',
         ))
 
+    bridge = {'backend': arg('backend'), 'armed_at_start': not radio_arms}
+    if not sim:
+        # Where fc_bridge reaches INAV: esp-link on the drone's Wi-Fi by default,
+        # or msp_gateway (127.0.0.1:5760) on the Pi's USB ESP (make pi-esp-on).
+        bridge.update({'msp_host': arg('msp_host'), 'msp_port': int(arg('msp_port')),
+                       'msp_timeout_s': float(arg('msp_timeout_s'))})
     actions.append(Node(
         package='drone_fc_bridge', executable='fc_bridge', output='screen',
-        parameters=[params, clock, {'backend': arg('backend'),
-                                    'armed_at_start': not radio_arms}],
+        parameters=[params, clock, bridge],
     ))
     # Watches the setpoint stream into fc_bridge: warns when it stops for timeout_s
     # and when it comes back. Mandatory; only logs (fc_bridge's timeout sends zero).
@@ -221,6 +226,15 @@ def generate_launch_description():
         DeclareLaunchArgument('headless', default_value='false', choices=['true', 'false'],
                               description='Sim only. true: Gazebo without its window '
                                           '(server only), for CI and the nightly tests'),
+        DeclareLaunchArgument('msp_host', default_value='192.168.4.1',
+                              description='inav only: where fc_bridge sends MSP. '
+                                          "192.168.4.1: esp-link on the drone's Wi-Fi; "
+                                          "127.0.0.1: msp_gateway on the Pi's USB ESP"),
+        DeclareLaunchArgument('msp_port', default_value='23',
+                              description="inav only: 23 for esp-link, 5760 for msp_gateway"),
+        DeclareLaunchArgument('msp_timeout_s', default_value='0.25',
+                              description="inav only: wait for a polling cycle's replies; "
+                                          'raise it (0.4) through a gateway with other clients'),
         # Everything else is decided once the arguments are known, and checked
         # before any process starts.
         OpaqueFunction(function=setup),

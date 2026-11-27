@@ -71,6 +71,20 @@ monitor: ## Prometheus + Grafana: the drone dashboard on http://localhost:3000
 monitor-stop: ## Stop Prometheus and Grafana (their data is kept)
 	$(COMPOSE) --profile monitoring rm -sf prometheus grafana
 
+# ========== Grafana through the Pi's USB ESP (run these on the Pi) ==========
+# The gateway on the USB bridge + the drone stack (backend inav, listen-only)
+# reading through it. One path per session: while it's on, no laptop on the
+# drone's Wi-Fi. Details at the top of project/scripts/pi_esp.sh.
+
+pi-esp-on: ws monitor ## On the Pi: Grafana reads the drone through the USB ESP [ESP_SERIAL=...]
+	ESP_SERIAL="$(ESP_SERIAL)" bash $(SCRIPTS)/pi_esp.sh on
+
+pi-esp-off: ## On the Pi: stop reading the drone (Grafana stays up with the history)
+	bash $(SCRIPTS)/pi_esp.sh off
+
+pi-esp-status: ## On the Pi: gateway, drone stack, FC link and Grafana, at a glance
+	bash $(SCRIPTS)/pi_esp.sh status
+
 # ========== real drone (laptop on the drone's Wi-Fi) ==========
 
 BENCH := python3 project/telemetry/msp_bench.py
@@ -103,4 +117,4 @@ motor-music: up ## PROPS OFF: make motor-music MODE=calibrate | MODE=play SONG=f
 
 .PHONY: help up build down clean-volumes logs shell ws ws-clean test sim-test \
 	sim-keyboard sim-joy sim-stop monitor monitor-stop bench wifi-rtt capture \
-	bench-rc bench-armed motor-music
+	bench-rc bench-armed motor-music pi-esp-on pi-esp-off pi-esp-status

@@ -182,6 +182,19 @@ def test_inav_backend_starts_no_gazebo_and_no_radio_nodes():
     assert values(started(actions)['fc_bridge'])['backend'] == 'inav'
 
 
+def test_inav_reaches_esp_link_by_default_and_the_gateway_when_asked():
+    bridge = values(started(launch(backend='inav'))['fc_bridge'])
+    assert (bridge['msp_host'], bridge['msp_port']) == ('192.168.4.1', 23)
+    bridge = values(started(launch(backend='inav', msp_host='127.0.0.1', msp_port='5760',
+                                   msp_timeout_s='0.4'))['fc_bridge'])
+    assert (bridge['msp_host'], bridge['msp_port'], bridge['msp_timeout_s']) == \
+        ('127.0.0.1', 5760, 0.4)   # int and float: fc_bridge declares them so
+
+
+def test_the_sim_gets_no_msp_parameters():
+    assert 'msp_host' not in values(started(launch())['fc_bridge'])
+
+
 def test_with_the_radio_only_the_radio_arms():
     for backend in ('sim', 'inav'):
         nodes = started(launch(backend=backend, radio='true'))

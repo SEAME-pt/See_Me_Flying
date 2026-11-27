@@ -198,6 +198,9 @@ other PCs ──SEAME──► Pi: msp_gateway ──USB──► D1 Mini ──
    devices are plugged in (`1a86` is the D1 Mini's CH340 chip; check
    `ls /dev/serial/by-id/`). `/dev/ttyUSB0` works too.
 
+For the Grafana dashboard, `make pi-esp-on` (repo root) does step 4 for you
+and starts the drone stack on the gateway; `make pi-esp-off` stops both.
+
 Opening the port can reset the D1 Mini on some boards. If that happens it
 rejoins within a few seconds, and the gateway just sees a few timeouts.
 

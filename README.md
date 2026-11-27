@@ -244,6 +244,7 @@ Run everything from the repo root. `make` (or `make help`) lists all commands. N
 | `make sim-keyboard`, `make sim-joy` | Build, then Gazebo with the keyboard or the RadioMaster; both ask for the camera |
 | `make test`, `make sim-test` | All tests like CI / the headless Gazebo flight test; results in `project/logs/` |
 | `make monitor` | Grafana dashboard on http://localhost:3000 |
+| `make pi-esp-on`, `make pi-esp-off`, `make pi-esp-status` | On the Pi: Grafana reads the real drone through the Pi's USB ESP |
 | `make bench`, `make wifi-rtt`, `make capture`, `make bench-rc`, `make bench-armed`, `make motor-music` | Real drone, props off |
 
 ### Start
@@ -292,6 +293,16 @@ make monitor-stop   # stop it (its data is kept)
 ```
 
 The dashboard opens without logging in; log in as `admin`/`admin` to edit it. It shows data while a sim or the drone stack runs.
+
+**On the Pi, reading the real drone through its USB ESP** (`firmware/pi_bridge`, see the [msp_dashboard README](project/telemetry/msp_dashboard/README.md#pi-without-ethernet-the-usb-bridge-firmwarepi_bridge)):
+
+```bash
+make pi-esp-on       # gateway on the USB ESP + drone stack (listen-only) + Grafana
+make pi-esp-status   # what runs, and whether the FC answers
+make pi-esp-off      # stop reading the drone; Grafana keeps the history
+```
+
+`pi-esp-on` starts `msp_gateway` on the bridge, then `sim.launch.py backend:=inav source:=none` with `fc_bridge` pointed at the gateway (`msp_host:=127.0.0.1 msp_port:=5760`). Anyone on SEAME then sees the dashboard on `http://<pi-address>:3000`. **One path per session:** it refuses to start while any `fc_bridge` runs (a sim, a bench run), and while it's on no laptop should join the drone's Wi-Fi, because esp-link would serve both. The Pi needs `cmake` and `g++` (to build the gateway) and to be in the `dialout` group; the script says so if not. More than one CH340 plugged in: `make pi-esp-on ESP_SERIAL=/dev/serial/by-id/...`.
 
 ### Tests
 
