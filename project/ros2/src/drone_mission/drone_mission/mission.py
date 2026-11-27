@@ -13,7 +13,7 @@ import threading
 from drone_interfaces.action import Goto, Land, Takeoff
 from drone_interfaces.msg import FcStatus
 from drone_mission.logic import ACTIVE, CANCELED, LAND, Mission, Params, SUCCEEDED
-from geometry_msgs.msg import TwistStamped
+from geometry_msgs.msg import PointStamped, TwistStamped
 from nav_msgs.msg import Odometry
 import rclpy
 from rclpy._rclpy_pybind11 import RCLError
@@ -42,6 +42,8 @@ class MissionNode(Node):
         group = ReentrantCallbackGroup()
 
         self.pub = self.create_publisher(TwistStamped, 'setpoint_velocity', 10)
+        # Where each accepted goal leads, in fc/odom's frame: path_viz's planned line.
+        self.target_pub = self.create_publisher(PointStamped, 'mission/target', 10)
         self.create_subscription(Range, 'fc/range', self.on_range, 10, callback_group=group)
         self.create_subscription(Odometry, 'fc/odom', self.on_odom, 10, callback_group=group)
         # Without a safety_manager nothing arrives here and the mission stays in control.
@@ -114,8 +116,20 @@ class MissionNode(Node):
             # rclpy hands this same request object to execute(): the key survives a
             # Land arriving between another goal's acceptance and its execution.
             self.accepted[id(goal)] = (goal, self.mission.goal)
+            planned = self.mission.planned()
         self.get_logger().info(f'{name} accepted')
+        self.publish_target(planned)
         return GoalResponse.ACCEPT
+
+    def publish_target(self, planned):
+        """Publish where an accepted goal leads (x, y, height in fc/odom's frame)."""
+        if planned is None:
+            return
+        msg = PointStamped()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = 'odom'
+        msg.point.x, msg.point.y, msg.point.z = planned
+        self.target_pub.publish(msg)
 
     def on_cancel(self, handle):
         with self.lock:

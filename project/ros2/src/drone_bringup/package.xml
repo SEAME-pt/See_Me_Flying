@@ -21,6 +21,8 @@
   <exec_depend>drone_sim</exec_depend>
   <exec_depend>joy</exec_depend>
   <exec_depend>drone_teleop</exec_depend>
+  <exec_depend>v4l2_camera</exec_depend>
+  <exec_depend>drone_perception</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

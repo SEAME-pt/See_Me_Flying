@@ -1,6 +1,6 @@
 # ROS drives the motors through MSP RC OVERRIDE, armed, props off, Nov 17
 
-`scripts/bench_rc_armed.sh` with the `inav-6` build (commit c3c73c0, `fc/motors` included). **Props off**, the drone held by hand, armed from the radio, laptop on the drone's Wi-Fi. FC config: `../fc_config_2026-11-17/`; the motor mixer is INAV's default quad X (`mmix` in `docs/extras/Drone_INAV_Backup_26_10_26.txt`): 1 rear right, 2 front right, 3 rear left, 4 front left.
+`project/scripts/bench_rc_armed.sh` (now `make bench-armed`) with the `inav-6` build (commit c3c73c0, `fc/motors` included). **Props off**, the drone held by hand, armed from the radio, laptop on the drone's Wi-Fi. FC config: `../fc_config_2026-11-17/`; the motor mixer is INAV's default quad X (`mmix` in `project/hardware/flight-controller/Drone_INAV_Backup_26_10_26.txt`): 1 rear right, 2 front right, 3 rear left, 4 front left.
 
 `events.log` has every step and readout, `bridge.log` the node, `bag/` `fc/rc`, `fc/motors`, `fc/status`, `fc/setpoint_velocity`, `fc/attitude`. Times below are seconds into the bag's minute (`:15` = 1794929615).
 

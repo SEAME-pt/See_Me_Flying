@@ -525,3 +525,19 @@ def test_disarm_on_the_ground_changes_nothing():
     f = Flight()
     f.m.on_armed(f.t, False)
     assert states(f.m) == []
+
+
+def test_planned_target_of_each_goal():
+    f = Flight()
+    assert f.m.planned() is None
+    assert f.m.request_takeoff(f.t, 1.0)[0]
+    assert f.m.planned() == (0.0, 0.0, 1.0), 'takeoff: straight up'
+    f.finish(f.m.goal)
+    assert f.m.request_goto(f.t, 1.0, 0.5)[0]
+    x, y, h = f.m.planned()
+    assert abs(x - 1.0) <= 0.01 and abs(y - 0.5) <= 0.01 and h == 1.0, 'goto: its target'
+    f.finish(f.m.goal)
+    assert f.m.request_land(f.t)[0]
+    assert f.m.planned() == (f.m.x, f.m.y, 0.0), 'land: straight down'
+    f.finish(f.m.goal)
+    assert f.m.planned() is None

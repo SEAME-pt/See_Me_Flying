@@ -1,6 +1,6 @@
 # The motors play the melody through ROS, Nov 17
 
-`scripts/motor_music/sing.sh play` (commit dbf0160), the first pass of an RTTTL ringtone (12.3 s, 18 notes, G5–G6). Props off, armed from the radio, SA on. FC on **control profile 2 with roll, pitch and yaw PIDs at zero**, so the motors get the throttle alone. Relative tuning, `--base 1150`, zero point 976 (the old default). Heard: **recognizable**.
+`project/scripts/motor_music/sing.sh play` (now `make motor-music MODE=play`, commit dbf0160), the first pass of an RTTTL ringtone (12.3 s, 18 notes, G5–G6). Props off, armed from the radio, SA on. FC on **control profile 2 with roll, pitch and yaw PIDs at zero**, so the motors get the throttle alone. Relative tuning, `--base 1150`, zero point 976 (the old default). Heard: **recognizable**.
 
 `song.wav` is silent: the laptop's mic records no real sound (a 1 kHz beep from its own speaker doesn't show up), so there is no recording of the performance in this folder.
 

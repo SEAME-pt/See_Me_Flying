@@ -1,6 +1,6 @@
 # ROS sticks through MSP RC OVERRIDE on the real drone, Nov 17
 
-`scripts/bench_rc_override.sh` with the `inav-6` build (commit 70e3202): `fc_bridge backend:=inav rc_override:=true` on the ground laptop, joined to the drone's Wi-Fi (esp-link, `192.168.4.1:23`). Props off, **never armed** (AUX1 at 1000 for the whole bag), Configurator closed. FC config: `../fc_config_2026-11-17/` (`msp_override_channels = 15`, MSP RC OVERRIDE on SA = channel 7).
+`project/scripts/bench_rc_override.sh` (now `make bench-rc`) with the `inav-6` build (commit 70e3202): `fc_bridge backend:=inav rc_override:=true` on the ground laptop, joined to the drone's Wi-Fi (esp-link, `192.168.4.1:23`). Props off, **never armed** (AUX1 at 1000 for the whole bag), Configurator closed. FC config: `../fc_config_2026-11-17/` (`msp_override_channels = 15`, MSP RC OVERRIDE on SA = channel 7).
 
 `events.log` has a line per step and each readout; `bridge.log` the node's log; `bag/` (MCAP) `fc/rc`, `fc/status`, `fc/setpoint_velocity`, `fc/attitude`. Times below are from the bag.
 

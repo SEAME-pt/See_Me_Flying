@@ -1,0 +1,15 @@
+{
+  "kind": "tests",
+  "name": null,
+  "date": "2026-11-26T16:21:24+00:00",
+  "host": "albertoPC",
+  "commit": "10205a2d379d3379ddc0c8bbf92a1791e3a7cf48",
+  "commit_short": "10205a2",
+  "commit_subject": "resolved merge conflicts",
+  "branch": "issue233/AddYolo",
+  "uncommitted_code": [
+    "project/ros2/src/drone_perception/drone_perception/aruco_detector.py",
+    "project/ros2/src/drone_perception/drone_perception/yolo_detector.py"
+  ],
+  "uncommitted_other": []
+}

@@ -11,6 +11,8 @@ __pycache__/
 # (big); the rest of the run folder (meta, result, logs, xUnit) is committed.
 project/logs/sim_flight/*/flight_bag/
 project/logs/sim_flight/*/ros_log/
+project/logs/sim_sensors/*/flight_bag/
+project/logs/sim_sensors/*/ros_log/
 # Motor music: songs stay local (ringtones of other people's music)
 project/scripts/motor_music/songs/
 project/logs/measurements/motor_music/*/song.rtttl
@@ -27,3 +29,16 @@ seame-docker/logs/measurements/motor_music/*/*.wav
 
 # AI models: big downloads, stay local (see drone_sim/depth.py for where to get them)
 project/models/*.onnx
+# Obsidian: share the vault settings, not each person's open tabs
+.obsidian/workspace.json
+
+# Perception: models are rebuilt with the export command in the computer-vision guide;
+# recordings, extracted frames and training datasets are too big for git
+project/ros2/models/*.onnx
+*.pt
+project/ros2/bags/
+project/ros2/frames/
+project/ros2/dataset/
+
+# msp_bench.py CSVs when run without --logbook or --out
+results/

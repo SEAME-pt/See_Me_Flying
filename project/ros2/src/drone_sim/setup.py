@@ -30,6 +30,7 @@ setup(
             'estimator = drone_sim.estimator_node:main',
             'depth_view = drone_sim.depth_view:main',
             'sweep_view = drone_sim.sweep_view:main',
+            'path_viz = drone_sim.path_viz_node:main',
         ],
     },
 )

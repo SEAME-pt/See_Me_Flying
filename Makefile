@@ -26,7 +26,7 @@ clean-volumes: ## Stop everything and delete the volumes (Gazebo model cache, Pr
 	$(COMPOSE) --profile monitoring down -v
 
 logs: ## Follow container logs
-	$(COMPOSE) logs -f $(SERVICE)
+	$(COMPOSE) logs -f $(SERVICE)	
 
 shell: up ## Open a bash shell in the container
 	$(COMPOSE) exec $(SERVICE) bash
@@ -38,7 +38,7 @@ ws: up ## colcon build the ROS workspace (project/ros2/src)
 
 ws-clean: up ## Delete the workspace build/, install/ and log/
 	$(call in_ws,rm -rf build install log)
-
+	
 # ========== tests (results in project/logs/) ==========
 
 test: up ## All tests (ROS + telemetry), like CI: results in project/logs/tests/
@@ -46,6 +46,9 @@ test: up ## All tests (ROS + telemetry), like CI: results in project/logs/tests/
 
 sim-test: ## Headless Gazebo flight test (nightly): results in project/logs/sim_flight/
 	bash $(SCRIPTS)/sim_flight_test.sh
+
+sim-test-sensors: ## Headless Gazebo sensor test: results in project/logs/sim_sensors/
+	SUITE=sensors bash $(SCRIPTS)/sim_flight_test.sh
 
 # ========== simulation (Gazebo) ==========
 
@@ -73,9 +76,20 @@ monitor-stop: ## Stop Prometheus and Grafana (their data is kept)
 
 # ========== real drone (laptop on the drone's Wi-Fi) ==========
 
-wifi-rtt: ## Wi-Fi round trip to the FC: make wifi-rtt NOTE="where, ESP mode" [ARGS="-n 1000"]
+BENCH := python3 project/telemetry/msp_bench.py
+
+bench: ## Full MSP bench, PROPS OFF: make bench NOTE="where, setup" [ARGS="--serial /dev/ttyUSB0"]
+	@test -n "$(NOTE)" || { echo 'Say the conditions: make bench NOTE="bench, Pi USB bridge, radio off"'; exit 2; }
+	$(BENCH) --logbook "$(NOTE)" $(ARGS)
+
+wifi-rtt: ## Wi-Fi round trip to the FC: make wifi-rtt NOTE="where, ESP mode" [ARGS="--rtt-count 1000"]
 	@test -n "$(NOTE)" || { echo 'Say the conditions: make wifi-rtt NOTE="bench, AP mode, radio on"'; exit 2; }
-	python3 $(SCRIPTS)/measure_wifi_rtt.py --note "$(NOTE)" $(ARGS)
+	$(BENCH) --logbook "$(NOTE)" --logbook-name wifi_rtt --skip sensors,load \
+		--rtt-commands API_VERSION --rtt-count 200 --rtt-interval 0.05 --timeout 2 $(ARGS)
+
+capture: ## Record MSP replies for the tests: make capture STATE=flat_still [ARGS="--serial /dev/ttyUSB0"]
+	@test -n "$(STATE)" || { echo 'Say the drone state: make capture STATE=flat_still (or tilted, radio_off, flow_moving)'; exit 2; }
+	$(BENCH) --capture "$(STATE)" $(ARGS)
 
 # INAV bench runs, PROPS OFF. Interactive: they say what to do with the radio.
 # Results in project/logs/measurements/. INSTALL=<path> uses another build in the container.
@@ -92,4 +106,5 @@ motor-music: up ## PROPS OFF: make motor-music MODE=calibrate | MODE=play SONG=f
 
 .PHONY: help up build down clean-volumes logs shell ws ws-clean test sim-test \
 	sim-keyboard sim-joy sim-wall sim-stop monitor monitor-stop wifi-rtt \
+	sim-keyboard sim-joy sim-stop monitor monitor-stop bench wifi-rtt capture \
 	bench-rc bench-armed motor-music

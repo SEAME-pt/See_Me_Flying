@@ -7,9 +7,9 @@
 # This script runs the rest, like bench_rc_armed.sh: the bag, the bridge, the
 # radio steps, and the laptop mic. No internet needed.
 #
-# Usage, on the host in seame-docker/, dev container running:
-#   INSTALL=/tmp/inav6_bench/install scripts/motor_music/sing.sh calibrate
-#   INSTALL=/tmp/inav6_bench/install scripts/motor_music/sing.sh play SONG.rtttl [options]
+# Usage, from the repo root, dev container running (make up):
+#   make motor-music MODE=calibrate [INSTALL=/tmp/inav6_bench/install]
+#   make motor-music MODE=play SONG=SONG.rtttl [ARGS="options"] [INSTALL=...]
 # play options go to sing.py: --part all, --stretch F (longer notes, 1.2),
 # --base T, --zero Z (relative), and with
 # a map --octave N, --nudge N (semitones).
@@ -20,7 +20,7 @@
 #
 # calibrate: throttle stick 1050-1400 in 8 steps, 2 s each, recorded; the
 # pitch of each step goes to pitch.json. play: the song, recorded.
-# Everything into logs/measurements/motor_music/<date>_<commit>/.
+# Everything into project/logs/measurements/motor_music/<date>_<commit>/.
 #
 # Kill switch: the radio's arm switch. If sing.py stops while SA is on,
 # fc_bridge centres the throttle (1500): disarm.

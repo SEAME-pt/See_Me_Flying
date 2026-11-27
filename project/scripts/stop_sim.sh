@@ -16,6 +16,7 @@ docker compose exec -T dev bash -c '
   pkill -f "[s]afety_manager"
   pkill -f "[f]low_model"
   pkill -f "[e]stimator"
+  pkill -f "[p]ath_viz"
   pkill -f "[j]oy_node"
   # Wait until Gazebo is really gone: a new launch refuses to start while one runs.
   for i in $(seq 1 20); do pgrep -f "[g]z sim" >/dev/null || break; sleep 0.5; done

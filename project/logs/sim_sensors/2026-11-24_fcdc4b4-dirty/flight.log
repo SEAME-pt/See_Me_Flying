@@ -1,0 +1,133 @@
+[INFO] [launch]: All log files can be found below /home/dev/.ros/log/2026-11-24-11-53-39-084448-f7b871110f82-1418
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [gazebo-1]: process started with pid [1442]
+[INFO] [parameter_bridge-2]: process started with pid [1443]
+[INFO] [flow_model-3]: process started with pid [1456]
+[INFO] [estimator-4]: process started with pid [1457]
+[INFO] [fc_bridge-5]: process started with pid [1458]
+[INFO] [watchdog-6]: process started with pid [1459]
+[INFO] [safety_manager-7]: process started with pid [1460]
+[INFO] [metrics_exporter-8]: process started with pid [1461]
+[INFO] [mission-9]: process started with pid [1462]
+test_1_sim_comes_up (test_sim_sensors.TestSimSensors.test_1_sim_comes_up) ... [flow_model-3] [INFO] [1795521219.633728623] [flow_model]: flow_model running: /sim/ground_truth -> fc/optical_flow
+[safety_manager-7] [INFO] [1795521219.656677916] [safety_manager]: Priority: radio > manual > mission; timeout 0.30 s
+[estimator-4] [INFO] [1795521219.662767343] [estimator]: estimator running: flow + range + attitude -> fc/odom
+[metrics_exporter-8] [INFO] [1795521219.667456038] [metrics_exporter]: Metrics on http://127.0.0.1:9105/metrics
+[mission-9] [INFO] [1795521219.680372567] [mission]: Ready: mission/takeoff, mission/goto, mission/land
+[parameter_bridge-2] [INFO] [1795521220.311773115] [ros_gz_bridge]: Creating ROS->GZ Bridge: [/X3/gazebo/command/twist (geometry_msgs/msg/Twist) -> /X3/gazebo/command/twist (gz.msgs.Twist)] (Lazy 0)
+[parameter_bridge-2] [INFO] [1795521220.315868840] [ros_gz_bridge]: Creating ROS->GZ Bridge: [/X3/enable (std_msgs/msg/Bool) -> /X3/enable (gz.msgs.Boolean)] (Lazy 0)
+[parameter_bridge-2] [INFO] [1795521220.317028238] [ros_gz_bridge]: Creating GZ->ROS Bridge: [/clock (gz.msgs.Clock) -> /clock (rosgraph_msgs/msg/Clock)] (Lazy 0)
+[parameter_bridge-2] [INFO] [1795521220.318597521] [ros_gz_bridge]: Creating GZ->ROS Bridge: [/model/x3/odometry (gz.msgs.Odometry) -> /X3/odom (nav_msgs/msg/Odometry)] (Lazy 0)
+[parameter_bridge-2] [INFO] [1795521220.319730712] [ros_gz_bridge]: Creating GZ->ROS Bridge: [/model/x3/odometry (gz.msgs.Odometry) -> /sim/ground_truth (nav_msgs/msg/Odometry)] (Lazy 0)
+[gazebo-1] [1;33mWarning [Utils.cc:132][0m [/sdf/model[@name="X4"]/link[@name="base_link"]/sensor[@name="air_pressure"]/air_pressure/noise:/home/dev/.gz/fuel/fuel.gazebosim.org/openrobotics/models/x4 uav config 1/15/model.sdf:L226]: XML Element[noise], child of element[air_pressure], not defined in SDF. Copying[noise] as children of [air_pressure].
+ok
+test_2_takeoff (test_sim_sensors.TestSimSensors.test_2_takeoff) ... [mission-9] [WARN] [1795521237.174573632] [mission]: takeoff rejected: rangefinder not steady yet
+[parameter_bridge-2] [INFO] [1795521237.203935102] [ros_gz_bridge]: Passing message from ROS geometry_msgs/msg/Twist to Gazebo gz.msgs.Twist (showing msg only once per type)
+[mission-9] [WARN] [1795521237.696903942] [mission]: takeoff rejected: rangefinder not steady yet
+[watchdog-6] [WARN] [1795521237.751316022] [watchdog]: No setpoint for 0.60 s: a real failsafe would command hover
+[parameter_bridge-2] [INFO] [1795521238.151925362] [ros_gz_bridge]: Passing message from ROS std_msgs/msg/Bool to Gazebo gz.msgs.Boolean (showing msg only once per type)
+[mission-9] [INFO] [1795521238.218486759] [mission]: takeoff accepted
+[mission-9] [INFO] [1795521238.254739753] [mission]: State: grounded -> takeoff (height 0.05 m)
+[safety_manager-7] [INFO] [1795521238.256742853] [safety_manager]: Active source: mission
+[fc_bridge-5] [INFO] [1795521238.303394446] [fc_bridge]: Setpoints received, following them
+[watchdog-6] [INFO] [1795521238.351404649] [watchdog]: Setpoints are back
+[mission-9] [INFO] [1795521242.653802260] [mission]: State: takeoff -> hold (height 1.16 m)
+ok
+test_3_hover (test_sim_sensors.TestSimSensors.test_3_hover) ... ok
+test_4_pass (test_sim_sensors.TestSimSensors.test_4_pass) ... hover 10 s: height error +0.001 m (sd 0.011), vertical speed sd 0.012 m/s
+[mission-9] [INFO] [1795521255.726453069] [mission]: goto accepted
+[mission-9] [INFO] [1795521255.752814450] [mission]: State: hold -> goto (height 1.18 m)
+[mission-9] [INFO] [1795521271.105270020] [mission]: State: goto -> hold (height 1.21 m)
+ok
+test_5_creep_1cm (test_sim_sensors.TestSimSensors.test_5_creep_1cm) ... 4 m pass: 666 steady flow samples, speed error -0.011 m/s (sd 0.013); truly moved 4.067 m, estimate off by 0.163 m
+[safety_manager-7] [INFO] [1795521273.128838715] [safety_manager]: Active source: manual
+[mission-9] [INFO] [1795521273.153007021] [mission]: State: hold -> overridden (height 1.21 m)
+creep 1 cm/s for 60 s: truly moved 0.547 m, estimate off by 0.346 m: missed 63% (expected 40%..80%)
+[fc_bridge-5] [WARN] [1795521333.403237371] [fc_bridge]: Setpoint timeout: holding (zero velocity)
+[safety_manager-7] [WARN] [1795521333.404701565] [safety_manager]: No source publishing: fc_bridge times out and sends zero
+[mission-9] [INFO] [1795521333.453383712] [mission]: State: overridden -> hold (height 1.22 m)
+[safety_manager-7] [INFO] [1795521333.454989366] [safety_manager]: Active source: mission
+[fc_bridge-5] [INFO] [1795521333.503296793] [fc_bridge]: Setpoints received, following them
+ok
+test_6_creep_3cm (test_sim_sensors.TestSimSensors.test_6_creep_3cm) ... [safety_manager-7] [INFO] [1795521337.148460190] [safety_manager]: Active source: manual
+[mission-9] [INFO] [1795521337.153414313] [mission]: State: hold -> overridden (height 1.21 m)
+creep 3 cm/s for 30 s: truly moved 0.813 m, estimate off by 0.291 m: missed 36% (expected 15%..45%)
+[fc_bridge-5] [WARN] [1795521367.451442823] [fc_bridge]: Setpoint timeout: holding (zero velocity)
+[safety_manager-7] [WARN] [1795521367.452907583] [safety_manager]: No source publishing: fc_bridge times out and sends zero
+[mission-9] [INFO] [1795521367.505409148] [mission]: State: overridden -> hold (height 1.21 m)
+[safety_manager-7] [INFO] [1795521367.506986098] [safety_manager]: Active source: mission
+[fc_bridge-5] [INFO] [1795521367.551350422] [fc_bridge]: Setpoints received, following them
+ok
+test_7_land (test_sim_sensors.TestSimSensors.test_7_land) ... [mission-9] [INFO] [1795521369.168406630] [mission]: land accepted
+[mission-9] [INFO] [1795521369.204727777] [mission]: State: hold -> land (height 1.22 m)
+[mission-9] [INFO] [1795521378.404638796] [mission]: State: land -> grounded (height 0.04 m)
+[fc_bridge-5] [INFO] [1795521378.453006176] [fc_bridge]: Disarmed (fc/arm)
+ok
+[INFO] [gazebo-1]: process has finished cleanly [pid 1442]
+
+----------------------------------------------------------------------
+Ran 7 tests in 159.400s
+
+OK
+[INFO] [mission-9]: sending signal 'SIGINT' to process[mission-9]
+[INFO] [metrics_exporter-8]: sending signal 'SIGINT' to process[metrics_exporter-8]
+[INFO] [safety_manager-7]: sending signal 'SIGINT' to process[safety_manager-7]
+[INFO] [watchdog-6]: sending signal 'SIGINT' to process[watchdog-6]
+[INFO] [fc_bridge-5]: sending signal 'SIGINT' to process[fc_bridge-5]
+[INFO] [estimator-4]: sending signal 'SIGINT' to process[estimator-4]
+[INFO] [flow_model-3]: sending signal 'SIGINT' to process[flow_model-3]
+[INFO] [parameter_bridge-2]: sending signal 'SIGINT' to process[parameter_bridge-2]
+[watchdog-6] [INFO] [1795521378.673494287] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[fc_bridge-5] [INFO] [1795521378.673829240] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[estimator-4] Traceback (most recent call last):
+[estimator-4]   File "/tmp/ws/install/drone_sim/lib/drone_sim/estimator", line 33, in <module>
+[estimator-4]     sys.exit(load_entry_point('drone-sim==0.1.0', 'console_scripts', 'estimator')())
+[estimator-4]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[estimator-4]   File "/tmp/ws/install/drone_sim/lib/python3.12/site-packages/drone_sim/estimator_node.py", line 61, in main
+[estimator-4]     rclpy.spin(EstimatorNode())
+[estimator-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 247, in spin
+[estimator-4]     executor.spin_once()
+[estimator-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 934, in spin_once
+[estimator-4]     self._spin_once_impl(timeout_sec)
+[estimator-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 915, in _spin_once_impl
+[flow_model-3] Traceback (most recent call last):
+[flow_model-3]   File "/tmp/ws/install/drone_sim/lib/drone_sim/flow_model", line 33, in <module>
+[flow_model-3]     sys.exit(load_entry_point('drone-sim==0.1.0', 'console_scripts', 'flow_model')())
+[flow_model-3]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[flow_model-3]   File "/tmp/ws/install/drone_sim/lib/python3.12/site-packages/drone_sim/flow_model.py", line 81, in main
+[flow_model-3]     rclpy.spin(FlowModel())
+[flow_model-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 247, in spin
+[flow_model-3]     executor.spin_once()
+[flow_model-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 934, in spin_once
+[flow_model-3]     self._spin_once_impl(timeout_sec)
+[flow_model-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 915, in _spin_once_impl
+[estimator-4]     handler, entity, node = self.wait_for_ready_callbacks(
+[estimator-4]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[estimator-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 885, in wait_for_ready_callbacks
+[estimator-4]     return next(self._cb_iter)
+[estimator-4]            ^^^^^^^^^^^^^^^^^^^
+[estimator-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 789, in _wait_for_ready_callbacks
+[estimator-4]     wait_set.wait(timeout_nsec)
+[estimator-4] KeyboardInterrupt
+[parameter_bridge-2] [INFO] [1795521378.675732324] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[flow_model-3]     handler, entity, node = self.wait_for_ready_callbacks(
+[flow_model-3]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[flow_model-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 885, in wait_for_ready_callbacks
+[flow_model-3]     return next(self._cb_iter)
+[flow_model-3]            ^^^^^^^^^^^^^^^^^^^
+[flow_model-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/executors.py", line 789, in _wait_for_ready_callbacks
+[flow_model-3]     wait_set.wait(timeout_nsec)
+[flow_model-3] KeyboardInterrupt
+[ERROR] [flow_model-3]: process has died [pid 1456, exit code -2, cmd '/tmp/ws/install/drone_sim/lib/drone_sim/flow_model --ros-args --params-file /tmp/ws/install/drone_bringup/share/drone_bringup/config/sim.yaml --params-file /tmp/launch_params_pmz5_5nk'].
+[ERROR] [estimator-4]: process has died [pid 1457, exit code -2, cmd '/tmp/ws/install/drone_sim/lib/drone_sim/estimator --ros-args --params-file /tmp/ws/install/drone_bringup/share/drone_bringup/config/sim.yaml --params-file /tmp/launch_params_h2j5q33u'].
+[INFO] [watchdog-6]: process has finished cleanly [pid 1459]
+[INFO] [fc_bridge-5]: process has finished cleanly [pid 1458]
+[INFO] [parameter_bridge-2]: process has finished cleanly [pid 1443]
+[INFO] [safety_manager-7]: process has finished cleanly [pid 1460]
+[INFO] [metrics_exporter-8]: process has finished cleanly [pid 1461]
+[INFO] [mission-9]: process has finished cleanly [pid 1462]
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.000s
+
+NO TESTS RAN
