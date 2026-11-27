@@ -1,0 +1,111 @@
+# See Me Flying: fake GPS notes
+
+## Fake GPS: the idea
+INAV believes it has a GPS fix because we feed it a position over MSP, and from then on its own nav controller does the flying. That gets us position hold and waypoint flight (`MSP_SET_WP`), so "go 10 m forward" is just a waypoint 10 m from the origin. Waypoints can also carry actions like hold for a few seconds, set heading (our peek yaw) and land. Since the closed-loop flying happens on the FC, the ground station only has to send position at 5-10 Hz plus the next target, which means link latency stops mattering for flight. On the ROS side we get clean commands (`goto`, `yaw`, `land`) instead of stick values, and the position shows up in the OSD, blackbox and Configurator map, which helps debugging.
+
+What it doesn't give us: absolute accuracy (position is relative to takeoff and drifts), obstacle avoidance, or any change to stabilisation, since angle mode doesn't use GPS.
+
+## How control works (what we figured out)
+Stabilisation (the kHz gyro loops, attitude control, motor mixing) always runs on the FC, and MSP never touches it. So a laggy or choppy link doesn't make the drone fall out of the sky. MSP RC override only replaces the stick values the FC reads, which means the real danger is the FC faithfully obeying the *last* values if the stream stalls: "pitch forward" held forever, perfectly stabilised, straight into a wall.
+
+The catch is that INAV has no velocity or position setpoint command over MSP, and without a position source its nav modes aren't available at all. Controlling it with fake sticks means writing our own velocity-to-stick mapping with no position feedback to tell us whether the drone did what we asked.
+
+That also decides where things should live. The FC handles fast control and position hold. Anything onboard (ESP or an MCU) handles reflexes and the watchdog, because those can't wait for Wi-Fi. The ground station only deals with slow stuff: detection, planning, intent like "go look around the corner".
+
+## How to feed INAV
+- Enable GPS feature, `gps_provider = MSP`
+- Send at a steady 5-10 Hz: 3D fix, plausible sat count, lat, lon, alt, ground speed (`MSP_SET_RAW_GPS`, cmd 201)
+- Better if available: `MSP2_SENSOR_GPS` (also carries accuracy, velocity, heading). The MSP2 sensor family also has a compass message, so if a real mag doesn't work out we might feed our own yaw (from the camera) as a fake one.
+- Local meters to lat/lon: pick any origin, `lat = lat0 + north/111320`, `lon = lon0 + east/(111320*cos(lat0))`
+- Modes (pos hold, WP) are switched by an AUX channel, and MSP RC override can set AUX channels, so no radio needed
+- Missions via `MSP_SET_WP` (209)
+- Takeoff is probably throttle override in alt hold, then switch to WP mode
+- Rate must be steady and smooth. No jumps. Clamp implied speed between updates.
+
+## Position estimator (ground station)
+Predict + correct:
+1. Start (0,0), heading 0 at takeoff
+2. Predict: integrate MTF-02P flow velocity, rotated by yaw
+3. Get yaw: compass first (read the heading back from INAV, `MSP_ATTITUDE`), camera correction as backup (below)
+4. Optional: correct position with static landmarks (door, window, furniture) + depth
+5. Output lat/lon to INAV
+
+**Yaw: try a compass first** (yaw is probably the biggest error source: 5 deg of error over 10 m is ~0.9 m sideways)
+- A magnetometer measures heading directly, so no estimating. INAV fuses it into its heading and we read it back over MSP to rotate the flow velocity into north/east.
+- Cheap module (~EUR 2-6), INAV supports common chips (QMC5883L, IST8310...). Needs I2C pads on the FC (check the pinout) and a spot away from motors, ideally on a small mast. The AIO board probably has no mag, check the Sensors tab.
+- Risks: indoors, steel in floors/walls, electronics and laptops distort the field, differently in different spots, so heading can jump as the drone moves. On a drone this small, motor magnets, ESC wires and battery current are centimetres away and interference changes with throttle.
+- Two cheap tests: (1) gyro only, props on, log heading for a minute or two. If it only drifts a few degrees we may not need a compass for short flights. (2) with a mag on the bench/props off, walk the drone around the room and turn it slowly watching for heading jumps, then spin up the motors and see if heading shifts with throttle.
+- If the compass behaves in our room, use it. If not, camera correction below is the fallback, and also a good cross-check.
+
+**Yaw from camera** (fallback / cross-check)
+- Save a reference snapshot at takeoff, compare later from a hover
+- Match features (ORB), estimate rotation (`estimateAffinePartial2D` or `findEssentialMat` + `recoverPose`)
+- Rotation moves all points equally, translation moves near points more than far -> RANSAC splits static background from moving stuff (people)
+- Visual yaw rate minus gyro yaw rate = gyro bias
+- Can also command a slow known yaw to check calibration and gyro scale
+- Needs: camera calibration, roll/pitch compensation, 50+ spread-out points, sharp frames (Laplacian variance to pick the best of a few)
+- One far landmark can fix yaw too. A close one can't separate yaw from sideways drift.
+
+**Other notes**
+- Single-point YOLO boxes are bad position references (no depth, jitter, identical objects, things move). Use detection for *what to do*, not *where am I*.
+- Depth for landmarks: VL53L5CX grid (trusted), monocular depth models (scale bias 10-20%, averaging doesn't fix bias), stereo not worth it on this drone
+- RGB-D alone isn't a position source either, would still need VIO/SLAM on top. VIO/SLAM = track features + IMU for motion, build a map. Stretch goal, analog video is a bad input.
+- INAV also fuses its own flow. Our fake GPS comes from the same flow so they might fight. Test: (A) INAV keeps flow, fake GPS only for waypoints vs (B) fake GPS is the main position.
+- Second flow sensor: not worth it (shared errors, INAV takes only one). Only gives fault detection.
+- Cheap flow improvements: low steady height (0.5-1.5 m), textured + well-lit floor, rigid/damped mount, calibrate scale with a measured 5 m flight, fly slowly
+
+## Expected accuracy (ballpark)
+| Method | Error |
+|---|---|
+| Real GPS | 1-3 m absolute, no drift |
+| Flow + gyro | 2-5% of distance |
+| + camera yaw correction | 1-3% |
+| With our noisy analog video | plan for 3-5% |
+
+Relative to takeoff, grows with distance/time. Good for 10-30 m flights that end near the start.
+
+## Camera / vision
+- Snapshots from a hover instead of live video: wait for the drone to settle (low gyro/flow rate), grab several frames, keep the sharpest, take max/median person count, save the frames
+- 640x480 for counting people, 320x240 is borderline
+- ESP8266 can't carry video (1-2 Mbps real Wi-Fi), so analog video + receiver, or a Pi Zero 2 W if we want a digital camera onboard
+- YOLO on ground station at a few fps, not onboard
+- Test the detector on recorded drone video first, it needs no flight
+
+## Safety
+- **ESP watchdog:** ESP streams MSP at fixed rate (25-50 Hz) and decides itself. No command for ~300 ms: hold. After 2-3 s: gentle descent. After ~8 s: stop overriding.
+- **ESP dies / wire comes loose:** the watchdog dies too, so the FC and radio have to cover it. Test how INAV treats a stalled override stream (hold last values or drop back to the receiver).
+- **ESP robustness:** clean 3.3 V reg + 100-470 uF cap (Wi-Fi TX spikes), soldered joints, strain relief, hardware watchdog on, watch boot garbage on the UART
+- **Backup autopilot idea:** microcontroller (RP2040/STM32/Teensy, no SD card, instant boot) between upstream and FC as the only MSP master. Forwards commands, checks heartbeat and sanity limits, takes over and lands on failure. Two ESPs doesn't really work (arbitration, shared failure modes).
+- **Pi Zero on board** could run the mission state machine so Wi-Fi isn't in the loop. Costs: 10-15 g, current draw, 20-30 s boot, SD corruption on power loss (read-only rootfs helps), becomes a single point of failure.
+- **Fake GPS failure:** estimator jumps / impossible speed / stops -> stop the fix and land. Test what INAV does when the fix disappears.
+- **Failsafe = land**, never RTH (home is our arbitrary origin). Battery failsafe on.
+- **Landing:** descend using MTF-02P height, cut throttle near the ground, let INAV disarm. If rangefinder drops out, fall back to a conservative timed descent.
+- **Radio:** keep ELRS bound in development as an independent kill switch. Dropping it is a last step. INAV with MSP as receiver type would treat a stalled stream as lost receiver (verify).
+- Props off first, then tethered, then guards + away from people. 850 mAh gives a few minutes per charge.
+
+## Forward sensor
+- VL53L1X (~4 m, ~EUR 8-15, 1-2 g, I2C 3.3 V) or VL53L5CX (8x8 zones, EUR 15-25). VL53L0X (1-2 m) is enough at slow speed.
+- Skip the free sonar: wide cone, bulky, prop noise, 5 V
+- Wire to the ESP over I2C, not the FC (rangefinder input is taken by the MTF-02P). ROS side: `sensor_msgs/Range`, safety manager zeroes velocity under ~0.8 m.
+- Single narrow beam misses thin things and side stuff. It's a safety net, not avoidance.
+- Yaw 180 and fly forward on the return so the sensor faces the way we move.
+- Mount level, clear of guards/props/camera.
+
+## Verify first (from memory of INAV, quick bench checks)
+- `gps_provider = MSP` + message layouts work in our version. `MSP2_SENSOR_GPS` and MSP compass message exist?
+- What INAV needs to arm with GPS on, and what it does when the fix is lost
+- Heading: does our FC have a mag, does a real one behave in the room and on this small frame, and if not, can we feed ours
+- Does INAV's flow conflict with our fake GPS
+- Can MSP RC override set mode AUX channels, and what happens when the stream stalls
+- Can WP missions start without real satellites, how does takeoff work
+- Wi-Fi 2.4 GHz next to the ELRS receiver: range and failsafe still OK?
+- Which MSP RC override channel order / `msp_override_channels` setup we need
+
+## Tools
+- INAV CLI, Configurator (map, receiver tab), blackbox
+- MSP: 200 raw RC, 201 raw GPS, 209 set WP, MSP2 sensor messages
+- MicoAssistant (set MTF-02P to MSP) + MicoAir INAV setup video
+- Magnetometer module (QMC5883L / IST8310 class) if the compass test works out
+- OpenCV (ORB, RANSAC, pose recovery), YOLO
+- ROS: snapshot service on `/image_raw`, mission state machine, safety manager
+- Later, if we need absolute position: UWB anchors or a ceiling camera
