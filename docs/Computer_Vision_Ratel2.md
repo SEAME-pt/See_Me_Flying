@@ -385,3 +385,7 @@ Pretrained YOLO (`yolov8n.onnx`, 640, `CPUExecutionProvider`):
 - The ONNX metadata key for class names, and the output layout, for Ultralytics versions other than 8.4.216 (the version used in 8.4). If the node logs 0 classes or the boxes are wrong, this is the place to look.
 - Whether `ultralytics` and PyTorch install on every host's Python version (step 6.1 has the fallback).
 - The Hailo steps in 8.3: tool names, flags and supported models change between Hailo releases. The Hailo Developer Zone documentation for the HAT is the reference; this guide gives no exact `hailomz` commands.
+
+# Tags
+
+#guides 
