@@ -15,6 +15,8 @@
   <exec_depend>drone_safety</exec_depend>
   <exec_depend>drone_mission</exec_depend>
   <exec_depend>drone_monitoring</exec_depend>
+  <!-- foxglove:=true only: the Foxglove dashboard -->
+  <exec_depend>foxglove_bridge</exec_depend>
   <!-- Sim only (backend:=sim): Gazebo, the sim sensors and the RadioMaster over USB -->
   <exec_depend>ros_gz_sim</exec_depend>
   <exec_depend>ros_gz_bridge</exec_depend>

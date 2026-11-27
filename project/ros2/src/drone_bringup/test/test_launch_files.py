@@ -7,13 +7,14 @@ include it creates only record what they were given: which program,
 which parameters, which remaps, and what goes to Gazebo. Nothing runs, so this
 takes about a second and needs no Gazebo.
 
-CI installs no Gazebo, ros_gz or joy (it installs build and test dependencies
-only), so for those three packages a made-up install path is used, and their
+CI installs no Gazebo, ros_gz, joy or foxglove_bridge (it installs build and test
+dependencies only), so for those packages a made-up install path is used, and their
 programs are checked only where they are installed (the dev container).
 
 Catches: a renamed program or package, a parameter file that is not installed,
 a node that starts without sim.yaml, the inav backend starting Gazebo or the
-radio nodes, a node on wall time in the sim (or sim time on the real drone),
+radio nodes, a node on wall time in the sim (or sim time on the real drone), a Foxglove
+dashboard that viewers could publish through,
 a source publishing on the wrong topic, a launch argument renamed (ros2 launch
 silently ignores unknown names, so the tests here refuse them), and a package
 the launch needs but does not check for before starting Gazebo.
@@ -33,11 +34,12 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.utilities import perform_substitutions
 from launch_ros.actions import Node
 import pytest
+import yaml
 
 PACKAGE_DIR = Path(__file__).resolve().parents[1]
 LAUNCH_FILE = PACKAGE_DIR / 'launch' / 'sim.launch.py'
 # Runtime-only packages that CI does not install.
-NOT_IN_CI = {'ros_gz_sim', 'ros_gz_bridge', 'joy'}
+NOT_IN_CI = {'ros_gz_sim', 'ros_gz_bridge', 'joy', 'foxglove_bridge'}
 
 
 # ---------- running setup() without starting anything ----------
@@ -211,6 +213,22 @@ def test_nothing_flies_without_a_source(arguments):
     assert {'fc_bridge', 'safety_manager'} <= nodes
 
 
+def test_foxglove_only_when_asked():
+    # No login on the bridge: it never starts on its own.
+    for backend in ('sim', 'inav'):
+        assert 'foxglove_bridge' not in started(launch(backend=backend)), backend
+        assert 'foxglove_bridge' in started(launch(backend=backend, foxglove='true')), backend
+
+
+def test_foxglove_is_read_only():
+    # fc_bridge's inputs belong to safety_manager: viewers may only watch.
+    sim_yaml = os.path.join(get_package_share_directory('drone_bringup'), 'config', 'sim.yaml')
+    with open(sim_yaml) as f:
+        bridge = yaml.safe_load(f)['foxglove_bridge']['ros__parameters']
+    assert bridge['capabilities'] == ['connectionGraph']
+    assert bridge['port'] == 8765
+
+
 # ---------- what goes to Gazebo ----------
 
 def test_gazebo_server_and_window_are_two_processes():
@@ -312,7 +330,7 @@ def test_other_programs_are_installed():
         except LookupError:
             pass
     if not here:
-        pytest.skip('ros_gz_bridge and joy are not installed here (CI); '
+        pytest.skip('ros_gz_bridge, joy and foxglove_bridge are not installed here (CI); '
                     'the dev container checks them')
     assert all(os.access(p, os.X_OK) for p in here), here
 
@@ -345,6 +363,8 @@ def test_every_package_it_starts_is_checked_first():
     for arguments in COMBINATIONS:
         sim = arguments['backend'] == 'sim'
         checked = set(module.PACKAGES if sim else module.REAL_PACKAGES)
+        if arguments['foxglove'] == 'true':
+            checked.add('foxglove_bridge')
         used = {n['package'] for n in started(launch(**arguments)).values()}
         if sim:
             used.add('ros_gz_sim')
@@ -355,6 +375,13 @@ def test_every_package_it_starts_is_checked_first():
 def test_a_missing_package_stops_the_launch(package):
     with pytest.raises(RuntimeError, match=package):
         launch(missing=[package])
+
+
+def test_foxglove_bridge_is_needed_only_with_foxglove():
+    # An image built before foxglove_bridge was added still launches without it.
+    assert started(launch(missing=['foxglove_bridge']))
+    with pytest.raises(RuntimeError, match='foxglove_bridge'):
+        launch(foxglove='true', missing=['foxglove_bridge'])
 
 
 def test_the_real_drone_needs_none_of_the_sim_packages():

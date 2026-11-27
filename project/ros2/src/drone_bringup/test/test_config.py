@@ -91,9 +91,10 @@ def test_times_and_rates_positive(cfg):
 
 def test_decimals_are_floats(cfg):
     # 0 instead of 0.0 makes a node refuse to start (wrong parameter type).
+    # The exceptions are integer parameters: joystick axes, seeds, ports.
     for node, params in cfg.items():
         for key, value in params.items():
-            if isinstance(value, bool) or key.startswith(('axis_', 'seed')):
+            if isinstance(value, bool) or key.startswith(('axis_', 'seed', 'port')):
                 continue
             assert not isinstance(value, int), f'{node}.{key}: write {value}.0, not {value}'
 

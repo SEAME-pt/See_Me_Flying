@@ -56,11 +56,12 @@ def gz_servers_in_my_partition():
     return pids
 
 
-def check_before_starting(sim):
+def check_before_starting(sim, foxglove):
     # Both run before any process starts. A missing package found later, mid-launch,
     # used to leave the already-started Gazebo orphaned; a second launch then ran
     # two sims in one partition and fc_bridge read both drones in turn (flicker).
-    for package in PACKAGES if sim else REAL_PACKAGES:
+    # foxglove_bridge only when asked for: an image built before it still launches.
+    for package in (PACKAGES if sim else REAL_PACKAGES) + ['foxglove_bridge'] * foxglove:
         try:
             get_package_share_directory(package)
         except LookupError:
@@ -78,7 +79,8 @@ def setup(context):
     sim = arg('backend') == 'sim'
     radio = arg('radio') == 'true'
     source = arg('source')
-    check_before_starting(sim)
+    foxglove = arg('foxglove') == 'true'
+    check_before_starting(sim, foxglove)
 
     config = os.path.join(get_package_share_directory('drone_bringup'), 'config')
     params = os.path.join(config, 'sim.yaml')
@@ -163,6 +165,15 @@ def setup(context):
         parameters=[params, clock], output='screen',
     ))
 
+    # foxglove:=true: the Foxglove dashboard (ws://<this machine>:8765), read-only:
+    # sim.yaml gives viewers no publishing, services or parameters, so fc_bridge's
+    # inputs stay with safety_manager. No login: private networks only.
+    if foxglove:
+        actions.append(Node(
+            package='foxglove_bridge', executable='foxglove_bridge',
+            parameters=[params, clock], output='screen',
+        ))
+
     # demo:=true runs a scripted flight for the source; without it nothing flies
     # until someone sends a goal or takes the sticks.
     demo = arg('demo') == 'true'
@@ -218,6 +229,10 @@ def generate_launch_description():
                               description="Sim only: the Gazebo window's main view. free: "
                                           "Gazebo's own, follow: behind the drone, fpv: "
                                           "the drone's front camera (our worlds only)"),
+        DeclareLaunchArgument('foxglove', default_value='false', choices=['true', 'false'],
+                              description='true: the Foxglove dashboard on port 8765, '
+                                          'read-only and without login (private networks '
+                                          'only)'),
         DeclareLaunchArgument('headless', default_value='false', choices=['true', 'false'],
                               description='Sim only. true: Gazebo without its window '
                                           '(server only), for CI and the nightly tests'),

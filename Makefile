@@ -19,8 +19,8 @@ build: ## Rebuild the image (after changing project/Dockerfile)
 	@$(SCRIPTS)/make-env.sh
 	$(COMPOSE) build
 
-down: ## Stop and remove the dev container (and monitoring, if running)
-	$(COMPOSE) --profile monitoring down
+down: ## Stop and remove the dev container (and monitoring and dashboard, if running)
+	$(COMPOSE) --profile monitoring --profile dashboard down
 
 clean-volumes: ## Stop everything and delete the volumes (Gazebo model cache, Prometheus and Grafana data)
 	$(COMPOSE) --profile monitoring down -v
@@ -71,6 +71,18 @@ monitor: ## Prometheus + Grafana: the drone dashboard on http://localhost:3000
 monitor-stop: ## Stop Prometheus and Grafana (their data is kept)
 	$(COMPOSE) --profile monitoring rm -sf prometheus grafana
 
+# ========== Foxglove dashboard (Lichtblick, monitoring/lichtblick/) ==========
+
+dashboard: ## Lichtblick on http://localhost:8080; start the stack with foxglove:=true
+	$(COMPOSE) --profile dashboard up -d lichtblick
+	@echo "Dashboard: http://localhost:8080/?ds=foxglove-websocket&ds.url=ws://localhost:8765"
+	@echo "Data appears once the stack runs with foxglove:=true (foxglove_bridge, port 8765)"
+	@echo "From another device: replace localhost with this machine's IP (private network only)"
+	@echo "Old layout showing? Layouts > import monitoring/lichtblick/default-layout.json"
+
+dashboard-stop: ## Stop Lichtblick
+	$(COMPOSE) --profile dashboard rm -sf lichtblick
+
 # ========== real drone (laptop on the drone's Wi-Fi) ==========
 
 BENCH := python3 project/telemetry/msp_bench.py
@@ -102,5 +114,5 @@ motor-music: up ## PROPS OFF: make motor-music MODE=calibrate | MODE=play SONG=f
 	bash $(SCRIPTS)/motor_music/sing.sh $(MODE) $(if $(filter play,$(MODE)),"$(SONG)") $(ARGS)
 
 .PHONY: help up build down clean-volumes logs shell ws ws-clean test sim-test \
-	sim-keyboard sim-joy sim-stop monitor monitor-stop bench wifi-rtt capture \
+	sim-keyboard sim-joy sim-stop monitor monitor-stop dashboard dashboard-stop bench wifi-rtt capture \
 	bench-rc bench-armed motor-music

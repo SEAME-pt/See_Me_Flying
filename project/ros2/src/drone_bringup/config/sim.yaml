@@ -37,6 +37,16 @@ metrics_exporter:
     # Serves 127.0.0.1:9105 (parameters address, port), scraped by monitoring/prometheus.yml
     stale_after_s: 3.0      # a topic quiet this long: its values show NO DATA in Grafana
 
+foxglove_bridge:
+  ros__parameters:
+    # Only with foxglove:=true. No login: anyone who reaches the port sees every
+    # topic, so keep it on a private network (the Pi's hotspot, not the school's).
+    port: 8765
+    address: "0.0.0.0"
+    # Read-only: no clientPublish, services or parameters (viewers could otherwise
+    # publish setpoints or change parameters). connectionGraph: who talks to whom.
+    capabilities: ["connectionGraph"]
+
 mission:
   ros__parameters:
     rate_hz: 20.0

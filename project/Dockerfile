@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-jazzy-tf2-tools \
       ros-jazzy-ament-mypy \
       python3-prometheus-client \
+      ros-jazzy-foxglove-bridge \
       sudo bash-completion git vim \
     && rm -rf /var/lib/apt/lists/*
 

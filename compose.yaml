@@ -65,6 +65,17 @@ services:
       - ./monitoring/grafana:/etc/grafana/provisioning:ro
       - grafana-data:/var/lib/grafana
 
+  # Lichtblick (open-source Foxglove viewer, no account): `make dashboard`.
+  # Opens monitoring/lichtblick/default-layout.json in a browser that has no layout
+  # saved yet. Data comes from foxglove_bridge (sim.launch.py foxglove:=true, port 8765).
+  lichtblick:
+    image: ghcr.io/lichtblick-suite/lichtblick:latest@sha256:14455ed327f11a59eaf4cd0626f54c0b63322a81e8b9397a13617f34dbeac2c9   # v2.5.2
+    profiles: [dashboard]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./monitoring/lichtblick/default-layout.json:/lichtblick/default-layout.json:ro
+
 volumes:
   gz-cache:
   prom-data:

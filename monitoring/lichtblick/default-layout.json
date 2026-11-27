@@ -1,0 +1,85 @@
+{
+  "configById": {
+    "Image!fpv": {
+      "imageMode": { "imageTopic": "/image_raw/compressed" }
+    },
+    "Indicator!armed": {
+      "path": "/fc/status.armed",
+      "style": "background",
+      "fallbackColor": "#3c8d2f",
+      "fallbackLabel": "DISARMED",
+      "rules": [{ "operator": "=", "rawValue": "true", "color": "#d32f2f", "label": "ARMED" }]
+    },
+    "Indicator!link": {
+      "path": "/fc/status.link_ok",
+      "style": "background",
+      "fallbackColor": "#d32f2f",
+      "fallbackLabel": "NO LINK",
+      "rules": [{ "operator": "=", "rawValue": "true", "color": "#3c8d2f", "label": "LINK OK" }]
+    },
+    "Plot!battery": {
+      "paths": [
+        { "value": "/fc/battery.voltage", "enabled": true, "timestampMethod": "receiveTime", "label": "Battery (V)" }
+      ],
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 60
+    },
+    "Plot!height": {
+      "paths": [
+        { "value": "/fc/range.range", "enabled": true, "timestampMethod": "receiveTime", "label": "Rangefinder (m)" }
+      ],
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 60
+    },
+    "RawMessages!status": {
+      "topicPath": "/fc/status",
+      "expansion": "all"
+    },
+    "RosOut!log": {
+      "searchTerms": [],
+      "minLogLevel": 2
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": { "speed": 1 },
+  "layout": {
+    "direction": "row",
+    "first": {
+      "direction": "column",
+      "first": "Image!fpv",
+      "second": "RosOut!log",
+      "splitPercentage": 70
+    },
+    "second": {
+      "direction": "column",
+      "first": {
+        "direction": "row",
+        "first": "Indicator!armed",
+        "second": "Indicator!link",
+        "splitPercentage": 50
+      },
+      "second": {
+        "direction": "column",
+        "first": "Plot!battery",
+        "second": {
+          "direction": "column",
+          "first": "Plot!height",
+          "second": "RawMessages!status",
+          "splitPercentage": 45
+        },
+        "splitPercentage": 35
+      },
+      "splitPercentage": 15
+    },
+    "splitPercentage": 60
+  }
+}
