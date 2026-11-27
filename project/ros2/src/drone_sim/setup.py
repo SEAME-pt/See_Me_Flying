@@ -28,6 +28,7 @@ setup(
             'flow_check = drone_sim.flow_check:main',
             'odom_check = drone_sim.odom_check:main',
             'estimator = drone_sim.estimator_node:main',
+            'path_viz = drone_sim.path_viz_node:main',
         ],
     },
 )

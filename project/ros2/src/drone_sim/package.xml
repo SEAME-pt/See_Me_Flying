@@ -3,7 +3,10 @@
 <package format="3">
   <name>drone_sim</name>
   <version>0.1.0</version>
-  <description>Simulation-only nodes for the Gazebo sim: flow_model publishes fc/optical_flow from ground truth, estimator makes fc/odom from flow, range and attitude, flow_check compares them with ground truth.</description>
+  <description>Simulation-only nodes for the Gazebo sim: flow_model publishes
+    fc/optical_flow from ground truth, estimator makes fc/odom from flow, range
+    and attitude, flow_check compares them with ground truth, path_viz draws the
+    estimated and true paths for RViz..</description>
   <maintainer email="david.roque@seame.pt">David Roque</maintainer>
   <license>Apache-2.0</license>
 
@@ -12,6 +15,7 @@
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>tf2_ros_py</depend>
 
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_mypy</test_depend>
