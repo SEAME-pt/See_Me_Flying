@@ -58,6 +58,9 @@ sim-keyboard: ws ## Gazebo + keyboard control (no radio: the drone starts armed)
 sim-joy: ws ## Gazebo + joystick (RadioMaster Pocket over USB)
 	bash $(SCRIPTS)/sim_joy.sh
 
+sim-wall: ws ## Gazebo: fly forward until something gets in the way [ARGS="speed:=0.3"]
+	bash $(SCRIPTS)/sim_wall.sh $(ARGS)
+
 sim-stop: ## Stop every sim process left in the container
 	bash $(SCRIPTS)/stop_sim.sh
 
@@ -102,5 +105,6 @@ motor-music: up ## PROPS OFF: make motor-music MODE=calibrate | MODE=play SONG=f
 	bash $(SCRIPTS)/motor_music/sing.sh $(MODE) $(if $(filter play,$(MODE)),"$(SONG)") $(ARGS)
 
 .PHONY: help up build down clean-volumes logs shell ws ws-clean test sim-test \
+	sim-keyboard sim-joy sim-wall sim-stop monitor monitor-stop wifi-rtt \
 	sim-keyboard sim-joy sim-stop monitor monitor-stop bench wifi-rtt capture \
 	bench-rc bench-armed motor-music

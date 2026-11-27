@@ -25,6 +25,7 @@ setup(
         'console_scripts': [
             'mission = drone_mission.mission:main',
             'demo_flight = drone_mission.demo_flight:main',
+            'forward_flight = drone_mission.forward_flight:main',
         ],
     },
 )
