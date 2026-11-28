@@ -21,6 +21,9 @@
   <exec_depend>drone_sim</exec_depend>
   <exec_depend>joy</exec_depend>
   <exec_depend>drone_teleop</exec_depend>
+  <!-- part:=drone/station: the camera crosses the network as JPEG -->
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>compressed_image_transport</exec_depend>
   <exec_depend>v4l2_camera</exec_depend>
   <exec_depend>drone_perception</exec_depend>
 

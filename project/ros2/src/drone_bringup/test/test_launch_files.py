@@ -37,7 +37,8 @@ import pytest
 PACKAGE_DIR = Path(__file__).resolve().parents[1]
 LAUNCH_FILE = PACKAGE_DIR / 'launch' / 'sim.launch.py'
 # Runtime-only packages that CI does not install.
-NOT_IN_CI = {'ros_gz_sim', 'ros_gz_bridge', 'joy'}
+NOT_IN_CI = {'ros_gz_sim', 'ros_gz_bridge', 'joy', 'image_transport',
+             'compressed_image_transport'}
 
 
 # ---------- running setup() without starting anything ----------
@@ -120,9 +121,11 @@ def launch(*, gz_running=(), missing=(), **arguments):
 
 
 def every_combination():
-    """Return every combination of the arguments that have a fixed set of choices."""
+    """Return every valid combination of the arguments that have a fixed set of choices."""
     choices = {name: d.choices for name, d in declared_arguments().items() if d.choices}
-    return [dict(zip(choices, values)) for values in itertools.product(*choices.values())]
+    every = [dict(zip(choices, values)) for values in itertools.product(*choices.values())]
+    # Splitting over two machines is for the sim (test_split_is_for_the_sim_only).
+    return [a for a in every if a['backend'] == 'sim' or a['part'] == 'all']
 
 
 COMBINATIONS = every_combination()
@@ -257,8 +260,12 @@ def test_each_source_publishes_on_its_own_topic():
 
 def test_watchdog_always_watches_what_fc_bridge_gets():
     # Mandatory with every backend and source: it checks the link into fc_bridge.
+    # Split, it runs on the station, beside safety_manager whose output it watches.
     for arguments in COMBINATIONS:
         nodes = started(launch(**arguments))
+        if arguments['part'] == 'drone':
+            assert 'watchdog' not in nodes, name_of(arguments)
+            continue
         assert 'watchdog' in nodes, name_of(arguments)
         assert remaps(nodes['watchdog']) == {'setpoint_velocity': '/fc/setpoint_velocity'}
 
@@ -340,13 +347,14 @@ def test_every_package_it_starts_is_a_dependency():
 def test_every_package_it_starts_is_checked_first():
     # A package found missing mid-launch left Gazebo running orphaned; the
     # second launch then ran two sims in one partition. setup() checks
-    # PACKAGES (sim) or REAL_PACKAGES (inav) first, so they must cover all.
+    # needed_packages() first, so it must cover all.
     module = load_launch_file()
     for arguments in COMBINATIONS:
         sim = arguments['backend'] == 'sim'
-        checked = set(module.PACKAGES if sim else module.REAL_PACKAGES)
-        used = {n['package'] for n in started(launch(**arguments)).values()}
-        if sim:
+        actions = launch(**arguments)
+        checked = set(module.needed_packages(sim, arguments['part']))
+        used = {n['package'] for n in started(actions).values()}
+        if gazebo(actions):
             used.add('ros_gz_sim')
         assert used <= checked, f'{name_of(arguments)}: unchecked {sorted(used - checked)}'
 
@@ -367,3 +375,144 @@ def test_refuses_to_start_next_to_a_running_sim():
     with pytest.raises(RuntimeError, match='already running'):
         launch(gz_running=['4242'])
     assert started(launch(backend='inav', gz_running=['4242']))   # no Gazebo needed
+
+
+# ---------- split over two machines: part:=drone on the laptop, part:=station on the Pi ----------
+
+SIM_COMBINATIONS = [a for a in COMBINATIONS if a['backend'] == 'sim' and a['part'] == 'all']
+
+
+def test_split_is_for_the_sim_only():
+    # With the real drone there is nothing to play the drone: it all runs on the station.
+    for part in ('drone', 'station'):
+        with pytest.raises(RuntimeError, match='split the sim'):
+            launch(backend='inav', part=part)
+
+
+def test_drone_and_station_together_start_what_one_machine_does():
+    # Each node runs on one machine only: two fc_bridges or two missions would fight.
+    for arguments in SIM_COMBINATIONS:
+        whole = set(started(launch(**arguments)))
+        drone = set(started(launch(**dict(arguments, part='drone'))))
+        station = set(started(launch(**dict(arguments, part='station'))))
+        assert drone & station == {'republish'}, name_of(arguments)   # the camera link
+        assert (drone | station) - {'republish'} == whole, name_of(arguments)
+
+
+def test_the_drone_plays_the_drone_and_the_station_flies_it():
+    drone = started(launch(part='drone', radio='true'))
+    station = started(launch(part='station', radio='true'))
+    assert {'fc_bridge', 'parameter_bridge', 'flow_model', 'estimator',
+            'joy_node', 'radio_teleop'} <= set(drone)      # the radio is plugged into the laptop
+    assert {'safety_manager', 'watchdog', 'mission', 'metrics_exporter'} <= set(station)
+    assert not set(drone) & {'safety_manager', 'mission'}
+    assert not set(station) & {'fc_bridge', 'parameter_bridge', 'joy_node'}
+
+
+def test_both_halves_agree_on_who_arms():
+    # The launch cannot check the other machine: both get radio:=, and it must match.
+    for radio in ('true', 'false'):
+        fc_bridge = started(launch(part='drone', radio=radio))['fc_bridge']
+        mission = started(launch(part='station', radio=radio))['mission']
+        assert values(fc_bridge)['armed_at_start'] is not values(mission)['radio_arms'], radio
+
+
+def test_only_the_drone_starts_gazebo():
+    assert len(gazebo(launch(part='drone'))) == 2
+    assert gazebo(launch(part='station')) == []
+
+
+def test_the_camera_crosses_the_network_compressed():
+    module = load_launch_file()
+    send = started(launch(part='drone'))['republish']
+    receive = started(launch(part='station'))['republish']
+    assert values(send)['in_transport'] == 'raw'
+    assert values(send)['out_transport'] == 'compressed'
+    assert remaps(send) == {'in': '/camera/image', 'out/compressed': module.LINK_IMAGE}
+    assert values(receive)['in_transport'] == 'compressed'
+    assert values(receive)['out_transport'] == 'raw'
+    assert remaps(receive) == {'in/compressed': module.LINK_IMAGE, 'out': module.STATION_IMAGE}
+    # One machine needs no link: nothing crosses a network.
+    assert 'republish' not in started(launch())
+
+
+def test_the_station_needs_none_of_the_gazebo_packages():
+    # The Pi runs no Gazebo, and may not even have it installed.
+    nodes = started(launch(part='station', missing=['ros_gz_sim', 'ros_gz_bridge', 'joy',
+                                                    'drone_sim', 'drone_teleop']))
+    assert 'mission' in nodes
+
+
+def test_the_station_starts_next_to_a_running_sim():
+    # On one machine for a test, the laptop runs both halves.
+    assert started(launch(part='station', gz_running=['4242']))
+    with pytest.raises(RuntimeError, match='already running'):
+        launch(part='drone', gz_running=['4242'])
+
+
+# ---------- wall_mission.launch.py: the forward flight on top of sim.launch.py ----------
+
+WALL_FILE = PACKAGE_DIR / 'launch' / 'wall_mission.launch.py'
+
+
+def wall_mission(env_display='', **arguments):
+    """Return (arguments given to sim.launch.py, {executable: Node arguments})."""
+    spec = importlib.util.spec_from_file_location('wall_launch', WALL_FILE)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.Node = RecordedNode
+    module.IncludeLaunchDescription = RecordedInclude
+    module.PythonLaunchDescriptionSource = RecordedSource
+    entities = module.generate_launch_description().entities
+    declared = {e.name: e for e in entities if isinstance(e, DeclareLaunchArgument)}
+    (setup,) = [e for e in entities if isinstance(e, OpaqueFunction)]
+    unknown = set(arguments) - set(declared)
+    assert not unknown, f'wall_mission.launch.py has no argument {sorted(unknown)}'
+    context = LaunchContext()
+    for name, decl in declared.items():
+        context.launch_configurations[name] = arguments.get(
+            name, perform_substitutions(context, decl.default_value))
+    old = os.environ.get('DISPLAY')
+    os.environ['DISPLAY'] = env_display
+    try:
+        actions = setup.execute(context)
+    finally:
+        if old is None:
+            del os.environ['DISPLAY']
+        else:
+            os.environ['DISPLAY'] = old
+    (include,) = [a for a in actions if isinstance(a, RecordedInclude)]
+    return include.recorded, started(actions)
+
+
+def test_wall_mission_passes_the_part_to_the_sim():
+    for part in ('all', 'drone', 'station'):
+        sim_arguments, _ = wall_mission(part=part)
+        assert sim_arguments['part'] == part
+        assert sim_arguments['radio'] == 'false'      # both halves: the mission arms
+        assert set(sim_arguments) <= set(declared_arguments())
+
+
+def test_wall_mission_flies_from_the_station():
+    _, nodes = wall_mission(part='drone')
+    assert not set(nodes) & {'sweep_view', 'forward_flight'}
+    for part in ('all', 'station'):
+        _, nodes = wall_mission(part=part)
+        assert {'sweep_view', 'forward_flight'} <= set(nodes), part
+
+
+def test_wall_mission_station_reads_the_unpacked_camera():
+    sim = load_launch_file()
+    _, nodes = wall_mission(part='station')
+    assert remaps(nodes['sweep_view']) == {'camera/image': sim.STATION_IMAGE}
+    _, nodes = wall_mission(part='all')
+    assert remaps(nodes['sweep_view']) == {}           # one machine: Gazebo's camera directly
+
+
+def test_wall_mission_window_only_with_a_screen():
+    def show(display, value):
+        _, nodes = wall_mission(env_display=display, show=value)
+        return values(nodes['sweep_view'])['show']
+    assert show('', 'auto') is False                   # the Pi over SSH
+    assert show(':0', 'auto') is True
+    assert show('', 'true') is True and show(':0', 'false') is False

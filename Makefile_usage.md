@@ -34,6 +34,21 @@ With the RadioMaster (`sim-joy`):
 3. Fly: flip the **takeover** switch (other shoulder) on.
 4. SA off disarms at once, even in the air.
 
+## Wall mission through the ground station
+
+The drone takes off, flies at a wall and hovers in front of it (plane sweep on the camera). `make sim-wall` runs it all on one laptop. Split, the laptop plays the drone and the ground station flies it, as with the real drone:
+
+```bash
+make sim-wall-drone       # laptop: Gazebo, the simulated sensors, fc_bridge
+make sim-wall-station     # ground station (the Pi, over SSH): mission, sweep_view, forward_flight
+```
+
+- Start the laptop first. Both machines on the same network, both containers on `ROS_DOMAIN_ID` 6 (the default). Nobody else on domain 6 meanwhile.
+- The camera crosses the network as JPEG (about 3 MB/s instead of 28 MB/s raw). On the station, don't open `/camera/image` (rqt, `ros2 topic echo`): it pulls the raw images across. Use `/station/camera/image`.
+- sweep_view opens its window only where there is a screen; over SSH it runs without one.
+- The Pi is slower: start with `make sim-wall-station ARGS="speed:=0.2"`.
+- Nothing arrives on the station (`ros2 topic list` shows only its own topics)? The network may block multicast: check with `ros2 multicast receive` on one machine and `ros2 multicast send` on the other.
+
 ## Monitoring
 
 ```bash

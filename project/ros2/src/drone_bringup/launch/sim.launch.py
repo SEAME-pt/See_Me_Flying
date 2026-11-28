@@ -24,6 +24,20 @@ PACKAGES = ['ros_gz_sim', 'ros_gz_bridge', 'drone_fc_bridge', 'drone_safety', 'd
             'drone_monitoring', 'joy', 'drone_sim', 'drone_teleop']
 REAL_PACKAGES = ['drone_fc_bridge', 'drone_safety', 'drone_mission', 'drone_monitoring']
 
+# part:=drone and part:=station split the sim over two machines on ROS_DOMAIN_ID 6.
+# drone (the laptop) plays the drone: Gazebo, the simulated sensors, fc_bridge and the
+# radio. station (the ground station, the Pi 5) runs what it runs on the real drone:
+# safety_manager, watchdog, mission and metrics. Raw, the camera is about 28 MB/s,
+# too much for Wi-Fi: it crosses the network as JPEG (LINK_IMAGE, about 3 MB/s) and
+# the station unpacks it to STATION_IMAGE. Nothing on the station may subscribe to
+# camera/image itself: that would pull the raw images across the network.
+CAMERA_LINK = ['image_transport', 'compressed_image_transport']
+DRONE_PACKAGES = ['ros_gz_sim', 'ros_gz_bridge', 'drone_fc_bridge', 'drone_sim', 'joy',
+                  'drone_teleop'] + CAMERA_LINK
+STATION_PACKAGES = REAL_PACKAGES + CAMERA_LINK
+LINK_IMAGE = '/link/camera/compressed'
+STATION_IMAGE = '/station/camera/image'
+
 # camera:=follow. The window loads before the drone is in its scene, so its config
 # cannot start following (offset and smoothing do come from follow.config).
 # Ask the window to follow x3 (the drone in every world) once it answers.
@@ -56,17 +70,25 @@ def gz_servers_in_my_partition():
     return pids
 
 
-def check_before_starting(sim):
+def needed_packages(sim, part):
+    """Return the packages a launch with these arguments starts programs from."""
+    if not sim:
+        return REAL_PACKAGES
+    return {'all': PACKAGES, 'drone': DRONE_PACKAGES, 'station': STATION_PACKAGES}[part]
+
+
+def check_before_starting(sim, part):
     # Both run before any process starts. A missing package found later, mid-launch,
     # used to leave the already-started Gazebo orphaned; a second launch then ran
     # two sims in one partition and fc_bridge read both drones in turn (flicker).
-    for package in PACKAGES if sim else REAL_PACKAGES:
+    for package in needed_packages(sim, part):
         try:
             get_package_share_directory(package)
         except LookupError:
             raise RuntimeError(f"Package '{package}' not found: run colcon build, then "
                                'source install/setup.bash in this terminal') from None
-    running = gz_servers_in_my_partition() if sim else []
+    # The station starts no Gazebo, so one running there (or none) is no matter.
+    running = gz_servers_in_my_partition() if sim and part != 'station' else []
     if running:
         raise RuntimeError(f'Gazebo is already running (PID {", ".join(running)}): two sims '
                            'would share topics. Stop it first: pkill -f "gz sim"')
@@ -78,7 +100,13 @@ def setup(context):
     sim = arg('backend') == 'sim'
     radio = arg('radio') == 'true'
     source = arg('source')
-    check_before_starting(sim)
+    part = arg('part')
+    if part != 'all' and not sim:
+        raise RuntimeError('part:=drone and part:=station split the sim over two machines; '
+                           'with backend:=inav everything runs on the ground station')
+    check_before_starting(sim, part)
+    drone = part in ('all', 'drone')       # plays the drone (sim) or talks to it (inav)
+    station = part in ('all', 'station')   # what the ground station runs
 
     config = os.path.join(get_package_share_directory('drone_bringup'), 'config')
     params = os.path.join(config, 'sim.yaml')
@@ -88,7 +116,7 @@ def setup(context):
     radio_arms = radio or not sim
 
     actions = []
-    if sim:
+    if sim and drone:
         share = get_package_share_directory('drone_bringup')
         # model://grass_ground, model://textured_floor, ... live in our package
         actions.append(AppendEnvironmentVariable(
@@ -140,60 +168,83 @@ def setup(context):
             parameters=[params, clock], output='screen',
         ))
 
-    actions.append(Node(
-        package='drone_fc_bridge', executable='fc_bridge', output='screen',
-        parameters=[params, clock, {'backend': arg('backend'),
-                                    'armed_at_start': not radio_arms}],
-    ))
-    # Watches the setpoint stream into fc_bridge: warns when it stops for timeout_s
-    # and when it comes back. Mandatory; only logs (fc_bridge's timeout sends zero).
-    actions.append(Node(
-        package='drone_fc_bridge', executable='watchdog', output='screen',
-        remappings=TO_WATCHDOG, parameters=[params, clock],
-    ))
-    # The only publisher of /fc/setpoint_velocity: radio > manual > mission.
-    actions.append(Node(
-        package='drone_safety', executable='safety_manager',
-        parameters=[params, clock], output='screen',
-    ))
-    # Prometheus metrics on localhost:9105 for the Grafana dashboard (make monitor).
-    # Only listens; if it fails, the rest flies on.
-    actions.append(Node(
-        package='drone_monitoring', executable='metrics_exporter',
-        parameters=[params, clock], output='screen',
-    ))
+    if drone:
+        # Split, the station's mission must see the same radio:=: it decides
+        # whether the mission arms (radio_arms), and fc_bridge whether it starts armed.
+        actions.append(Node(
+            package='drone_fc_bridge', executable='fc_bridge', output='screen',
+            parameters=[params, clock, {'backend': arg('backend'),
+                                        'armed_at_start': not radio_arms}],
+        ))
+    if part == 'drone':
+        # The camera to the station: JPEG instead of 28 MB/s raw (see LINK_IMAGE).
+        actions.append(Node(
+            package='image_transport', executable='republish', name='camera_link_send',
+            output='screen', parameters=[params, clock, {
+                'in_transport': 'raw', 'out_transport': 'compressed'}],
+            remappings=[('in', '/camera/image'), ('out/compressed', LINK_IMAGE)],
+        ))
+    if part == 'station':
+        # ...and back to a raw image on the station, stamps unchanged.
+        actions.append(Node(
+            package='image_transport', executable='republish', name='camera_link_receive',
+            output='screen', parameters=[params, clock, {
+                'in_transport': 'compressed', 'out_transport': 'raw'}],
+            remappings=[('in/compressed', LINK_IMAGE), ('out', STATION_IMAGE)],
+        ))
+    if station:
+        actions += station_nodes(source, arg('demo') == 'true', radio_arms, params, clock)
+    if drone:
+        actions += radio_nodes(sim and radio, params, clock)
+    return actions
 
+
+def station_nodes(source, demo, radio_arms, params, clock):
+    """Return what the ground station runs: safety, watchdog, metrics and the mission."""
+    nodes = [
+        # Watches the setpoint stream into fc_bridge: warns when it stops for timeout_s
+        # and when it comes back. Mandatory; only logs (fc_bridge's timeout sends zero).
+        Node(package='drone_fc_bridge', executable='watchdog', output='screen',
+             remappings=TO_WATCHDOG, parameters=[params, clock]),
+        # The only publisher of /fc/setpoint_velocity: radio > manual > mission.
+        Node(package='drone_safety', executable='safety_manager',
+             parameters=[params, clock], output='screen'),
+        # Prometheus metrics on localhost:9105 for the Grafana dashboard (make monitor).
+        # Only listens; if it fails, the rest flies on.
+        Node(package='drone_monitoring', executable='metrics_exporter',
+             parameters=[params, clock], output='screen'),
+    ]
     # demo:=true runs a scripted flight for the source; without it nothing flies
     # until someone sends a goal or takes the sticks.
-    demo = arg('demo') == 'true'
     if source == 'mission':
         # Takeoff, Goto and Land action servers on the rangefinder, always; with
         # demo:=true also demo_flight: takeoff, a square, land. demo_flight retries
         # Takeoff until the rangefinder is up and the drone is armed.
-        actions.append(Node(
-            package='drone_mission', executable='mission',
-            remappings=TO_MISSION, output='screen',
-            parameters=[params, clock, {'radio_arms': radio_arms}],
-        ))
+        nodes.append(Node(package='drone_mission', executable='mission',
+                          remappings=TO_MISSION, output='screen',
+                          parameters=[params, clock, {'radio_arms': radio_arms}]))
         if demo:
-            actions.append(Node(
-                package='drone_mission', executable='demo_flight',
-                parameters=[params, clock], output='screen',
-            ))
+            nodes.append(Node(package='drone_mission', executable='demo_flight',
+                              parameters=[params, clock], output='screen'))
+    return nodes
 
-    if sim and radio:
-        # The RadioMaster Pocket over USB, playing the part INAV plays on the real
-        # drone: arm switch arms, takeover switch overrides any source. Not plugged
-        # in: joy_node waits quietly and picks it up when it appears. On the real
-        # drone the radio talks ELRS to INAV, so neither node runs with backend:=inav.
-        actions.append(Node(
-            package='joy', executable='joy_node', parameters=[params], output='screen',
-        ))
-        actions.append(Node(
-            package='drone_teleop', executable='radio_teleop',
-            remappings=TO_RADIO, parameters=[params, clock], output='screen',
-        ))
-    return actions
+
+def radio_nodes(wanted, params, clock):
+    """
+    Return the RadioMaster Pocket over USB, playing the part INAV plays on the real drone.
+
+    Arm switch arms, takeover switch overrides any source. Not plugged in: joy_node
+    waits quietly and picks it up when it appears. On the real drone the radio talks
+    ELRS to INAV, so neither node runs with backend:=inav; split, they run with the
+    drone (the laptop the radio is plugged into).
+    """
+    if not wanted:
+        return []
+    return [
+        Node(package='joy', executable='joy_node', parameters=[params], output='screen'),
+        Node(package='drone_teleop', executable='radio_teleop',
+             remappings=TO_RADIO, parameters=[params, clock], output='screen'),
+    ]
 
 
 def generate_launch_description():
@@ -221,6 +272,11 @@ def generate_launch_description():
         DeclareLaunchArgument('headless', default_value='false', choices=['true', 'false'],
                               description='Sim only. true: Gazebo without its window '
                                           '(server only), for CI and the nightly tests'),
+        DeclareLaunchArgument('part', default_value='all', choices=['all', 'drone', 'station'],
+                              description='Sim only. all: one machine. Split over two: '
+                                          'drone (laptop: Gazebo, sensors, fc_bridge, radio) '
+                                          'and station (ground station: safety, mission); '
+                                          'give both the same radio:='),
         # Everything else is decided once the arguments are known, and checked
         # before any process starts.
         OpaqueFunction(function=setup),

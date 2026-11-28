@@ -61,6 +61,12 @@ sim-joy: ws ## Gazebo + joystick (RadioMaster Pocket over USB)
 sim-wall: ws ## Gazebo: fly forward until something gets in the way [ARGS="speed:=0.3"]
 	bash $(SCRIPTS)/sim_wall.sh $(ARGS)
 
+sim-wall-drone: ws ## Wall mission split, laptop half: Gazebo plays the drone [ARGS=...]
+	bash $(SCRIPTS)/sim_wall.sh part:=drone $(ARGS)
+
+sim-wall-station: ws ## Wall mission split, ground station half (Pi over SSH) [ARGS=...]
+	bash $(SCRIPTS)/sim_wall_station.sh $(ARGS)
+
 sim-stop: ## Stop every sim process left in the container
 	bash $(SCRIPTS)/stop_sim.sh
 
@@ -105,6 +111,6 @@ motor-music: up ## PROPS OFF: make motor-music MODE=calibrate | MODE=play SONG=f
 	bash $(SCRIPTS)/motor_music/sing.sh $(MODE) $(if $(filter play,$(MODE)),"$(SONG)") $(ARGS)
 
 .PHONY: help up build down clean-volumes logs shell ws ws-clean test sim-test \
-	sim-keyboard sim-joy sim-wall sim-stop monitor monitor-stop wifi-rtt \
+	sim-keyboard sim-joy sim-wall sim-wall-drone sim-wall-station sim-stop monitor monitor-stop wifi-rtt \
 	sim-keyboard sim-joy sim-stop monitor monitor-stop bench wifi-rtt capture \
 	bench-rc bench-armed motor-music
